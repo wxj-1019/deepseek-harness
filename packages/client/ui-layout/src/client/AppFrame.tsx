@@ -170,6 +170,10 @@ export function AppFrame({
       data-details-collapsed={cols.details === 0 || undefined}
       data-dragging={dragging || undefined}
     >
+      {/* Inert backdrop layers: painted only while the background plugin's
+          body variables stand; below every column, never interactive. */}
+      <div className={css.backdrop} aria-hidden="true" />
+      <div className={css.scrim} aria-hidden="true" />
       <div className={css.sidebarCol}>
         {/* Render-site slot call with live concession output: a closed
             sidebar keeps the mounted slot at the compact-rail width, and the

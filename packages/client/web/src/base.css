@@ -22,7 +22,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-bg-base);
+  /* Transparent while a backdrop is active (ui-background body variables);
+     the flat base token otherwise. */
+  background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base));
 }
 
 /* Form controls don't inherit the body font (UA sheets pin their families —
