@@ -55,7 +55,7 @@ export const BackgroundSettingsSchema: z<BackgroundSettings> = z.object({
   // The union wrapper carries no default: absence survives resolution, keeping
   // `resolveBackdrop`'s `missing-image-ref` verdict reachable on resolved sections.
   image: z.union([z.object({
-    attachmentId: z.string(),
+    attachmentId: z.string().pattern(/^sha256:[0-9a-f]{64}$/),
     mediaType: z.union([...BACKGROUND_IMAGE_MEDIA_TYPES]),
     bytes: z.natural(),
     width: z.natural(),
