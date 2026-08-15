@@ -4,10 +4,34 @@
   grid-template-rows: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--dsw-alias-bg-base);
+  background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base));
   /* Collapse/expand animates the tracks on the deepsuite sider curve
      (--ds-ease-in-out / --ds-transition-duration-slow, ui-theme base.css). */
   transition: grid-template-columns var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+}
+
+/* Backdrop layers sit at the bottom of the frame's paint order: the ui-background
+   plugin sets the body variables; unset variables keep both layers inert. The
+   frame's own background paints above negative-z children, so the surface var
+   going transparent is what reveals the layers. The arrangement also requires
+   no ancestor of the frame (#root in particular) to gain an opaque background;
+   if one ever does, isolation: isolate on .frame is the fix. */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image: var(--dsw-specific-backdrop-image, none);
+  background-size: cover;
+  background-position: center;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--dsw-specific-backdrop-scrim, transparent);
 }
 
 /* Dragging writes widths at pointer cadence; easing them would detach the

@@ -7,7 +7,7 @@
   height: 100%;
   display: grid;
   place-items: center;
-  background: var(--dsw-alias-bg-base, #f9fafb);
+  background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base, #f9fafb));
 }
 
 .card {
