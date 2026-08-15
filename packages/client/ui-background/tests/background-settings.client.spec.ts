@@ -41,5 +41,10 @@ describe('resolveBackdrop', () => {
     // Raw schema input is untyped at this boundary, like the null case above.
     expect(BackgroundSettingsSchema({ preference: 'image' } as never)).not.toHaveProperty('image')
     expect(BackgroundSettingsSchema({ preference: 'image', image: null } as never).image).toBe(null)
+    // A malformed content address fails at the settings boundary, not downstream.
+    expect(() => BackgroundSettingsSchema({
+      preference: 'image',
+      image: { attachmentId: 'not-a-hash', mediaType: 'image/png', bytes: 3, width: 2, height: 2 },
+    } as never)).toThrow(/attachmentId/)
   })
 })

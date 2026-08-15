@@ -2,7 +2,9 @@
   "extends": "../../../tsconfig.base.client.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "lib/types"
+    "outDir": "lib/types",
+    // The Host half (index.ts/http.ts) sits on node:http and Buffer.
+    "types": ["node"]
   },
   "include": [
     "src"
@@ -12,6 +14,7 @@
     { "path": "../runtime" },
     { "path": "../ui-slots" },
     { "path": "../ui-settings" },
+    { "path": "../connection/tsconfig.host.json" },
     { "path": "../../attachment/attachment" },
     { "path": "../../host/webserver" },
     { "path": "../../settings/settings" },
