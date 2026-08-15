@@ -38,7 +38,8 @@ describe('resolveBackdrop', () => {
   })
 
   it('keeps an absent image absent through schema resolution (union wrapper guards the z.object implicit default)', () => {
-    expect(BackgroundSettingsSchema({ preference: 'image' })).not.toHaveProperty('image')
-    expect(BackgroundSettingsSchema({ preference: 'image', image: null }).image).toBe(null)
+    // Raw schema input is untyped at this boundary, like the null case above.
+    expect(BackgroundSettingsSchema({ preference: 'image' } as never)).not.toHaveProperty('image')
+    expect(BackgroundSettingsSchema({ preference: 'image', image: null } as never).image).toBe(null)
   })
 })
