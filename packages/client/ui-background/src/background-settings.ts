@@ -75,8 +75,8 @@ export interface BackgroundPreset {
   css: { light: string; dark: string }
 }
 
-/** Fixed preset registry; the Background settings section is the only selector surface. */
-export const BACKGROUND_PRESETS: readonly BackgroundPreset[] = Object.freeze([
+/** Fixed non-empty preset registry; the Background settings section is the only selector surface. */
+export const BACKGROUND_PRESETS: readonly [BackgroundPreset, ...BackgroundPreset[]] = Object.freeze([
   Object.freeze({
     id: 'aurora',
     css: Object.freeze({
