@@ -145,9 +145,13 @@ export function backdropVarsCss(section: BackgroundSettings): string {
   if (resolution.kind === 'none' || resolution.kind === 'invalid') return ''
   const scrim = `color-mix(in srgb, var(--dsw-alias-bg-base) ${section.dimming}%, transparent)`
   const surface = '--dsw-specific-backdrop-surface:transparent'
+  // Fixed translucency for content columns (the chat transcript paints it as
+  // its fill): readability over busy images is a floor, not a second
+  // user-tunable scalar, so it ignores the dimming slider.
+  const veil = '--dsw-specific-backdrop-veil:color-mix(in srgb, var(--dsw-alias-bg-base) 80%, transparent)'
   if (resolution.kind === 'image') {
-    return `body{--dsw-specific-backdrop-image:url("${BACKDROP_IMAGE_URL}");--dsw-specific-backdrop-scrim:${scrim};${surface}}`
+    return `body{--dsw-specific-backdrop-image:url("${BACKDROP_IMAGE_URL}");--dsw-specific-backdrop-scrim:${scrim};${veil};${surface}}`
   }
-  return `body{--dsw-specific-backdrop-image:${resolution.css.light};--dsw-specific-backdrop-scrim:${scrim};${surface}}`
+  return `body{--dsw-specific-backdrop-image:${resolution.css.light};--dsw-specific-backdrop-scrim:${scrim};${veil};${surface}}`
     + `body[data-ds-dark-theme]{--dsw-specific-backdrop-image:${resolution.css.dark}}`
 }

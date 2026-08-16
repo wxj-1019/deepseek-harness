@@ -1,7 +1,7 @@
 /**
  * Browser background service over the durable `ui-background` section: it owns
  * the live preference (none / built-in preset / one stored image), publishes
- * immutable snapshots on `background/change`, and projects the three
+ * immutable snapshots on `background/change`, and projects the four
  * `--dsw-specific-backdrop-*` body variables through a presenter-owned style
  * element. Uploads POST raw bytes to /backgrounds and return the stored
  * reference; the Background settings section (registered here) chains
