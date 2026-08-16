@@ -117,9 +117,15 @@ describe('BackgroundSection', () => {
     expect(pressed(/Image/)).toBe('false')
     fireEvent.click(screen.getByRole('button', { name: 'Presets' }))
     expect(face.setPreset).toHaveBeenCalledWith('aurora')
-    // Without a stored image the file row is not mounted: the card's input
-    // ref click is a no-op, not an upload.
+    // The hidden file input is always mounted: the Image card reaches it from
+    // a bare section, so the first upload stays reachable; a click alone (no
+    // file chosen) never uploads.
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+    expect(input).not.toBeNull()
+    const clicked = vi.fn()
+    input.addEventListener('click', clicked)
     fireEvent.click(screen.getByRole('button', { name: 'Image' }))
+    expect(clicked).toHaveBeenCalledTimes(1)
     expect(face.uploadImage).not.toHaveBeenCalled()
   })
 
