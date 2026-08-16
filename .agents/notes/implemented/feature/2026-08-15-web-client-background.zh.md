@@ -54,15 +54,16 @@ Host 半复用现有附件存储（`ctx.attachments` 的 `saveImage`/`readImage`
 
 ## 渲染管线
 
-三个 body 级 CSS 变量是唯一机制；启动变换与运行时 presenter 只写变量，样式表以惰性默认值消费：
+四个 body 级 CSS 变量是唯一机制；启动变换与运行时 presenter 只写变量，样式表以惰性默认值消费：
 
 - `--dsw-specific-backdrop-image` —— 存储图片的 `url(...)` 或预设渐变；未设即无。
 - `--dsw-specific-backdrop-scrim` —— `color-mix(in srgb, var(--dsw-alias-bg-base) <dimming>%, transparent)`；对活令牌求值使遮罩自动跟随亮暗。
+- `--dsw-specific-backdrop-veil` —— `color-mix(in srgb, var(--dsw-alias-bg-base) 80%, transparent)`；内容列在背景激活时绘制的固定半透明基色填充。聊天转录列（`ChatView` 的 `.column`，以 box-shadow 外扩 16px，使正文不贴面纱边缘）以 `var(--dsw-alias-bg-base)` 为回退值消费它：裸 markdown 正文保有可读底衬，而滚动器两侧留白、头部与首屏继续透出背景。面纱按设计不随遮罩浓度滑杆变化——繁忙图片上的可读性是底线，不是第二个用户可调标量。
 - `--dsw-specific-backdrop-surface` —— 背景生效时为 `transparent`；否则未设。
 
-`ui-layout` 在 AppFrame 堆叠序底部渲染两个惰性层（`position: absolute; inset: 0; pointer-events: none`，z-index −2 图片、−1 遮罩），并把 AppFrame 根与启动页的涂刷改为 `background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base))`。组件填充——卡片、气泡、菜单——保留各自令牌并保持不透明；侧栏保留实心填充。`ui-layout` 绝不消费背景服务——它对该包没有任何依赖——因此没有该插件时布局行为不变。
+`ui-layout` 在 AppFrame 堆叠序底部渲染两个惰性层（`position: absolute; inset: 0; pointer-events: none`，z-index −2 图片、−1 遮罩），并把 AppFrame 根与启动页的涂刷改为 `background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base))`；`ui-conversation` 的 ConversationRoot 消费同一 surface 变量，使转录列透出图层而非以平面基色盖住。组件填充——卡片、气泡、菜单——保留各自令牌并保持不透明；侧栏保留实心填充。`ui-layout` 绝不消费背景服务——它对该包没有任何依赖——因此没有该插件时布局行为不变。
 
-Host 半的 `tapIndex` 变换镜像 `injectBootTheme`：在宿主侧经 `settings.get` 读 `ui-background` 节（没有 settings provider 时用默认值），并在 `</head>` 前插入一小段设置这三个变量的 `<style>`，使刷新时首帧即现背景。`backdropVarsCss` 是双方调用者共享的唯一来源。运行期 `BackgroundPresenter`——位于 `ui-background`，拥有 head 中的一个 style 元素，随插件 fiber 一并销毁——按 `ctx.background` 快照写同样三个变量；预设以 `body` + `body[data-ds-dark-theme]` 一对规则同时携带两种配色模式，因此无需 theme 订阅或 `theme/change` 重应用，`none`/无效节则撤下该元素，让惰性默认值接管。
+Host 半的 `tapIndex` 变换镜像 `injectBootTheme`：在宿主侧经 `settings.get` 读 `ui-background` 节（没有 settings provider 时用默认值），并在 `</head>` 前插入一小段设置这四个变量的 `<style>`，使刷新时首帧即现背景。`backdropVarsCss` 是双方调用者共享的唯一来源。运行期 `BackgroundPresenter`——位于 `ui-background`，拥有 head 中的一个 style 元素，随插件 fiber 一并销毁——按 `ctx.background` 快照写同样四个变量；预设以 `body` + `body[data-ds-dark-theme]` 一对规则同时携带两种配色模式，因此无需 theme 订阅或 `theme/change` 重应用，`none`/无效节则撤下该元素，让惰性默认值接管。
 
 ## 设置界面
 
@@ -76,7 +77,7 @@ Host 半的 `tapIndex` 变换镜像 `injectBootTheme`：在宿主侧经 `setting
 
 ## 测试
 
-包套件镜像 `ui-theme` 的：客户端 apply 装配（服务提供、分区槽注册、设置同步）、jsdom 下的分区组件行为（偏好切换、以桩 fetch 上传、遮罩浓度）、`node:vm` 下逐偏好的启动注入、Host apply（命名空间注册与销毁、以桩 `attachments`/`webServer` 验证路由处理器、index 变换）、运行时服务（快照、校验、revision 守卫）、设置 store，以及断言 AppFrame 以回退值消费三个变量的 CSS 契约测试。产品用户可见面在 web 应用的快照套件中随 keyless `background-settings` 快照发布；该包 `test:coverage` 保持逐文件 100%。
+包套件镜像 `ui-theme` 的：客户端 apply 装配（服务提供、分区槽注册、设置同步）、jsdom 下的分区组件行为（偏好切换、以桩 fetch 上传、遮罩浓度）、`node:vm` 下逐偏好的启动注入、Host apply（命名空间注册与销毁、以桩 `attachments`/`webServer` 验证路由处理器、index 变换）、运行时服务（快照、校验、revision 守卫）、设置 store，以及断言 AppFrame 以回退值消费变量、聊天转录列以不透明回退绘制面纱的 CSS 契约测试。产品用户可见面在 web 应用的快照套件中随 keyless `background-settings` 快照发布——旅程播种一段转录，并钉住预设生效时面纱在场、不随遮罩浓度滑杆变化、选无后回退平面基色；该包 `test:coverage` 保持逐文件 100%。
 
 ## 已考虑的备选方案
 
@@ -88,9 +89,9 @@ Host 半的 `tapIndex` 变换镜像 `injectBootTheme`：在宿主侧经 `setting
 ## 后果
 
 - 持久偏好刷新后无闪烁保留：启动变换在首帧画出该节，presenter 在激活后接管同一组变量，两者共享同一个 `backdropVarsCss` 来源。
-- 三变量契约让 `ui-layout` 在没有该插件时依然正确——它渲染惰性图层，绝不消费背景服务。
+- 变量契约让 `ui-layout` 在没有该插件时依然正确——它渲染惰性图层，绝不消费背景服务——也让聊天列以同样方式正确：没有该插件时，面纱回退为平面基色令牌。
 - 上传准入复用 `ctx.attachments.imageLimits`，一份部署策略统管聊天图片与背景，settings 只保存内容寻址引用。
 - 两条 `/backgrounds` 方法都携带完整的 `/api` 信任栅栏，以对齐而非单独的威胁模型解决第二写入面风险。
 - 被替换的图片不做垃圾回收；孤立的存储对象会累积，但受上传大小上限约束。回收是存储缝上的后续工作。
-- 复杂图片上的可读性只依赖一个标量遮罩；没有分区或自动对比度适配。若不足，后续方向是分区半透明而非更多标量。
+- 复杂图片上的可读性依赖遮罩加转录列背后固定的分区面纱；没有自动对比度适配。面纱在首个构建显示出裸正文被 5% 遮罩的图片淹没后落地——正是初版暂缓的分区跟进，且保持零新增标量。
 - 启动变换在渲染 index HTML 时读设置；写入与刷新竞态可能让旧背景再出现一次——与 `ui-theme` 启动注入已接受的窗口相同。

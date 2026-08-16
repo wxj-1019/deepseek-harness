@@ -59,6 +59,7 @@ describe('BackgroundRuntime', () => {
     expect(stub.set).toHaveBeenCalledWith('preference', 'image')
     expect(stub.set).toHaveBeenCalledWith('image', REF)
     expect(document.querySelector('style[data-dsh-background]')?.textContent).toContain('url("/backgrounds/current")')
+    expect(document.querySelector('style[data-dsh-background]')?.textContent).toContain('--dsw-specific-backdrop-veil:')
     service.setDimming(60)
     expect(stub.set).toHaveBeenCalledWith('dimming', 60)
     expect(document.querySelector('style[data-dsh-background]')?.textContent).toContain(' 60%, transparent)')

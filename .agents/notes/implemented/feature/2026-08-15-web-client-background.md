@@ -54,15 +54,16 @@ The route registration goes through `ctx.effect` (the returned disposer removes 
 
 ## Rendering pipeline
 
-Three body-level CSS variables are the single mechanism; the boot transform and the runtime presenter only set variables, and the stylesheet consumes them with inert defaults:
+Four body-level CSS variables are the single mechanism; the boot transform and the runtime presenter only set variables, and the stylesheet consumes them with inert defaults:
 
 - `--dsw-specific-backdrop-image` — `url(...)` for stored images, or the preset's gradient; unset means none.
 - `--dsw-specific-backdrop-scrim` — `color-mix(in srgb, var(--dsw-alias-bg-base) <dimming>%, transparent)`; resolving against the live token makes the scrim follow light/dark automatically.
+- `--dsw-specific-backdrop-veil` — `color-mix(in srgb, var(--dsw-alias-bg-base) 80%, transparent)`; the fixed-translucency base fill content columns paint over an active backdrop. The chat transcript column (`ChatView` `.column`, spread 16px by a box-shadow so prose never sits flush against the veil's edge) consumes it with `var(--dsw-alias-bg-base)` as the fallback, so bare markdown prose keeps a readable fill while the scroller gutters, the header, and the hero keep showing the background. The veil ignores the dimming slider by design: readability over busy images is a floor, not a second user-tunable scalar.
 - `--dsw-specific-backdrop-surface` — `transparent` while a background is active; unset otherwise.
 
-`ui-layout` renders two inert layers at the bottom of the AppFrame stacking order (`position: absolute; inset: 0; pointer-events: none`, z-index −2 image and −1 scrim) and switches the AppFrame root and boot-page paints to `background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base))`. Component fills — cards, bubbles, menus — keep their own tokens and stay opaque; the sidebar keeps its solid fill. `ui-layout` never consumes the background service — it has no dependency on the package at all — so the layout works unchanged without the plugin.
+`ui-layout` renders two inert layers at the bottom of the AppFrame stacking order (`position: absolute; inset: 0; pointer-events: none`, z-index −2 image and −1 scrim) and switches the AppFrame root and boot-page paints to `background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base))`; `ui-conversation`'s ConversationRoot consumes the same surface var so the transcript column reveals the layers instead of covering them with its flat base. Component fills — cards, bubbles, menus — keep their own tokens and stay opaque; the sidebar keeps its solid fill. `ui-layout` never consumes the background service — it has no dependency on the package at all — so the layout works unchanged without the plugin.
 
-The Host half's `tapIndex` transform mirrors `injectBootTheme`: it reads the `ui-background` section host-side through `settings.get` (defaulting when no settings provider composes) and inserts a small `<style>` before `</head>` setting the three variables, so a reload shows the background on first paint. `backdropVarsCss` is the single source both callers share. At runtime `BackgroundPresenter` — in `ui-background`, owning one style element in head, disposed with the plugin fiber — sets the same variables from `ctx.background` snapshots; presets ship both palette modes as one `body` + `body[data-ds-dark-theme]` rule pair, so no theme subscription or `theme/change` re-apply is needed, and `none`/invalid sections retract the element so the inert defaults take over.
+The Host half's `tapIndex` transform mirrors `injectBootTheme`: it reads the `ui-background` section host-side through `settings.get` (defaulting when no settings provider composes) and inserts a small `<style>` before `</head>` setting the four variables, so a reload shows the background on first paint. `backdropVarsCss` is the single source both callers share. At runtime `BackgroundPresenter` — in `ui-background`, owning one style element in head, disposed with the plugin fiber — sets the same variables from `ctx.background` snapshots; presets ship both palette modes as one `body` + `body[data-ds-dark-theme]` rule pair, so no theme subscription or `theme/change` re-apply is needed, and `none`/invalid sections retract the element so the inert defaults take over.
 
 ## Settings UI
 
@@ -76,7 +77,7 @@ A `settings.section` (id `background`, order 5, label zh 背景 / en Background)
 
 ## Testing
 
-The package suite mirrors `ui-theme`'s: client apply wiring (service provision, section slot registration, settings sync), section component behavior in jsdom (preference switching, upload with stubbed fetch, dimming), boot injection via `node:vm` across each preference, host apply (namespace registration and disposal, route handlers with stubbed `attachments`/`webServer`, index transform), runtime service (snapshots, validation, revision guard), settings store, and a CSS contract test asserting AppFrame consumes the three variables with fallbacks. The product-user-visible surface ships a keyless `background-settings` snapshot in the web app's snapshot suite; `test:coverage` stays per-file 100% for the package.
+The package suite mirrors `ui-theme`'s: client apply wiring (service provision, section slot registration, settings sync), section component behavior in jsdom (preference switching, upload with stubbed fetch, dimming), boot injection via `node:vm` across each preference, host apply (namespace registration and disposal, route handlers with stubbed `attachments`/`webServer`, index transform), runtime service (snapshots, validation, revision guard), settings store, and CSS contract tests asserting AppFrame consumes the variables with fallbacks and the chat transcript column paints the veil with its opaque fallback. The product-user-visible surface ships a keyless `background-settings` snapshot in the web app's snapshot suite — the journey seeds a transcript and pins that the veil stands while a preset paints, ignores the dimming slider, and retracts to the flat base on none; `test:coverage` stays per-file 100% for the package.
 
 ## Alternatives considered
 
@@ -88,9 +89,9 @@ The package suite mirrors `ui-theme`'s: client apply wiring (service provision, 
 ## Consequences
 
 - The durable preference survives reload with no flash: the boot transform paints the section on first paint and the presenter re-owns the same variables after activation, both through one `backdropVarsCss` source.
-- The three-variable contract keeps `ui-layout` correct without the plugin — it renders the inert layers and never consumes the background service.
+- The variable contract keeps `ui-layout` correct without the plugin — it renders the inert layers and never consumes the background service — and keeps the chat column correct the same way: without the plugin the veil falls back to the flat base token.
 - Upload admission reuses `ctx.attachments.imageLimits`, so one deployment policy governs chat images and backgrounds, and settings hold only the content-addressed reference.
 - Both `/backgrounds` methods carry the full `/api` trust fence, resolving the second-write-surface risk with parity rather than a separate threat model.
 - Replaced images are not garbage-collected; orphaned store objects accumulate, bounded by the upload size cap. GC is a follow-up on the store seam.
-- Readability over busy images rests on one scalar scrim; there is no per-region or auto-contrast adaptation. If it proves insufficient, the follow-up is per-area translucency, not more scalars.
+- Readability over busy images rests on the scrim plus the fixed per-area veil behind the transcript column; there is no auto-contrast adaptation. The veil landed after the first build showed bare prose drowned by a 5%-scrim image — the per-area follow-up the first cut deferred, kept scalar-free.
 - The boot transform reads settings while the index HTML is rendered; a settings write racing a reload can show the previous background once — the same window `ui-theme`'s boot injection already accepts.

@@ -23,6 +23,7 @@ describe('injectBootBackground', () => {
     expect(out).toContain('linear-gradient(160deg, #dce7fb')
     expect(out).toContain('body[data-ds-dark-theme]{--dsw-specific-backdrop-image:')
     expect(out).toContain('color-mix(in srgb, var(--dsw-alias-bg-base) 30%, transparent)')
+    expect(out).toContain('--dsw-specific-backdrop-veil:')
   })
 
   it('resolves the image URL from the section for an image background', () => {
