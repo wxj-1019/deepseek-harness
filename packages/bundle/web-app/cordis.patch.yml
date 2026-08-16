@@ -179,16 +179,6 @@
     - id: ui-aqua
       name: '@deepseek-ai/dsh-client-ui-aqua'
 
-    # User-configurable background: durable none/preset/image preference over
-    # the attachments store, /backgrounds upload-and-serve route (fenced by the
-    # connection trust module), boot backdrop style, and the Background
-    # settings section.
-    - id: ui-background
-      name: '@deepseek-ai/dsh-client-ui-background'
-      inject: [webRuntime]
-      config:
-        trustedHosts: !!js ctx.webRuntime.trustedHosts
-
     - id: locale
       name: '@deepseek-ai/dsh-client-locale'
 

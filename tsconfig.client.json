@@ -87,7 +87,6 @@
     { "path": "./packages/client/ui-trajectory" },
     { "path": "./packages/session-query/session-log-export" },
     { "path": "./packages/client/ui-theme" },
-    { "path": "./packages/client/ui-background" },
     { "path": "./packages/client/ui-aqua" },
     { "path": "./packages/client/ui-settings" },
     { "path": "./packages/client/ui-settings-general" },
