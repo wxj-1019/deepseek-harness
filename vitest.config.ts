@@ -179,6 +179,12 @@ export default defineConfig({
         // harness the jsdom lane doesn't cover yet. TODO(gui): cover and
         // remove as the client test lane matures.
         'packages/client/ui-trajectory/src/*',
+        // Aqua is absorbed third-party theme code (upstream v1.3.0, MIT): the
+        // persistence seams carry full specs; the rendering engines (WebGL
+        // fluid, canvas whale/mesh, spotlight, seam stamper) need a
+        // browser-grade harness and stay under the same GUI-debt exemption as
+        // the other client UI trees until that lane matures.
+        'packages/client/ui-aqua/src/*',
         // Trajectory's compact Markdown projection retains deferred branch coverage.
         'packages/client/ui-primitives/src/markdown/plain-text.ts',
         'packages/client/ui-user-questions/src/client/QuestionComposer.tsx',
