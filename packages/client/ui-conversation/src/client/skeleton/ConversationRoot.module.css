@@ -8,11 +8,7 @@
   flex-direction: column;
   height: 100%;
   min-width: 0;
-  /* Transparent while the ui-background plugin's surface var stands (the
-     backdrop layers behind the frame show through the transcript; the chat
-     message column paints the backdrop veil over them for readability); the
-     flat base token otherwise. Cards, bubbles, and menus keep their own fills. */
-  background: var(--dsw-specific-backdrop-surface, var(--dsw-alias-bg-base));
+  background: var(--dsw-alias-bg-base);
 
   /* Shared width axis for the whole column: one content width W
      (--dsh-chat-content-width) for the transcript, the dock cards

@@ -430,13 +430,13 @@ export interface Config {
 
 来源：[`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
-<a id="deepseek-aidsh-client-ui-background"></a>
+<a id="deepseek-aidsh-client-ui-aqua"></a>
 
-## `@deepseek-ai/dsh-client-ui-background`
+## `@deepseek-ai/dsh-client-ui-aqua`
 
 ```ts config-catalog
 /** Host-row config: the deployment's serving authorities for the route fence. */
-export interface BackgroundHostConfig {
+export interface AquaHostConfig {
   /**
    * Non-loopback authorities this deployment serves, exactly the /api trust
    * fence's list (a composition derives it the same way, e.g.
@@ -448,7 +448,7 @@ export interface BackgroundHostConfig {
 }
 ```
 
-来源：[`packages/client/ui-background/src/index.ts:25`](../packages/client/ui-background/src/index.ts)
+来源：[`packages/client/ui-aqua/src/index.ts:23`](../packages/client/ui-aqua/src/index.ts)
 
 <a id="deepseek-aidsh-code-runtime-worker-thread"></a>
 

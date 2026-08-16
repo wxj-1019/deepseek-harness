@@ -335,10 +335,12 @@ export interface Config {
   maxMessageImageBytes?: number
   /** Maximum intrinsic width multiplied by height accepted for one image. */
   maxImagePixels?: number
+  /** Maximum encoded bytes accepted for one video. */
+  maxVideoBytes?: number
 }
 ```
 
-Source: [`packages/attachment/attachment-local/src/index.ts:24`](../packages/attachment/attachment-local/src/index.ts)
+Source: [`packages/attachment/attachment-local/src/index.ts:30`](../packages/attachment/attachment-local/src/index.ts)
 
 <a id="deepseek-aidsh-bash-local"></a>
 
@@ -428,13 +430,13 @@ export interface Config {
 
 Source: [`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
-<a id="deepseek-aidsh-client-ui-background"></a>
+<a id="deepseek-aidsh-client-ui-aqua"></a>
 
-## `@deepseek-ai/dsh-client-ui-background`
+## `@deepseek-ai/dsh-client-ui-aqua`
 
 ```ts config-catalog
 /** Host-row config: the deployment's serving authorities for the route fence. */
-export interface BackgroundHostConfig {
+export interface AquaHostConfig {
   /**
    * Non-loopback authorities this deployment serves, exactly the /api trust
    * fence's list (a composition derives it the same way, e.g.
@@ -446,7 +448,7 @@ export interface BackgroundHostConfig {
 }
 ```
 
-Source: [`packages/client/ui-background/src/index.ts:25`](../packages/client/ui-background/src/index.ts)
+Source: [`packages/client/ui-aqua/src/index.ts:23`](../packages/client/ui-aqua/src/index.ts)
 
 <a id="deepseek-aidsh-code-runtime-worker-thread"></a>
 

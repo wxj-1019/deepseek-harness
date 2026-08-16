@@ -49,7 +49,7 @@ function attachmentsStub(): AttachmentStore {
   } as unknown as AttachmentStore
 }
 
-/** In-memory settings document (the ui-background host spec's MemorySettings). */
+/** In-memory settings document (the standard MemorySettings fixture). */
 class MemorySettings extends SettingsProvider {
   readonly writable = true
   protected load(): Promise<Record<string, unknown>> { return Promise.resolve({}) }
