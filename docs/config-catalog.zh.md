@@ -337,6 +337,8 @@ export interface Config {
   maxMessageImageBytes?: number
   /** Maximum intrinsic width multiplied by height accepted for one image. */
   maxImagePixels?: number
+  /** Maximum encoded bytes accepted for one video. */
+  maxVideoBytes?: number
 }
 ```
 

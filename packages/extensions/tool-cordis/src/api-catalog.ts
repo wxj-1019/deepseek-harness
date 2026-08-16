@@ -358,6 +358,11 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         parameters: [],
       },
       {
+        signature: 'abstract readonly videoLimits: VideoAttachmentLimits',
+        description: 'Deployment-resolved video policy used by upload admission. Videos are single-object media (wallpapers), so unlike images there is no separate batch-validation member: saveVideo is the validation gate.',
+        parameters: [],
+      },
+      {
         signature: 'abstract validateImage(input: SaveImageAttachment): Promise<void>',
         description: 'Validate one image without persisting it. Batch callers validate every member before saving any member.',
         parameters: [{ name: 'input', description: 'encoded bytes, declared media type, and optional display name.' }],
@@ -379,6 +384,19 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         signature: 'abstract readImage(ref: ImageAttachmentRef, signal?: AbortSignal): Promise<StoredImageAttachment>',
         description: 'Read one image and verify that bytes still match the recorded reference.',
         parameters: [{ name: 'ref', description: 'durable reference from the session log.' }, { name: 'signal', description: 'optional cancellation for backend read and verification work.' }],
+        returns: 'the verified bytes and canonical reference.',
+        throws: ['the signal reason when aborted, or a storage error when verification fails.'],
+      },
+      {
+        signature: 'abstract saveVideo(input: SaveVideoAttachment): Promise<VideoAttachmentRef>',
+        description: 'Validate and durably commit one video before its owning preference is written. Validation is container magic-byte sniffing plus the byte cap — no demux or decode; callers must not treat admission as codec validation.',
+        parameters: [{ name: 'input', description: 'encoded bytes, declared media type, and optional display name.' }],
+        returns: 'a durable content-addressed reference.',
+      },
+      {
+        signature: 'abstract readVideo(ref: VideoAttachmentRef, signal?: AbortSignal): Promise<StoredVideoAttachment>',
+        description: 'Read one video and verify that bytes still match the recorded reference.',
+        parameters: [{ name: 'ref', description: 'durable reference from the owning preference.' }, { name: 'signal', description: 'optional cancellation for backend read and verification work.' }],
         returns: 'the verified bytes and canonical reference.',
         throws: ['the signal reason when aborted, or a storage error when verification fails.'],
       },
@@ -3692,6 +3710,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface SaveTextSpill {\n    owner: SpillOwner;\n    source: SpillSource;\n    suggestedName: string;\n    content: string;\n}',
   },
   {
+    name: 'SaveVideoAttachment',
+    declaration: 'export interface SaveVideoAttachment {\n    data: Uint8Array;\n    mediaType: VideoMediaType;\n    name?: string;\n}',
+  },
+  {
     name: 'ScheduledToolDispatch',
     declaration: 'export type ScheduledToolDispatch = {\n    kind: \'post-result\';\n    result: ToolExecutionResult;\n} | {\n    kind: \'final-result\';\n    result: ToolExecutionResult;\n};',
   },
@@ -4098,6 +4120,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'StoredImageAttachment',
     declaration: 'export interface StoredImageAttachment {\n    ref: ImageAttachmentRef;\n    data: Uint8Array;\n}',
+  },
+  {
+    name: 'StoredVideoAttachment',
+    declaration: 'export interface StoredVideoAttachment {\n    ref: VideoAttachmentRef;\n    data: Uint8Array;\n}',
   },
   {
     name: 'StreamChunk',
@@ -4538,6 +4564,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'UserQuestionProvider',
     declaration: 'export interface UserQuestionProvider {\n    ask(request: AskUserQuestionRequest): Promise<AskUserQuestionAnswer>;\n}',
+  },
+  {
+    name: 'VideoAttachmentLimits',
+    declaration: 'export interface VideoAttachmentLimits {\n    maxVideoBytes: number;\n    mediaTypes: readonly VideoMediaType[];\n}',
+  },
+  {
+    name: 'VideoAttachmentRef',
+    declaration: 'export interface VideoAttachmentRef {\n    attachmentId: AttachmentId;\n    mediaType: VideoMediaType;\n    bytes: number;\n    name?: string;\n}',
+  },
+  {
+    name: 'VideoMediaType',
+    declaration: 'export type VideoMediaType = \'video/mp4\' | \'video/webm\' | \'video/ogg\';',
   },
   {
     name: 'WebBootEntry',

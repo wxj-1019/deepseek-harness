@@ -1,0 +1,78 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - text: Agent preset Applies to sessions you start from now on. Running sessions keep the preset they began with.
+  - button "Standard mode":
+    - text: Standard mode
+    - img
+  - text: Permission Choose the default permission mode for new sessions
+  - button "Workspace Write":
+    - text: Workspace Write
+    - img
+  - text: Language
+  - button "English":
+    - text: English
+    - img
+  - text: Appearance
+  - button "Light":
+    - img
+    - text: Light
+  - button "Dark":
+    - img
+    - text: Dark
+  - button "System" [pressed]:
+    - img
+    - text: System
+  - text: Mode
+  - group "Mode":
+    - button "Mica"
+    - button "Compatibility" [pressed]
+  - text: Backdrop
+  - group "Backdrop":
+    - button "Fluid"
+    - button "Wallpaper" [pressed]
+  - text: Wallpaper
+  - button "Choose image"
+  - button "Choose video"
+  - button "Delete"
+  - text: Use light mode for light wallpapers, dark mode for dark wallpapers ⚠️ Wallpaper blur
+  - slider "Wallpaper blur 0 px": "0"
+  - spinbutton: "0"
+  - text: px Wallpaper frost
+  - slider "Wallpaper frost 0 %": "0"
+  - spinbutton: "0"
+  - text: "% Background brightness"
+  - slider "Background brightness 50 %": "50"
+  - spinbutton: "50"
+  - text: "% Light mode: 50 is unchanged, 100 brightens to pure white Ambient Particle whale"
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Fish
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Interactive mesh
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Enter behavior while busy Busy only; Cmd/Ctrl+Enter uses the other behavior
+  - button "Queue":
+    - text: Queue
+    - img
