@@ -88,6 +88,8 @@ Host 半的 `tapIndex` 变换镜像 `injectBootTheme`：在宿主侧经 `setting
 
 ## 后果
 
+- **已取代（2026-08-17）：** 玻璃主题合并把本特性的数据面并入 `packages/client/ui-aqua` 并退役了该包——现行架构见 [2026-08-17-aqua-glass-theme-merge](2026-08-17-aqua-glass-theme-merge.md)。
+
 - 持久偏好刷新后无闪烁保留：启动变换在首帧画出该节，presenter 在激活后接管同一组变量，两者共享同一个 `backdropVarsCss` 来源。
 - 变量契约让 `ui-layout` 在没有该插件时依然正确——它渲染惰性图层，绝不消费背景服务——也让聊天列以同样方式正确：没有该插件时，面纱回退为平面基色令牌。
 - 上传准入复用 `ctx.attachments.imageLimits`，一份部署策略统管聊天图片与背景，settings 只保存内容寻址引用。

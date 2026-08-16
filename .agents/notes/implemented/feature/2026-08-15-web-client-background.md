@@ -88,6 +88,8 @@ The package suite mirrors `ui-theme`'s: client apply wiring (service provision, 
 
 ## Consequences
 
+- **Superseded (2026-08-17):** the glass-theme merge absorbed this feature's data plane into `packages/client/ui-aqua` and retired the package — [2026-08-17-aqua-glass-theme-merge](2026-08-17-aqua-glass-theme-merge.md) owns the current architecture.
+
 - The durable preference survives reload with no flash: the boot transform paints the section on first paint and the presenter re-owns the same variables after activation, both through one `backdropVarsCss` source.
 - The variable contract keeps `ui-layout` correct without the plugin — it renders the inert layers and never consumes the background service — and keeps the chat column correct the same way: without the plugin the veil falls back to the flat base token.
 - Upload admission reuses `ctx.attachments.imageLimits`, so one deployment policy governs chat images and backgrounds, and settings hold only the content-addressed reference.
