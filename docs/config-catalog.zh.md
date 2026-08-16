@@ -430,6 +430,26 @@ export interface Config {
 
 来源：[`packages/client/hmr/src/index.ts:31`](../packages/client/hmr/src/index.ts)
 
+<a id="deepseek-aidsh-client-ui-background"></a>
+
+## `@deepseek-ai/dsh-client-ui-background`
+
+```ts config-catalog
+/** Host-row config: the deployment's serving authorities for the route fence. */
+export interface BackgroundHostConfig {
+  /**
+   * Non-loopback authorities this deployment serves, exactly the /api trust
+   * fence's list (a composition derives it the same way, e.g.
+   * `!!js ctx.webRuntime.trustedHosts`). Absent means loopback-only, the safe
+   * standalone default; an entry that is not a bare `host[:port]` authority
+   * fails the plugin load.
+   */
+  trustedHosts?: string[]
+}
+```
+
+来源：[`packages/client/ui-background/src/index.ts:25`](../packages/client/ui-background/src/index.ts)
+
 <a id="deepseek-aidsh-code-runtime-worker-thread"></a>
 
 ## `@deepseek-ai/dsh-code-runtime-worker-thread`
