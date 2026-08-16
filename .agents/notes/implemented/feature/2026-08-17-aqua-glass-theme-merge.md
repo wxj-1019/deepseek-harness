@@ -1,12 +1,14 @@
-# Aqua glass theme merged onto the durable seams
+# Agent Note: Aqua glass theme merged onto the durable seams
+
+Status: implemented
 
 English | [中文](2026-08-17-aqua-glass-theme-merge.zh.md)
 
-- Date: 2026-08-17
-- Status: implemented; replaces the first-cut background feature (see supersession in [2026-08-15-web-client-background](2026-08-15-web-client-background.md))
-- Scope: `packages/client/ui-aqua`, `packages/attachment/*`, web-app composition
+## Problem
 
-## What shipped
+After the first-cut background feature shipped ([2026-08-15-web-client-background](2026-08-15-web-client-background.md)), a side-by-side trial against the third-party glass theme [DSH-Transparent-UI-Plugin](https://github.com/WYH66666666/DSH-Transparent-UI-Plugin) settled the product question: the aqua system — frosted surfaces, a WebGL fluid backdrop, video wallpapers — leads, and the in-tree flat-veil presentation is not the look users want. But aqua keeps every preference in browser-local storage (localStorage knobs, IndexedDB blobs, Chromium File System Access handles): nothing survives a browser reset, nothing follows the account, and no seam exists to drive it programmatically.
+
+## Decision
 
 The third-party glass theme [DSH-Transparent-UI-Plugin](https://github.com/WYH66666666/DSH-Transparent-UI-Plugin) v1.3.0 (MIT) is absorbed as `packages/client/ui-aqua` and becomes the leading visual system; the first-cut `ui-background` package is retired. Aqua's browser-local persistence (localStorage knobs, IndexedDB wallpaper blobs, Chromium File System Access handles) is rewired onto the harness seams:
 
@@ -18,9 +20,15 @@ The third-party glass theme [DSH-Transparent-UI-Plugin](https://github.com/WYH66
 
 The attachments seam gains video admission for this: `saveVideo`/`readVideo`/`videoLimits` on `AttachmentStore` with container magic-byte sniffing (MP4 `ftyp`, WebM EBML, Ogg) and a configurable byte cap. Video refs carry no intrinsic dimensions — the store owns no demuxer, so admission proves a well-formed container, never a decodable stream.
 
-## Why absorb rather than compose at runtime
+## Decision
 
 The upstream plugin exposes no cordis service and keeps its state in browser-local storage, so a runtime bridge could only poke its DOM internals — a fragile coupling with no contract. Absorbing the source (upstream itself develops by copying into `packages/client/ui-aqua` of a harness checkout; peer deps match `0.1.0-rc.5`) gives the merge one owner, one persistence story, and the repo's own gates. Placement under `packages/client/` rather than `vendor/` follows vendor/'s stated Cordis-framework scope; provenance lives in the package README and LICENSE.
+
+## Alternatives considered
+
+- **Runtime composition behind the user profile (path one).** Install the upstream plugin through the profile patch layer and idle the in-tree feature. Rejected as the end state: the plugin exposes no service seam, keeps state browser-local, and a runtime bridge could only poke its DOM internals — a coupling with no contract.
+- **Vendor the plugin under `vendor/`.** Rejected: vendor/'s declared scope is the Cordis framework layer; a client plugin needs the client bundle pipeline and would fight the host-only vendoring graph and release-member republishing of upstream's name.
+- **Absorb only the rendering ideas into the in-tree feature.** Rejected: it re-implements a maintained 4.6k-line theme by hand and still owes a durability rewire; the user chose the upstream system as the leading one.
 
 ## Consequences
 

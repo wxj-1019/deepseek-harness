@@ -57,7 +57,11 @@ export interface WallpaperVideoRef {
 /** Durable wallpaper reference: the upload route's answer, discriminated by media type. */
 export type WallpaperRef = WallpaperImageRef | WallpaperVideoRef
 
-/** Whether one wallpaper reference addresses the video surface. */
+/**
+ * Whether one wallpaper reference addresses the video surface.
+ * @param ref - the reference to classify.
+ * @returns whether the reference addresses the video surface.
+ */
 export function isVideoRef(ref: WallpaperRef): ref is WallpaperVideoRef {
   return ref.mediaType.startsWith('video/')
 }

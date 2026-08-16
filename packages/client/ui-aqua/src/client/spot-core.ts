@@ -21,12 +21,15 @@ export const ON_ATTR = 'data-spot-on'
 /** Selector matching every stamped pane. */
 export const SPOT_SELECTOR = `[${SPOT_ATTR}]`
 
-/** Nearest stamped pane from an event target (null when outside all panes). */
+/** Nearest stamped pane from an event target (null when outside all panes).
+ * @param target - event target to anchor the search from.
+ * @returns the closest stamped pane, or null outside every pane. */
 export function closestSpot(target: EventTarget | null): HTMLElement | null {
   return target instanceof Element ? target.closest<HTMLElement>(SPOT_SELECTOR) : null
 }
 
-/** Every stamped pane in document order. */
+/** Every stamped pane in document order.
+ * @returns the pane elements in document order. */
 export function spotElements(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>(SPOT_SELECTOR))
 }
@@ -36,7 +39,9 @@ export function spotElements(): HTMLElement[] {
  * composer+stats spot is the wider invisible inputbar wrapper — its glass is
  * the union of the composer card and the docked stats band, so the wrapper's
  * side gutters stay outside every effect.
- */
+
+ * @param spot - the stamped pane to measure.
+ * @returns the pane's visible glass region in viewport coordinates. */
 export function visualRect(spot: HTMLElement): DOMRect {
   const card = spot.querySelector<HTMLElement>('[data-composer-card]')
   if (card !== null) {
@@ -51,7 +56,11 @@ export function visualRect(spot: HTMLElement): DOMRect {
   return spot.getBoundingClientRect()
 }
 
-/** Is the pointer over the visible glass of the pane? */
+/** Is the pointer over the visible glass of the pane?
+ * @param visual - the pane's visible glass region.
+ * @param clientX - pointer viewport x.
+ * @param clientY - pointer viewport y.
+ * @returns whether the pointer is inside the region. */
 export function inside(visual: DOMRect, clientX: number, clientY: number): boolean {
   return clientX >= visual.left && clientX <= visual.right
     && clientY >= visual.top && clientY <= visual.bottom
@@ -77,7 +86,9 @@ function localTopLeft(el: HTMLElement, ancestor: HTMLElement): { x: number; y: n
  * (untransformed — safe to measure while tilted). For the fused
  * composer+stats spot this is the union of the composer card and the docked
  * stats band; for the other panes it is the pane's own box.
- */
+
+ * @param spot - the stamped pane to measure.
+ * @returns the pane's glass region in its own untransformed local space. */
 export function glassLocalRect(spot: HTMLElement): { left: number; top: number; width: number; height: number } {
   const card = spot.querySelector<HTMLElement>('[data-composer-card]')
   if (card === null) {
@@ -99,7 +110,9 @@ export function glassLocalRect(spot: HTMLElement): { left: number; top: number; 
   return { left, top, width: right - left, height: bottom - top }
 }
 
-/** Ensure the pane carries exactly one glow overlay div. */
+/** Ensure the pane carries exactly one glow overlay div.
+ * @param spot - the stamped pane owning the glow.
+ * @returns the pane's single glow overlay element. */
 export function ensureGlow(spot: HTMLElement): HTMLElement {
   let glow = spot.querySelector<HTMLElement>(`:scope > [${GLOW_ATTR}]`)
   if (glow === null) {
@@ -116,7 +129,8 @@ export function ensureGlow(spot: HTMLElement): HTMLElement {
  * through React re-renders and notifies the caller of DOM/layout changes
  * (the caller coalesces the callbacks).
  * @returns a disposer that removes every injected glow div.
- */
+
+ * @param onChange - callback fired on any DOM or layout change. */
 export function startOverlayKeeper(onChange: () => void): () => void {
   const tick = (): void => {
     for (const spot of spotElements()) ensureGlow(spot)

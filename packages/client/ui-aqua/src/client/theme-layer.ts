@@ -89,7 +89,10 @@ export class AquaLayer {
     this.dark = this.resolveScheme()
   }
 
-  /** Whether the resolved palette is dark (the brightness knob darkens). */
+  /**
+   * Whether the resolved palette is dark (the brightness knob darkens).
+   * @returns the resolved scheme is dark.
+   */
   getDark(): boolean {
     return this.dark
   }

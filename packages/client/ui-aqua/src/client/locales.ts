@@ -1,6 +1,8 @@
 /** `settings.aqua` namespace dictionaries (the settings-row copy). */
 
-/** Dictionary namespace owned by this plugin. */
+/**
+ * Dictionary namespace owned by this plugin ('settings.aqua').
+ */
 export const NS = 'settings.aqua'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
@@ -44,6 +46,7 @@ export const zh = {
   'aqua.videoHint': '⚠️视频会自动压暗以保证文字清晰，可用模糊度和亮度调节',
 } satisfies Record<string, string>
 
+/** The zh dictionary's key union — the namespace's complete key set. */
 export type AquaLocaleKey = keyof typeof zh
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
