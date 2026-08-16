@@ -13,9 +13,13 @@ const NAMESPACE = settingsNamespace(AQUA_SETTINGS_NAMESPACE)
 type WallpaperImageMediaType = WallpaperImageRef['mediaType']
 type WallpaperVideoMediaType = WallpaperVideoRef['mediaType']
 
+/** Server path answering the current stored wallpaper. */
 const CURRENT_PATH = '/backgrounds/current'
 
-/** Services the handlers read per request. */
+/**
+ * Services the handlers read per request: the durable media store owning
+ * admission and the settings document naming the current wallpaper.
+ */
 export interface WallpaperRouteDeps {
   /** Durable media storage (also owns the admission policy). */
   attachments: AttachmentStore

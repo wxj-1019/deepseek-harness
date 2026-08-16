@@ -1,12 +1,14 @@
-# Aqua 玻璃主题合并到持久缝
+# Agent Note: Aqua 玻璃主题合并到持久缝
+
+Status: implemented
 
 [English](2026-08-17-aqua-glass-theme-merge.md) | 中文
 
-- 日期：2026-08-17
-- 状态：已实现；取代第一版背景特性（见 [2026-08-15-web-client-background](2026-08-15-web-client-background.md) 的取代说明）
-- 范围：`packages/client/ui-aqua`、`packages/attachment/*`、web-app 组合
+## 问题
 
-## 交付内容
+第一版背景特性落地（[2026-08-15-web-client-background](2026-08-15-web-client-background.md)）后，与第三方玻璃主题 [DSH-Transparent-UI-Plugin](https://github.com/WYH66666666/DSH-Transparent-UI-Plugin) 的并行试用给出了产品答案：aqua 系统——磨砂表面、WebGL 流体背景、视频壁纸——主导，树内的平涂面纱呈现不是用户想要的样子。但 aqua 把所有偏好存浏览器本地（localStorage 旋钮、IndexedDB blob、Chromium File System Access 句柄）：浏览器重置即丢、不跟随账户、也没有可编程的缝。
+
+## 决策
 
 第三方玻璃主题 [DSH-Transparent-UI-Plugin](https://github.com/WYH66666666/DSH-Transparent-UI-Plugin) v1.3.0（MIT）被吸收为 `packages/client/ui-aqua` 并成为主导视觉系统；第一版 `ui-background` 包退役。aqua 的浏览器本地持久化（localStorage 旋钮、IndexedDB 壁纸 blob、Chromium File System Access 句柄）重接到 harness 缝上：
 
@@ -18,9 +20,15 @@
 
 附件缝为此新增视频准入：`AttachmentStore` 上的 `saveVideo`/`readVideo`/`videoLimits`，容器魔数嗅探（MP4 `ftyp`、WebM EBML、Ogg）加可配置字节上限。视频引用不携带内在尺寸——存储不拥有解复用器，准入只证明容器格式良好，不证明流可解码。
 
-## 为什么吸收而不是运行时组合
+## 决策
 
 上游插件不提供 cordis 服务，状态存浏览器本地存储，运行时桥接只能戳它的 DOM 内部——无契约的脆弱耦合。吸收源码（上游本就通过拷贝进 harness checkout 的 `packages/client/ui-aqua` 开发；peer 依赖与 `0.1.0-rc.5` 对齐）让合并只有一个所有者、一条持久化主线，并纳入仓库自身的门禁。放在 `packages/client/` 而非 `vendor/` 遵循 vendor/ 声明的 Cordis 框架范围；出处记录在包 README 与 LICENSE。
+
+## 已考虑的备选方案
+
+- **用户 profile 之下的运行时组合（路径一）。** 经 profile 补丁层安装上游插件、让树内特性闲置。作为终态被否决：插件不提供服务缝、状态存浏览器本地，运行时桥接只能戳其 DOM 内部——无契约的耦合。
+- **把插件 vendor 进 `vendor/`。** 否决：vendor/ 声明的范围是 Cordis 框架层；客户端插件需要客户端打包管线，并与仅 Host 的 vendoring 图、以 upstream 名义重新发布 release 成员相冲突。
+- **只吸收渲染思路进树内特性。** 否决：这等于手工重实现一个 4.6k 行的维护中主题，且仍欠一次持久化重接；用户已选上游系统为主导。
 
 ## 后果
 

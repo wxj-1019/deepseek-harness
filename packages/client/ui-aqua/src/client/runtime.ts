@@ -128,12 +128,18 @@ export class AquaRuntime {
     return this.snapshot
   }
 
-  /** Flip the master switch: off retracts every layer-owned effect. */
+  /**
+   * Flip the master switch: off retracts every layer-owned effect.
+   * @param value - the next enable state.
+   */
   setEnabled(value: boolean): void {
     this.write({ enabled: value })
   }
 
-  /** Set the rendering mode ('mica' or 'compat'). */
+  /**
+   * Set the rendering mode ('mica' or 'compat').
+   * @param value - the next mode.
+   */
   setMode(value: 'mica' | 'compat'): void {
     this.write({ mode: value })
   }
@@ -151,12 +157,19 @@ export class AquaRuntime {
     this.write({ [field]: Math.min(max, Math.max(0, Number.isFinite(value) ? value : AQUA_DEFAULTS[field])) } as Partial<AquaSection>)
   }
 
-  /** Set the backdrop source (fluid board or custom wallpaper). */
+  /**
+   * Set the backdrop source (fluid board or custom wallpaper).
+   * @param value - the next backdrop source.
+   */
   setBackground(value: 'fluid' | 'wallpaper'): void {
     this.write({ background: value })
   }
 
-  /** Set one decorative flag (whale, critters, mesh, spotlight, press). */
+  /**
+   * Set one decorative flag (whale, critters, mesh, spotlight, press).
+   * @param field - the flag field of the durable section.
+   * @param value - the next flag state.
+   */
   setFlag(field: 'whale' | 'critters' | 'mesh' | 'spotlight' | 'press', value: boolean): void {
     this.write({ [field]: value } as Partial<AquaSection>)
   }
