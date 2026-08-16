@@ -61,7 +61,6 @@ type PluginFiber = ReturnType<RegistryService['plugin']>
 type PluginCallback = Plugin.Function | Plugin.Constructor
 
 const hosts = new WeakMap<Context, InvariantHost>()
-// oxlint-disable-next-line typescript/unbound-method -- every call below supplies its RegistryService receiver explicitly.
 const originalPlugin = RegistryService.prototype.plugin
 
 RegistryService.prototype.plugin = function(plugin: Plugin, config?: unknown, getOuterStack?: () => string[]) {
@@ -130,6 +129,19 @@ class TestAttachmentStore extends AttachmentStore {
 
   readImage(_ref: ImageAttachmentRef): Promise<StoredImageAttachment> {
     return Promise.reject(new Error('test invariant attachment store does not read images'))
+  }
+
+  readonly videoLimits = Object.freeze({
+    maxVideoBytes: 1,
+    mediaTypes: Object.freeze(['video/mp4'] as const),
+  })
+
+  override saveVideo(): Promise<never> {
+    return Promise.reject(new Error('unreachable in this script'))
+  }
+
+  override readVideo(): Promise<never> {
+    return Promise.reject(new Error('unreachable in this script'))
   }
 }
 
