@@ -87,6 +87,19 @@ async function harness(image?: StoredImageAttachment): Promise<Context> {
         }
         return Promise.resolve(fixture)
       }
+
+      readonly videoLimits = Object.freeze({
+        maxVideoBytes: 1024,
+        mediaTypes: Object.freeze(['video/mp4'] as const),
+      })
+
+      saveVideo(): Promise<never> {
+        throw new Error('unreachable in this test')
+      }
+
+      readVideo(): Promise<never> {
+        throw new Error('unreachable in this test')
+      }
     }
     await ctx.plugin(E2eAttachmentStore)
   }

@@ -7,6 +7,10 @@ import type {
   ImageAttachmentRef,
   SaveImageAttachment,
   StoredImageAttachment,
+  SaveVideoAttachment,
+  StoredVideoAttachment,
+  VideoAttachmentLimits,
+  VideoAttachmentRef,
 } from './types.ts'
 
 export { AttachmentId } from './brand.ts'
@@ -19,6 +23,11 @@ export type {
   ImageMediaType,
   SaveImageAttachment,
   StoredImageAttachment,
+  SaveVideoAttachment,
+  StoredVideoAttachment,
+  VideoAttachmentLimits,
+  VideoAttachmentRef,
+  VideoMediaType,
 } from './types.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -35,6 +44,13 @@ export abstract class AttachmentStore extends Service {
 
   /** Deployment-resolved image policy used by authoritative and fast-path validation. */
   abstract readonly imageLimits: ImageAttachmentLimits
+
+  /**
+   * Deployment-resolved video policy used by upload admission. Videos are
+   * single-object media (wallpapers), so unlike images there is no separate
+   * batch-validation member: {@link saveVideo} is the validation gate.
+   */
+  abstract readonly videoLimits: VideoAttachmentLimits
 
   /**
    * Validate one image without persisting it.
@@ -88,6 +104,24 @@ export abstract class AttachmentStore extends Service {
    * @throws the signal reason when aborted, or a storage error when verification fails.
    */
   abstract readImage(ref: ImageAttachmentRef, signal?: AbortSignal): Promise<StoredImageAttachment>
+
+  /**
+   * Validate and durably commit one video before its owning preference is
+   * written. Validation is container magic-byte sniffing plus the byte cap —
+   * no demux or decode; callers must not treat admission as codec validation.
+   * @param input - encoded bytes, declared media type, and optional display name.
+   * @returns a durable content-addressed reference.
+   */
+  abstract saveVideo(input: SaveVideoAttachment): Promise<VideoAttachmentRef>
+
+  /**
+   * Read one video and verify that bytes still match the recorded reference.
+   * @param ref - durable reference from the owning preference.
+   * @param signal - optional cancellation for backend read and verification work.
+   * @returns the verified bytes and canonical reference.
+   * @throws the signal reason when aborted, or a storage error when verification fails.
+   */
+  abstract readVideo(ref: VideoAttachmentRef, signal?: AbortSignal): Promise<StoredVideoAttachment>
 }
 
 export default AttachmentStore

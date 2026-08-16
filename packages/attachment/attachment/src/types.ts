@@ -46,3 +46,44 @@ export interface StoredImageAttachment {
   ref: ImageAttachmentRef
   data: Uint8Array
 }
+
+/** Motion-media container formats accepted by the version-one video path. */
+export type VideoMediaType = 'video/mp4' | 'video/webm' | 'video/ogg'
+
+/**
+ * Durable, serializable metadata for one immutable video object. Unlike
+ * {@link ImageAttachmentRef} it carries no intrinsic dimensions: admission
+ * verifies container magic bytes only, and probing encoded dimensions would
+ * require a demuxer the store does not own.
+ */
+export interface VideoAttachmentRef {
+  /** Opaque storage identifier; never a filesystem path or bearer URL. */
+  attachmentId: AttachmentId
+  /** Media type verified from the stored bytes. */
+  mediaType: VideoMediaType
+  /** Exact encoded byte length. */
+  bytes: number
+  /** Optional display name stripped of local path information. */
+  name?: string
+}
+
+/** Deployment-resolved limits used by video upload admission and request buffering. */
+export interface VideoAttachmentLimits {
+  maxVideoBytes: number
+  mediaTypes: readonly VideoMediaType[]
+}
+
+/** Request to validate and durably commit one video. */
+export interface SaveVideoAttachment {
+  data: Uint8Array
+  /** Caller-declared media type, checked against container magic bytes. */
+  mediaType: VideoMediaType
+  /** Optional browser display name; it is never interpreted as a path. */
+  name?: string
+}
+
+/** Stored video bytes returned after reference and digest verification. */
+export interface StoredVideoAttachment {
+  ref: VideoAttachmentRef
+  data: Uint8Array
+}
