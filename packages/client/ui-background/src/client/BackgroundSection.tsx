@@ -115,7 +115,14 @@ export function BackgroundSection({
               aria-checked={section.preset === preset.id}
               className={clsx(css.swatch, section.preset === preset.id && css.selected)}
               style={{
-                background: `linear-gradient(to bottom, ${preset.css.light} 0 50%, ${preset.css.dark} 50% 100%)`,
+                // Two half-height layers, light above and dark below. A
+                // gradient cannot be a color stop: nesting the preset values
+                // inside one outer gradient is invalid CSS that Chromium drops
+                // (the swatch then paints nothing).
+                backgroundImage: `${preset.css.dark}, ${preset.css.light}`,
+                backgroundSize: '100% 50%',
+                backgroundPosition: 'bottom, top',
+                backgroundRepeat: 'no-repeat',
               }}
               onClick={() => { setPreset(preset.id) }}
             >
