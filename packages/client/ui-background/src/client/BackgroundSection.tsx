@@ -105,6 +105,26 @@ export function BackgroundSection({
           {t('kind.image')}
         </button>
       </div>
+      {/* Always mounted: the Image card opens the picker from any state, and
+          the first upload is what switches the preference to `image`. Inside
+          the conditional row below, a fresh section would have no input for
+          the card's ref click to reach, making the first upload unreachable. */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept={BACKGROUND_IMAGE_MEDIA_TYPES.join(',')}
+        className={css.fileInput}
+        onChange={(event) => {
+          const file = event.currentTarget.files?.[0]
+          event.currentTarget.value = ''
+          if (file === undefined) return
+          setBusy(true)
+          setUploadError(null)
+          void uploadImage(file)
+            .catch((error: unknown) => { setUploadError(error instanceof Error ? error.message : String(error)) })
+            .finally(() => { setBusy(false) })
+        }}
+      />
       {section.preference === 'preset' && (
         <div className={css.presets} role="radiogroup" aria-label={t('kind.preset')}>
           {BACKGROUND_PRESETS.map(preset => (
@@ -140,22 +160,6 @@ export function BackgroundSection({
               aria-label={t('kind.image')}
             />
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept={BACKGROUND_IMAGE_MEDIA_TYPES.join(',')}
-            className={css.fileInput}
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0]
-              event.currentTarget.value = ''
-              if (file === undefined) return
-              setBusy(true)
-              setUploadError(null)
-              void uploadImage(file)
-                .catch((error: unknown) => { setUploadError(error instanceof Error ? error.message : String(error)) })
-                .finally(() => { setBusy(false) })
-            }}
-          />
           <button type="button" className={css.action} disabled={busy} onClick={() => { fileRef.current?.click() }}>
             {busy ? t('uploading') : t('upload')}
           </button>
