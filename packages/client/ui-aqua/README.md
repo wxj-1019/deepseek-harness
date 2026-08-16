@@ -18,4 +18,5 @@ None; this package neither assembles nor sends a provider request.
 
 - Video admission proves container well-formedness (magic bytes), not codec decodability; a stored video may still fail to play in a client.
 - Replaced wallpapers are not garbage-collected; orphaned store objects accumulate, bounded by the upload size cap.
+- The absorbed rendering engines keep their unguarded array indexing: the package compiles with `noUncheckedIndexedAccess` off locally, and the host-faced tsconfig (the host half owns the route, the settings namespace, and the boot tap) adds the client overrides — jsx and DOM lib — on top of the base host config.
 - The absorbed stylesheet addresses stock surfaces through `[class*=…]` substring selectors and a seam-stamping MutationObserver; renames in sibling packages can require follow-ups here.

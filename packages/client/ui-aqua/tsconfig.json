@@ -1,13 +1,11 @@
 {
-  "extends": "../../../tsconfig.base.client.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib/types",
     "types": ["node"],
-    // The absorbed upstream rendering engines (mesh.ts, whale.ts) index their
-    // physics arrays without element guards throughout; tightening them would
-    // rewrite absorbed code with no behavioral gain. Everything else — the
-    // persistence seams, the runtime, the components — stays fully strict.
+    "jsx": "react-jsx",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "noUncheckedIndexedAccess": false
   },
   "include": [
