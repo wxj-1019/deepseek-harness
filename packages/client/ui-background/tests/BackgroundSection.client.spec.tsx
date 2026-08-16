@@ -15,7 +15,7 @@ import type { BackgroundSectionComponentProps, BackgroundSectionInjected } from 
 import { createBackgroundSectionStore } from '../src/client/settings-store.ts'
 import type { BackgroundSectionState } from '../src/client/settings-store.ts'
 import {
-  DEFAULT_BACKGROUND, type BackgroundImageRef, type BackgroundSettings, type BackdropResolution,
+  BACKGROUND_PRESETS, DEFAULT_BACKGROUND, type BackgroundImageRef, type BackgroundSettings, type BackdropResolution,
 } from '../src/background-settings.ts'
 
 afterEach(cleanup)
@@ -138,6 +138,35 @@ describe('BackgroundSection', () => {
     expect(face.setPreset).toHaveBeenCalledWith('mist')
     fireEvent.click(screen.getByRole('button', { name: 'None' }))
     expect(face.setNone).toHaveBeenCalled()
+  })
+
+  it('paints each preset swatch as two half-height layers, light above and dark below', () => {
+    mountSection(
+      { preference: 'preset', preset: 'aurora', dimming: 45 },
+      { kind: 'preset', css: BACKGROUND_PRESETS[0].css },
+    )
+    // jsdom cannot validate CSS, but the layer structure is the contract: a
+    // gradient cannot be a color stop, so nesting the preset values inside one
+    // outer gradient is invalid CSS Chromium drops (backgroundImage computes
+    // to `none`); the two half-height layers are what actually paints the
+    // split swatch.
+    for (const preset of BACKGROUND_PRESETS) {
+      const label = COPY[`preset.${preset.id}`] ?? preset.id
+      const swatch = screen.getByRole('radio', { name: label })
+      // jsdom re-serializes style values (hex becomes rgb()), so normalize the
+      // expected layers through the same element-style round trip.
+      const normalizer = document.createElement('div')
+      normalizer.style.backgroundImage = preset.css.dark
+      const dark = normalizer.style.backgroundImage
+      normalizer.style.backgroundImage = preset.css.light
+      const light = normalizer.style.backgroundImage
+      normalizer.style.backgroundPosition = 'bottom, top'
+      const position = normalizer.style.backgroundPosition
+      expect(swatch.style.backgroundImage).toBe(`${dark}, ${light}`)
+      expect(swatch.style.backgroundSize).toBe('100% 50%')
+      expect(swatch.style.backgroundPosition).toBe(position)
+      expect(swatch.style.backgroundRepeat).toBe('no-repeat')
+    }
   })
 
   it('uploads the chosen file, ignores empty selections, and removes through setNone', async () => {

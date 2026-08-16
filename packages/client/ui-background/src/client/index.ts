@@ -252,7 +252,7 @@ export function apply(ctx: ClientContext): void {
   const background = new BackgroundRuntime(ctx, host)
   ctx.provide('background', background)
 
-  ctx.effect(() => () => background.dispose(), 'ui-background: service disposal')
+  ctx.effect(() => () => { background.dispose() }, 'ui-background: service disposal')
 
   ctx.effect(() => ctx.locale.register(SETTINGS_NS, { zh, en }), 'ui-background: settings section dictionaries')
 

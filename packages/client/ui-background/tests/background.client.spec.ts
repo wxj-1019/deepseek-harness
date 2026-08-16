@@ -7,7 +7,7 @@ import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
 import {
   BackgroundRuntime, type BackgroundSnapshot,
 } from '../src/client/index.ts'
-import { DEFAULT_BACKGROUND, type BackgroundImageRef, type BackgroundSettings } from '../src/background-settings.ts'
+import { BACKGROUND_PRESETS, DEFAULT_BACKGROUND, type BackgroundImageRef, type BackgroundSettings } from '../src/background-settings.ts'
 
 afterEach(() => { document.head.innerHTML = ''; vi.unstubAllGlobals() })
 
@@ -46,7 +46,10 @@ describe('BackgroundRuntime', () => {
     expect(stub.set).toHaveBeenCalledWith('preset', 'aurora')
     const style = document.querySelector('style[data-dsh-background]')
     expect(style?.textContent).toContain('body[data-ds-dark-theme]')
-    expect(events.at(-1)?.backdrop).toEqual({ kind: 'preset', css: expect.any(Object) })
+    expect(events.at(-1)?.backdrop).toEqual({
+      kind: 'preset',
+      css: BACKGROUND_PRESETS.find(p => p.id === 'aurora')!.css,
+    })
     expect(() => { service.setPreset('sepia') }).toThrow(/not registered/)
   })
 
@@ -67,7 +70,10 @@ describe('BackgroundRuntime', () => {
   it('adopts Host acceptances, including invalid pairings', () => {
     const { stub, service } = runtime()
     stub.publish({ status: 'ready', value: { preference: 'preset', preset: 'dusk', dimming: 45 }, revision: 1 })
-    expect(service.getBackground().backdrop).toEqual({ kind: 'preset', css: expect.any(Object) })
+    expect(service.getBackground().backdrop).toEqual({
+      kind: 'preset',
+      css: BACKGROUND_PRESETS.find(p => p.id === 'dusk')!.css,
+    })
     stub.publish({ status: 'ready', value: { preference: 'preset', preset: 'gone', dimming: 45 }, revision: 2 })
     expect(service.getBackground().backdrop).toEqual({ kind: 'invalid', reason: 'unknown-preset' })
     expect(document.querySelector('style[data-dsh-background]')).toBeNull()
