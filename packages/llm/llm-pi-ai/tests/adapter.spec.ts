@@ -231,6 +231,19 @@ describe('PiAiAdapter provider routing', () => {
       readImage(value: ImageAttachmentRef): Promise<StoredImageAttachment> {
         return readImage(value)
       }
+
+      readonly videoLimits = Object.freeze({
+        maxVideoBytes: 1024,
+        mediaTypes: Object.freeze(['video/mp4'] as const),
+      })
+
+      saveVideo(): Promise<never> {
+        throw new Error('unreachable in this test')
+      }
+
+      readVideo(): Promise<never> {
+        throw new Error('unreachable in this test')
+      }
     }
 
     const ctx = new Context()
