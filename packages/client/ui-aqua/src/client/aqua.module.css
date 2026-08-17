@@ -937,6 +937,70 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
   backdrop-filter: blur(12px);
 }
 
+/* ---------- Third-party workbench (dsh-better-sidebar): floating-mode glass.
+   The plugin's documented skinning contract paints every surface with the
+   generic --dsw-alias-* tokens, which floating mode leaves stock-solid —
+   only compat turns them translucent (COMPAT_SURFACE_OVERRIDES in
+   aqua-settings.ts). Scope the same translucent values to its host subtree
+   (the stable [data-dsh-better-sidebar] seam it sets on its mount) so the
+   side and bottom panels show the wallpaper like the stock glass surfaces;
+   compat needs none of this, its global overrides already reach these
+   tokens. Values mirror COMPAT_SURFACE_OVERRIDES. ---------- */
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] {
+  --dsw-alias-bg-layer-1: rgba(255, 255, 255, 0.55);
+  --dsw-alias-bg-layer-2: rgba(236, 242, 250, 0.5);
+  --dsw-alias-bg-layer-3: rgba(226, 235, 247, 0.45);
+  --dsw-alias-bg-overlay: rgba(220, 231, 244, 0.6);
+  --dsw-alias-bg-module-platform: rgba(255, 255, 255, 0.55);
+  --dsw-alias-bg-multi-select: rgba(255, 255, 255, 0.55);
+  --dsw-specific-menu: rgba(234, 241, 249, 0.6);
+  --dsw-specific-selector: rgba(234, 241, 249, 0.55);
+  --dsw-specific-bubble: rgba(240, 245, 252, 0.55);
+  --dsw-specific-bubble-highlight: rgba(220, 233, 251, 0.55);
+  --dsw-specific-tip: rgba(234, 241, 249, 0.6);
+  --dsw-specific-input-major: rgba(255, 255, 255, 0.5);
+  --dsw-specific-login-input: rgba(240, 245, 251, 0.5);
+  --dsw-alias-markdown-code-block: rgba(240, 245, 251, 0.5);
+  --dsw-alias-markdown-code-block-banner: rgba(245, 248, 253, 0.55);
+  --dsw-alias-markdown-inline-code: rgba(228, 237, 248, 0.5);
+  --dsw-alias-markdown-citation: rgba(234, 241, 249, 0.55);
+  --dsw-alias-markdown-tag: rgba(228, 237, 248, 0.5);
+  --dsw-alias-markdown-placeholder: rgba(234, 241, 249, 0.55);
+  --dsw-alias-toast-bg: rgba(27, 50, 86, 0.85);
+  --dsw-alias-tooltip-bg: rgba(19, 36, 62, 0.88);
+}
+
+[data-dsh-aqua][data-dsh-float] body[data-ds-dark-theme] [data-dsh-better-sidebar] {
+  --dsw-alias-bg-layer-1: rgba(17, 26, 39, 0.55);
+  --dsw-alias-bg-layer-2: rgba(22, 33, 48, 0.55);
+  --dsw-alias-bg-layer-3: rgba(28, 42, 61, 0.5);
+  --dsw-alias-bg-overlay: rgba(34, 51, 74, 0.6);
+  --dsw-alias-bg-module-platform: rgba(17, 26, 39, 0.55);
+  --dsw-alias-bg-multi-select: rgba(22, 33, 48, 0.55);
+  --dsw-specific-menu: rgba(22, 33, 48, 0.6);
+  --dsw-specific-selector: rgba(28, 42, 61, 0.55);
+  --dsw-specific-bubble: rgba(18, 28, 42, 0.55);
+  --dsw-specific-bubble-highlight: rgba(26, 40, 58, 0.55);
+  --dsw-specific-tip: rgba(19, 29, 43, 0.6);
+  --dsw-specific-input-major: rgba(16, 25, 39, 0.5);
+  --dsw-specific-login-input: rgba(13, 20, 31, 0.5);
+  --dsw-alias-markdown-code-block: rgba(13, 20, 31, 0.5);
+  --dsw-alias-markdown-code-block-banner: rgba(18, 27, 41, 0.55);
+  --dsw-alias-markdown-inline-code: rgba(23, 35, 52, 0.5);
+  --dsw-alias-markdown-citation: rgba(26, 37, 52, 0.55);
+  --dsw-alias-markdown-tag: rgba(22, 33, 48, 0.5);
+  --dsw-alias-markdown-placeholder: rgba(19, 29, 43, 0.55);
+  --dsw-alias-toast-bg: rgba(28, 42, 61, 0.85);
+  --dsw-alias-tooltip-bg: rgba(22, 33, 48, 0.88);
+}
+
+/* The fixed panels are css-module classes, matched by the hashed-name
+   fragment the way the compat blur rules do; the blur knob follows the same
+   --dsh-aqua-blur the stock glass surfaces read. */
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='panel'] {
+  backdrop-filter: blur(var(--dsh-aqua-blur, 14px));
+}
+
 /* ---------- Reduced motion: keep the static look, drop every effect. ---------- */
 @media (prefers-reduced-motion: reduce) {
   [data-dsh-float] [data-phase='hero'],
