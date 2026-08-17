@@ -10,6 +10,9 @@
     - button "Vision model":
       - img
       - text: Vision model
+    - button "Dev checks":
+      - img
+      - text: Dev checks
     - button "Plugins":
       - img
       - text: Plugins
