@@ -118,6 +118,19 @@ class MemoryAttachmentStore extends AttachmentStore {
     if (stored === undefined) throw new AttachmentError('Attachment object is missing.', 'ATTACHMENT_NOT_FOUND')
     return { ref: stored.ref, data: Uint8Array.from(stored.data) }
   }
+
+  readonly videoLimits = Object.freeze({
+    maxVideoBytes: 1024,
+    mediaTypes: Object.freeze(['video/mp4'] as const),
+  })
+
+  saveVideo(): Promise<never> {
+    throw new Error('not used')
+  }
+
+  readVideo(): Promise<never> {
+    throw new Error('not used')
+  }
 }
 
 /** Scripted text response ending in a clean stop. */

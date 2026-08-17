@@ -139,5 +139,5 @@ abstract saveVideo(input: SaveVideoAttachment): Promise<VideoAttachmentRef>
 abstract readVideo(ref: VideoAttachmentRef, signal?: AbortSignal): Promise<StoredVideoAttachment>
 ```
 
-Source: [`packages/attachment/attachment/src/index.ts:38`](../../packages/attachment/attachment/src/index.ts)
+Source: [`packages/attachment/attachment/src/index.ts:40`](../../packages/attachment/attachment/src/index.ts)
 <!-- END GENERATED cordis-surface -->

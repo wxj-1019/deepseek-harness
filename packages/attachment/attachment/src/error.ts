@@ -14,9 +14,19 @@ const IMAGE_ADMISSION_ERROR_CODES = [
 /** Caller-correctable attachment failure codes raised while admitting image input. */
 export type ImageAdmissionErrorCode = typeof IMAGE_ADMISSION_ERROR_CODES[number]
 
+const VIDEO_ADMISSION_ERROR_CODES = [
+  'INVALID_VIDEO',
+  'VIDEO_TOO_LARGE',
+  'VIDEO_TYPE_MISMATCH',
+] as const
+
+/** Caller-correctable attachment failure codes raised while admitting video input. */
+type VideoAdmissionErrorCode = typeof VIDEO_ADMISSION_ERROR_CODES[number]
+
 /** Stable attachment failure codes used for protocol error routing. */
 export type AttachmentErrorCode =
   | ImageAdmissionErrorCode
+  | VideoAdmissionErrorCode
   | 'INVALID_ATTACHMENT_REF'
   | 'ATTACHMENT_CORRUPT'
   | 'ATTACHMENT_WRITE_FAILED'

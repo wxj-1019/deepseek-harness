@@ -148,11 +148,11 @@ export function apply(ctx: ClientContext): void {
     }
   }
 
-  // Master switch card in the Plugins configurable tab.
+  // Master switch card in the Plugins configurable tab, keyed by the settings
+  // namespace it edits (the tab pairs served namespaces with card keys).
   ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
     name: 'settings.plugin.item',
-    id: 'aqua',
-    order: 5,
+    key: AQUA_SETTINGS_NAMESPACE,
     store: pluginStore,
     locale: NS,
     inject: pluginInjected,

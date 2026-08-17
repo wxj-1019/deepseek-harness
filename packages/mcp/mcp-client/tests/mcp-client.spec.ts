@@ -100,6 +100,19 @@ class RecordingAttachmentStore extends AttachmentStore {
   readImage(_ref: ImageAttachmentRef): Promise<StoredImageAttachment> {
     throw new Error('not used')
   }
+
+  readonly videoLimits = Object.freeze({
+    maxVideoBytes: 1024,
+    mediaTypes: Object.freeze(['video/mp4'] as const),
+  })
+
+  saveVideo(): Promise<never> {
+    throw new Error('not used')
+  }
+
+  readVideo(): Promise<never> {
+    throw new Error('not used')
+  }
 }
 
 /** Exact-route fake used only for image-capability admission. */
