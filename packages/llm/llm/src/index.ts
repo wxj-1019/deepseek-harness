@@ -19,6 +19,7 @@ import type {
   LlmProviderInfo,
   ModelModality,
   StreamChunk,
+  VisionRouteService,
 } from './types.ts'
 import { freezeMessage, type Message } from './message.ts'
 import { resolveRetryPolicy } from './retry-policy.ts'
@@ -46,6 +47,12 @@ export type { LlmCallConfig, LlmCallConfigAdapterDefaults } from './call-config.
 declare module '@deepseek-ai/cordis' {
   interface Context {
     llm: LlmRuntime
+    /**
+     * Deployment-configured vision-model routing (implemented by
+     * `@deepseek-ai/dsh-llm-vision-route`). Absent while that plugin is not
+     * mounted; consumers treat absence as "no routing".
+     */
+    visionRoute?: VisionRouteService
   }
 
   interface Events {

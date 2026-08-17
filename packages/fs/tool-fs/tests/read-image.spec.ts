@@ -276,6 +276,33 @@ describe('strict image-modality gate', () => {
     expect(text(result)).toContain('does not declare image input')
   })
 
+  it('defers the gate when a configured vision route can carry the image', async () => {
+    await writeFile(join(dir, 'red.png'), PNG_1X1)
+    const ctx = await setup()
+    // The deployment's vision-route plugin (`dsh-llm-vision-route`) provides
+    // this service; the tool result's image block then enters a step the
+    // routing waterfall reroutes to the configured vision model.
+    ctx.provide('visionRoute', {
+      configured: () => ({ provider: 'visual', model: 'vision-model' }),
+      resolvesImages: async () => true,
+    })
+    const result = await readImage(ctx, { file_path: 'red.png' }, agentOn('text-model'))
+    expect(result.isError).toBe(false)
+    expect(result.content.some(block => block.type === 'image')).toBe(true)
+  })
+
+  it('keeps refusing when the configured vision route cannot carry images', async () => {
+    await writeFile(join(dir, 'red.png'), PNG_1X1)
+    const ctx = await setup()
+    ctx.provide('visionRoute', {
+      configured: () => ({ provider: 'visual', model: 'text-model' }),
+      resolvesImages: async () => false,
+    })
+    const result = await readImage(ctx, { file_path: 'red.png' }, agentOn('text-model'))
+    expect(result.isError).toBe(true)
+    expect(text(result)).toContain('does not declare image input')
+  })
+
   it('refuses when the route cannot be resolved (no agent, or no header and no options)', async () => {
     await writeFile(join(dir, 'red.png'), PNG_1X1)
     const ctx = await setup()

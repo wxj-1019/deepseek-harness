@@ -50,6 +50,20 @@ export interface LlmFailure {
   readonly requestId?: ProviderRequestId
 }
 
+/**
+ * Deployment-configured vision-model routing, implemented by
+ * `@deepseek-ai/dsh-llm-vision-route` and absent until that plugin mounts.
+ * Consumers (the host image preflight, the `read_image` tool gate) consult it
+ * when the routed model cannot carry images: a configured image-capable vision
+ * model means the request will be rerouted instead of refused.
+ */
+export interface VisionRouteService {
+  /** The configured vision model, or undefined when routing is off. */
+  configured(): { provider: string; model: string } | undefined
+  /** Whether the configured vision model declares image input. */
+  resolvesImages(): Promise<boolean>
+}
+
 /** Plain text visible to the end user. */
 export interface TextBlock {
   type: 'text'

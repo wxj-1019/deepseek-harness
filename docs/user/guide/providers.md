@@ -85,6 +85,12 @@ Configured providers appear in the model picker. Selecting a model also makes it
 
 If a saved default names a provider that was deleted, the composer displays **Select model** and blocks input until another model is selected.
 
+## Vision-model routing
+
+Open **Settings → Vision model** to name one image-capable model for the deployment. Once configured, the first turn whose message carries an image routes the request to that model automatically — no manual model switch. The session then stays on the vision model: its history now contains the image, and a text-only model cannot serve it afterwards (the same rule as the model picker's "session already contains images" refusal).
+
+The page lists only models whose declared modalities include image input, so the text-only DeepSeek route never appears there. To route images, the vision model must be configured as described under Image input — a model entered by hand needs `input: [text, image]` (or the route's `defaultInput`).
+
 ## Troubleshooting
 
 - **`MISSING_CREDENTIAL`** — Store the provider key through the Models page or supply the referenced environment variable.
