@@ -28,6 +28,10 @@ The command never guesses or fetches a base. Supply the ref verified from curren
 
 There is no universal local baseline beyond the hooks. Every behavior change needs the narrowest available test or purpose-built check that would fail for its regression; add broader checks only for surfaces the diff actually reaches.
 
+### Local dev-check toggles
+
+Before selecting evidence, read the `dev-checks` section of `$DSH_HOME/settings.yaml` (default `~/.dsh/settings.yaml`; every key defaults to on when the file or section is absent; `CI=true` ignores the file). A `false` key removes its lane from local selection: `e2e` (`pnpm run test:e2e`), `coverage` (`pnpm run test:coverage`), `snapshot` (`pnpm run test:snapshot`), `docSync` (`pnpm run doc-sync`), `buildHygiene` (build + hygiene + built-artifact smokes), and `prePushTypecheck` (the lefthook pre-push typecheck). The routine entry points enforce the same toggles through `scripts/dev-check-run.ts`, so a direct `pnpm run` skips too; a malformed section fails loud there, so surface that error instead of working around it. Report each skipped lane as `skipped per dev-checks settings (local-only)` — a toggle is never evidence, and CI runs every lane regardless. Explicit full runs (`check:all`), CI gate modes, and `test:snapshot:record/refresh` do not consult the toggles.
+
 - **Package or script behavior:** run the owning Vitest file or focused test name. Add adjacent package tests when a shared contract changes; leave repository-wide coverage to CI unless the change is genuinely cross-cutting or the user requests it.
 - **Documentation, Agent Notes, catalogs, or doc-linked comments:** run `pnpm run doc-sync`; run full lint when the documentation workflow requires it.
 - **Model-, editor-, CLI-, or terminal-visible output:** run the focused keyless snapshot or real runnable-example scenario that owns the output.

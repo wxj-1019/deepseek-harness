@@ -51,5 +51,8 @@ pre-merge-commit:
 
 pre-push:
   jobs:
+    # Switchable per machine via the `dev-checks.prePushTypecheck` toggle in
+    # $DSH_HOME/settings.yaml (web settings → "Dev checks"); the wrapper runs
+    # the typecheck unless the toggle is off. CI never consults the toggles.
     - name: typecheck
-      run: pnpm run typecheck
+      run: node_modules/.bin/tsx scripts/dev-check-run.ts prePushTypecheck -- pnpm run typecheck

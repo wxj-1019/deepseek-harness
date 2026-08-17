@@ -352,12 +352,15 @@ describe('settings domain', () => {
     ctx.settings.register(settingsNamespace('web-search-deepseek'), z.object({
       baseURL: z.string(),
     }))
+    ctx.settings.register(settingsNamespace('dev-checks'), z.object({
+      e2e: z.boolean().default(true),
+    }))
     const api = createApiProxy(ctx, DEFAULTS)
 
     const value = expectOk(await api.settings.describe(request({})))
     expect(value.namespaces.map(view => view.ns)).toEqual([
       'llm-deepseek', 'some-other-plugin', 'permission', 'ui-theme', 'locale',
-      'ui-conversation', 'shell', 'agent-loop', 'web-search-deepseek',
+      'ui-conversation', 'shell', 'agent-loop', 'web-search-deepseek', 'dev-checks',
     ])
     const permission = expectOk(await api.settings.mutate(request({
       ns: 'permission',
@@ -394,6 +397,11 @@ describe('settings domain', () => {
       ops: [{ op: 'set', path: ['baseURL'], value: 'https://search.test/v1' }],
     })))
     expect(webSearch.value).toEqual({ baseURL: 'https://search.test/v1' })
+    const devChecks = expectOk(await api.settings.mutate(request({
+      ns: 'dev-checks',
+      ops: [{ op: 'set', path: ['e2e'], value: false }],
+    })))
+    expect(devChecks.value).toEqual({ e2e: false })
 
     const other = expectOk(await api.settings.update(request({
       ns: 'some-other-plugin',

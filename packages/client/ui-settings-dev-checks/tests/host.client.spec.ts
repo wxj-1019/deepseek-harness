@@ -1,0 +1,32 @@
+import { Context } from '@deepseek-ai/cordis'
+import { describe, expect, it } from 'vitest'
+import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import {
+  apply,
+  DEV_CHECKS_SETTINGS_DEFAULTS,
+  DEV_CHECKS_SETTINGS_NAMESPACE,
+} from '@deepseek-ai/dsh-client-ui-settings-dev-checks'
+
+class MemorySettings extends SettingsProvider {
+  readonly writable = true
+  protected load(): Promise<Record<string, unknown>> { return Promise.resolve({}) }
+  protected persist(_ns: SettingsNamespace, _section: Record<string, unknown>): Promise<void> {
+    return Promise.resolve()
+  }
+}
+
+describe('ui-settings-dev-checks host', () => {
+  it('registers, validates, and disposes the durable dev-checks namespace with its fiber', async () => {
+    const ctx = new Context()
+    await ctx.plugin(MemorySettings).await()
+    const fiber = ctx.plugin({ apply })
+    await fiber.await()
+    const ns = settingsNamespace(DEV_CHECKS_SETTINGS_NAMESPACE)
+    expect(ctx.settings.get(ns)).toEqual(DEV_CHECKS_SETTINGS_DEFAULTS)
+    await ctx.settings.update(ns, { e2e: false, docSync: false })
+    expect(ctx.settings.get(ns)).toEqual({ ...DEV_CHECKS_SETTINGS_DEFAULTS, e2e: false, docSync: false })
+    await expect(ctx.settings.update(ns, { e2e: 'no' })).rejects.toThrow()
+    await fiber.dispose()
+    expect(ctx.settings.describe().map(row => row.ns)).not.toContain(ns)
+  })
+})

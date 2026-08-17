@@ -1,0 +1,38 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Vision model":
+      - img
+      - text: Vision model
+    - button "Dev checks":
+      - img
+      - text: Dev checks
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - paragraph: Per-machine switches for the heavy routine quality gates. Off means the routine entry point skips the gate on this machine; CI always runs the full gate, and explicit full runs (check:all) are never narrowed. Stored in the dev-checks section of $DSH_HOME/settings.yaml.
+  - text: E2E (real API) pnpm run test:e2e — real DeepSeek API calls across the suite; the slowest lane.
+  - button "E2E (real API)" [pressed]: ✓ On
+  - text: Coverage pnpm run test:coverage — the full instrumented unit run with per-file 100% thresholds.
+  - button "Coverage" [pressed]: ✓ On
+  - text: Snapshot replay pnpm run test:snapshot — keyless transcript replay over the built examples.
+  - button "Snapshot replay" [pressed]: ✓ On
+  - text: Doc sync pnpm run doc-sync — the documentation gate aggregate, including the site build.
+  - button "Doc sync" [pressed]: ✓ On
+  - text: "Build & hygiene Agent-selected build, hygiene, and built-artifact smokes. Advisory only: the scripts themselves stay unguarded."
+  - button "Build & hygiene" [pressed]: ✓ On
+  - text: Pre-push typecheck The repository typecheck in the lefthook pre-push hook.
+  - button "Pre-push typecheck" [pressed]: ✓ On

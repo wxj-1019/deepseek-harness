@@ -202,6 +202,13 @@
     - id: ui-settings-vision-model
       name: '@deepseek-ai/dsh-client-ui-settings-vision-model'
 
+    # Dev checks: per-machine switches narrowing the heavy routine quality
+    # gates (e2e, coverage, snapshot, doc-sync, pre-push typecheck); the
+    # repo-side gate wrapper reads the same settings document. Local-only —
+    # CI never consults these toggles.
+    - id: ui-settings-dev-checks
+      name: '@deepseek-ai/dsh-client-ui-settings-dev-checks'
+
     - id: ui-settings-plugin-inventory
       name: '@deepseek-ai/dsh-client-ui-settings-plugin-inventory'
 
