@@ -124,6 +124,12 @@ export interface ModelCatalogModel {
   name: string
   /** Optional provider-supplied description. */
   description?: string
+  /**
+   * Exact-model request modalities the route declares. Absent means the
+   * adapter stated no answer — surfaces must treat it as text-only, matching
+   * the "a model entered by hand is text-only until it says otherwise" rule.
+   */
+  inputModalities?: readonly string[]
   /** Exact-route reasoning metadata when the adapter exposes it. */
   reasoning?: ModelReasoning
 }

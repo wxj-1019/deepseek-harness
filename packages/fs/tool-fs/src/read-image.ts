@@ -56,6 +56,10 @@ export function imageMediaTypeForPath(filePath: string): ImageMediaType | undefi
  * Enforce the strict image-capability gate for the calling route. Resolves the
  * session's latest routed provider/model (request header config, then agent
  * options) and requires the exact resolved route to declare `image` input explicitly.
+ * A deployment with a configured vision route (`ctx.visionRoute`, provided by
+ * `@deepseek-ai/dsh-llm-vision-route`) defers instead: the tool result's image
+ * block enters the next step's messages, which the routing waterfall reroutes
+ * to that vision model.
  * @param ctx - the plugin context used to resolve the optional `llm` service.
  * @param exec - the tool-execution context supplying the calling agent.
  * @param requestedPath - the raw, not-yet-resolved path rendered in refusal messages.
@@ -70,6 +74,7 @@ export async function assertImageCapableRoute(ctx: Context, exec: ToolExecution,
   }
   const active = await llm.resolveModelInfo(provider, model, exec.signal)
   if (active.inputModalities === undefined || !active.inputModalities.includes('image')) {
+    if (await ctx.get('visionRoute')?.resolvesImages()) return
     throw new Error(`cannot read "${requestedPath}" as an image: model "${model}" does not declare image input; switch to an image-capable model to read images`)
   }
 }

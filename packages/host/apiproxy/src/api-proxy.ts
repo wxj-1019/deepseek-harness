@@ -321,6 +321,9 @@ async function buildModelCatalog(ctx: Context): Promise<{
           id: model.id,
           name: model.name,
           ...model.description === undefined ? {} : { description: model.description },
+          ...resolved.inputModalities === undefined
+            ? {}
+            : { inputModalities: resolved.inputModalities },
           ...reasoning === undefined ? {} : { reasoning },
         }
       }))
@@ -2426,11 +2429,16 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
               const current = selectionFor(agent).current
               const modelInfo = await ctx.llm.resolveModelInfo(current.provider, current.model)
               if (modelInfo.inputModalities !== undefined && !modelInfo.inputModalities.includes('image')) {
-                return err(request, {
-                  code: 'attachment-error',
-                  message: `Model "${current.model}" does not support image input.`,
-                  details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' },
-                })
+                // A deployment with a configured vision route accepts the
+                // prompt: the vision-route waterfall reroutes the request to
+                // the image-capable model instead of refusing it.
+                if (!await ctx.get('visionRoute')?.resolvesImages()) {
+                  return err(request, {
+                    code: 'attachment-error',
+                    message: `Model "${current.model}" does not support image input.`,
+                    details: { reason: 'MODEL_DOES_NOT_SUPPORT_IMAGES' },
+                  })
+                }
               }
             }
             const durable = await durablePromptContent(ctx, content)
