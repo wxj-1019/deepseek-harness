@@ -221,6 +221,7 @@
       "@deepseek-ai/dsh-client-ui-settings-models": ["./packages/client/ui-settings-models/src"],
       "@deepseek-ai/dsh-client-ui-settings-plugin-inventory": ["./packages/client/ui-settings-plugin-inventory/src"],
       "@deepseek-ai/dsh-client-ui-settings-dev-checks": ["./packages/client/ui-settings-dev-checks/src"],
+      "@deepseek-ai/dsh-client-ui-settings-vision-model": ["./packages/client/ui-settings-vision-model/src"],
       "@deepseek-ai/dsh-client-locale": ["./packages/client/locale/src"],
       "@deepseek-ai/dsh-client-web": ["./packages/client/web/src"],
       // sdk/ folders are role-named without their npm-side sdk/jsonrpc prefixes,

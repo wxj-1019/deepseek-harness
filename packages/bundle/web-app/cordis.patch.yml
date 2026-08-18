@@ -222,6 +222,13 @@
     - id: ui-cordis
       name: '@deepseek-ai/dsh-client-ui-cordis'
 
+    # dsh-better-sidebar: the community VSCode-style workbench — a right
+    # sidebar (explorer / editor / terminal / Git / browser) plus bottom
+    # panels, per-session layouts, and a `betterSidebar` service other
+    # plugins extend. Third-party package, pinned by the web-app dependency.
+    - id: better-sidebar
+      name: 'dsh-better-sidebar'
+
     # Durable workflow lifecycle as an independent Chat node after the
     # existing generic workflow tool row.
     - id: ui-workflow-run
