@@ -1,0 +1,97 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Vision model":
+      - img
+      - text: Vision model
+    - button "Dev checks":
+      - img
+      - text: Dev checks
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+    - button "Side card"
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - text: Agent preset Applies to sessions you start from now on. Running sessions keep the preset they began with.
+  - button "Standard mode":
+    - text: Standard mode
+    - img
+  - text: Permission Choose the default permission mode for new sessions
+  - button "Workspace Write":
+    - text: Workspace Write
+    - img
+  - text: Language
+  - button "English":
+    - text: English
+    - img
+  - text: Appearance
+  - button "Light":
+    - img
+    - text: Light
+  - button "Dark":
+    - img
+    - text: Dark
+  - button "System" [pressed]:
+    - img
+    - text: System
+  - text: Mode
+  - group "Mode":
+    - button "Mica" [pressed]
+    - button "Compatibility"
+  - text: Glass material Glass blur
+  - slider "Glass blur 20 px": "20"
+  - spinbutton: "20"
+  - text: px Frost
+  - slider "Frost 7 %": "7"
+  - spinbutton: "7"
+  - text: "% Backdrop"
+  - group "Backdrop":
+    - button "Fluid" [pressed]
+    - button "Wallpaper"
+  - text: Hue
+  - slider "Hue 320 °": "320"
+  - spinbutton: "320"
+  - text: ° Color depth
+  - slider "Color depth 25 %": "25"
+  - spinbutton: "25"
+  - text: "% Background brightness"
+  - slider "Background brightness 50 %": "50"
+  - spinbutton: "50"
+  - text: "% Light mode: 50 is unchanged, 100 brightens to pure white Ambient Particle whale"
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Fish
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Interactive mesh
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Hover effects Cursor glow
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Hover tilt
+  - button "On" [pressed]:
+    - img
+    - text: "On"
+  - text: Enter behavior while busy Busy only; Cmd/Ctrl+Enter uses the other behavior
+  - button "Queue":
+    - text: Queue
+    - img
+  - text: Desktop notification on completion Pop a system desktop notification when a task finishes while you are not watching that session; click it to jump to the session
+  - button "Desktop notification on completion": "Off"

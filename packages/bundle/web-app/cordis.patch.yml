@@ -261,6 +261,11 @@
     - id: ui-jobs
       name: '@deepseek-ai/dsh-client-ui-jobs'
 
+    # Desktop notification: a system toast when a session finishes running
+    # while you are not watching it, with its General settings opt-in row.
+    - id: ui-desktop-notify
+      name: '@deepseek-ai/dsh-client-ui-desktop-notify'
+
     # Goal surface: GoalBar in the input dock over the goal session projection.
     - id: ui-goal
       name: '@deepseek-ai/dsh-client-ui-goal'
