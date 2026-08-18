@@ -75,6 +75,11 @@ const OVERRIDES: Record<string, { license?: string; repo?: string }> = {
   '@modelcontextprotocol/server-filesystem': { license: 'MIT / Apache-2.0', repo: 'https://github.com/modelcontextprotocol/servers' },
   // No repository field in the published manifest.
   'node-addon-require-builtin': { repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+  // @yeesy369 dsh-browser packages publish without repository/homepage metadata.
+  '@yeesy369/dsh-browser': { license: 'MIT', repo: 'https://github.com/xylt369/dsh-browser' },
+  '@yeesy369/dsh-browser-playwright': { license: 'MIT', repo: 'https://github.com/xylt369/dsh-browser' },
+  '@yeesy369/dsh-tool-browser': { license: 'MIT', repo: 'https://github.com/xylt369/dsh-browser' },
+  '@yeesy369/dsh-web-permission': { license: 'MIT', repo: 'https://github.com/xylt369/dsh-browser' },
 }
 
 /**

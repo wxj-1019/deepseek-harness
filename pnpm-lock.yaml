@@ -1450,6 +1450,18 @@ importers:
       '@openviking/dsh-memory-plugin':
         specifier: workspace:*
         version: link:../../../plugins/openviking-memory
+      '@yeesy369/dsh-browser':
+        specifier: ^0.5.1
+        version: 0.5.1(@deepseek-ai/cordis@vendor+cordis)
+      '@yeesy369/dsh-browser-playwright':
+        specifier: ^0.6.1
+        version: 0.6.1(@deepseek-ai/cordis@vendor+cordis)
+      '@yeesy369/dsh-tool-browser':
+        specifier: ^0.5.1
+        version: 0.5.1(@deepseek-ai/cordis@vendor+cordis)(@deepseek-ai/dsh-attachment@packages+attachment+attachment)(@deepseek-ai/dsh-tools@packages+core+tools)
+      '@yeesy369/dsh-web-permission':
+        specifier: ^0.4.1
+        version: 0.4.1(@deepseek-ai/cordis@vendor+cordis)(@deepseek-ai/dsh-settings@packages+settings+settings)(@deepseek-ai/dsh-tools@packages+core+tools)
       commander:
         specifier: ^15.0.0
         version: 15.0.0
@@ -11878,6 +11890,30 @@ packages:
     engines: {node: '>=18.12.0'}
     hasBin: true
 
+  '@yeesy369/dsh-browser-playwright@0.6.1':
+    resolution: {integrity: sha512-DU4enyVaesBEQlIy2+J5vPxZBUPoyyRNt1q/kW37414pQbOwEBu9BvbNTrvoInkfMIHvmSUL3R2ut8c2xnDBdw==}
+    peerDependencies:
+      '@deepseek-ai/cordis': ^4.0.1
+
+  '@yeesy369/dsh-browser@0.5.1':
+    resolution: {integrity: sha512-c9/QjiLtkjRquNL6JfHWG0OoTT+JkCDOQNnPMM38EWLxwCedTABdsh+qxSeFvTtLCUUJzFZITpEnuVyQNa9TWg==}
+    peerDependencies:
+      '@deepseek-ai/cordis': ^4.0.1
+
+  '@yeesy369/dsh-tool-browser@0.5.1':
+    resolution: {integrity: sha512-U7Zt67yTG4kdrS1HFnUiWR/V0RGz8xOrXaqhEOKUVJrpofv+pA7o7M2mx5scq/2qjjzXXCw/T6TRL08n5k27Eg==}
+    peerDependencies:
+      '@deepseek-ai/cordis': ^4.0.1
+      '@deepseek-ai/dsh-attachment': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-tools': ^0.1.0-rc.6
+
+  '@yeesy369/dsh-web-permission@0.4.1':
+    resolution: {integrity: sha512-0X9flheAOKEf4PyW4XDnhLr2mcd/cg03KgoqtUe0BsfZXUT8aOe6TIuS7qthEZdImzwanXCuH4s2EUGaWo2vBg==}
+    peerDependencies:
+      '@deepseek-ai/cordis': ^4.0.1
+      '@deepseek-ai/dsh-settings': ^0.1.0-rc.6
+      '@deepseek-ai/dsh-tools': ^0.1.0-rc.6
+
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
     engines: {node: '>= 0.6'}
@@ -17315,6 +17351,32 @@ snapshots:
       - typescript
 
   '@yarnpkg/cli-dist@4.17.1': {}
+
+  '@yeesy369/dsh-browser-playwright@0.6.1(@deepseek-ai/cordis@vendor+cordis)':
+    dependencies:
+      '@deepseek-ai/cordis': link:vendor/cordis
+      '@deepseek-ai/schemastery': link:vendor/schemastery
+      '@yeesy369/dsh-browser': 0.5.1(@deepseek-ai/cordis@vendor+cordis)
+      playwright: 1.61.1
+
+  '@yeesy369/dsh-browser@0.5.1(@deepseek-ai/cordis@vendor+cordis)':
+    dependencies:
+      '@deepseek-ai/cordis': link:vendor/cordis
+
+  '@yeesy369/dsh-tool-browser@0.5.1(@deepseek-ai/cordis@vendor+cordis)(@deepseek-ai/dsh-attachment@packages+attachment+attachment)(@deepseek-ai/dsh-tools@packages+core+tools)':
+    dependencies:
+      '@deepseek-ai/cordis': link:vendor/cordis
+      '@deepseek-ai/dsh-attachment': link:packages/attachment/attachment
+      '@deepseek-ai/dsh-tools': link:packages/core/tools
+      '@deepseek-ai/schemastery': link:vendor/schemastery
+      '@yeesy369/dsh-browser': 0.5.1(@deepseek-ai/cordis@vendor+cordis)
+
+  '@yeesy369/dsh-web-permission@0.4.1(@deepseek-ai/cordis@vendor+cordis)(@deepseek-ai/dsh-settings@packages+settings+settings)(@deepseek-ai/dsh-tools@packages+core+tools)':
+    dependencies:
+      '@deepseek-ai/cordis': link:vendor/cordis
+      '@deepseek-ai/dsh-settings': link:packages/settings/settings
+      '@deepseek-ai/dsh-tools': link:packages/core/tools
+      '@deepseek-ai/schemastery': link:vendor/schemastery
 
   accepts@2.0.0:
     dependencies:

@@ -459,3 +459,16 @@
       config:
         - id: openviking-memory-runtime
           name: '@openviking/dsh-memory-plugin'
+
+# dsh-browser: third-party browser automation for the Web surface. It mounts a
+# Playwright/Edge provider, model-facing browser_* tools, and a web/browser
+# permission gate.
+- insert:
+    - id: browser-playwright
+      name: '@yeesy369/dsh-browser-playwright'
+
+    - id: tool-browser
+      name: '@yeesy369/dsh-tool-browser'
+
+    - id: web-permission
+      name: '@yeesy369/dsh-web-permission'
