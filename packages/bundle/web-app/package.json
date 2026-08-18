@@ -106,7 +106,8 @@
     "@deepseek-ai/dsh-workspace": "workspace:^",
     "@deepseek-ai/schemastery": "workspace:^",
     "commander": "^15.0.0",
-    "dsh-better-sidebar": "^0.13.0"
+    "dsh-better-sidebar": "^0.13.0",
+    "@openviking/dsh-memory-plugin": "workspace:*"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis-plugin-loader": "workspace:^",

@@ -446,3 +446,16 @@
       name: '@deepseek-ai/dsh-agent-presets'
       config:
         default: standard
+
+# OpenViking memory/context bundle: third-party dsh plugin, default-enabled in
+# the Web surface. It mounts an isolated openvikingMemory service and registers
+# the viking_* tools plus session memory capture/recall hooks.
+- insert:
+    - id: openviking-memory
+      name: '@deepseek-ai/cordis-plugin-group'
+      group: true
+      isolate:
+        openvikingMemory: true
+      config:
+        - id: openviking-memory-runtime
+          name: '@openviking/dsh-memory-plugin'

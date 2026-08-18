@@ -16,6 +16,9 @@ packages:
   # globs (vendor/*, packages/*/*) exclude them. See examples/AGENTS.md and the archived
   # run-ci-examples-from-built-lib Agent Note.
   - examples
+  # Local third-party/plugin packages that are part of this repository but not
+  # subject to the packages/*/* invariants (e.g. vendored OpenViking dsh plugin).
+  - plugins/*
   # Deploy root of the single-exe build: a pure dependency manifest whose
   # closure is what the exe bundles and what the Python runtime distributes.
   - python/sdk-runtime
