@@ -945,8 +945,14 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
    (the stable [data-dsh-better-sidebar] seam it sets on its mount) so the
    side and bottom panels show the wallpaper like the stock glass surfaces;
    compat needs none of this, its global overrides already reach these
-   tokens. Values mirror COMPAT_SURFACE_OVERRIDES. ---------- */
+   tokens. Values mirror COMPAT_SURFACE_OVERRIDES. `bg-base` is extra: the
+   plugin's deep panes (workbench panes, editor/tree/terminal wraps) paint
+   that token, and neither the floating nor the compat lists touch it (it is
+   the app-root fill, so it must stay opaque globally). The terminal's own
+   opacity floor (effectiveTokenValue) still falls back to an opaque xterm
+   background, so text never sits on the wallpaper. ---------- */
 [data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] {
+  --dsw-alias-bg-base: rgba(255, 255, 255, 0.55);
   --dsw-alias-bg-layer-1: rgba(255, 255, 255, 0.55);
   --dsw-alias-bg-layer-2: rgba(236, 242, 250, 0.5);
   --dsw-alias-bg-layer-3: rgba(226, 235, 247, 0.45);
@@ -971,6 +977,7 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
 }
 
 [data-dsh-aqua][data-dsh-float] body[data-ds-dark-theme] [data-dsh-better-sidebar] {
+  --dsw-alias-bg-base: rgba(17, 26, 39, 0.55);
   --dsw-alias-bg-layer-1: rgba(17, 26, 39, 0.55);
   --dsw-alias-bg-layer-2: rgba(22, 33, 48, 0.55);
   --dsw-alias-bg-layer-3: rgba(28, 42, 61, 0.5);

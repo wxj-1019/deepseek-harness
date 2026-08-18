@@ -25,8 +25,13 @@ mode needs nothing: its global overrides already reach the tokens.
 - The adaptation lives in the repo's own theme bundle, so plugin updates keep
   it (class-fragment and attribute seams only, never full hashed names), and
   the aqua master switch or plugin removal drops it with the stylesheet.
-- Values mirror `COMPAT_SURFACE_OVERRIDES` in `aqua-settings.ts`; changing the
-  compat palette must update both homes.
+- The scoped token list also overrides `--dsw-alias-bg-base` (the plugin's
+  workbench panes, editor/tree/terminal wraps paint that token, and neither
+  the floating nor the compat lists touch it because it is the app-root
+  fill). The terminal keeps an opaque xterm background through the plugin's
+  own opacity floor (`effectiveTokenValue`), so only the chrome turns glass.
+- Values mirror `COMPAT_SURFACE_OVERRIDES` in `aqua-settings.ts` (plus the
+  bg-base pane fill); changing the compat palette must update both homes.
 - Verified against the running web app (dark, floating, wallpaper on): the
   panel computed background is the scoped glass tint and the blur follows the
   knob; screenshot confirms the wallpaper shows through both panels. The
