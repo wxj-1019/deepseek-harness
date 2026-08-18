@@ -1003,9 +1003,90 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
 
 /* The fixed panels are css-module classes, matched by the hashed-name
    fragment the way the compat blur rules do; the blur knob follows the same
-   --dsh-aqua-blur the stock glass surfaces read. */
-[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='panel'] {
+   --dsh-aqua-blur the stock glass surfaces read. The bottom panel's fragment
+   is camelCase (bottomPanel): CSS attribute substring matching is
+   case-sensitive, so the lowercase 'panel' fragment misses it and it needs
+   its own selector. */
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='panel'],
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='bottomPanel'] {
   backdrop-filter: blur(var(--dsh-aqua-blur, 14px));
+}
+
+/* The interior pane sheet goes transparent: it fills the panel body and
+   paints --dsw-alias-bg-base, so its translucent fill stacked on the panel's
+   own fill read as one near-opaque wash with the unfrosted layer on top —
+   the panel alone is the glass sheet (the trajectory-view treatment of inner
+   surfaces). 'panel' contains the 'pane' fragment, so the panel family is
+   excluded to keep the sheet's own fill; paneCard is excluded too: the
+   empty-pane welcome cards keep their fill, like the settings-page inner
+   cards. */
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='pane']:not([class*='panel']):not([class*='paneCard']) {
+  background: transparent;
+}
+
+/* ---------- Third-party workbench (dsh-better-sidebar): floating-card
+   material. The fixed panels take the stock floating-card recipe
+   (sidebarCol / header / composer): the frost-scaled glass-card fill, the
+   inset top highlight plus the soft outer shadow, the hairline border (the
+   side panel gets the sidebar column's luminous right edge), and 12px
+   floating insets with a 20px radius. Margins float the fixed panels
+   without touching the plugin's inline width/left/right (the bottom
+   panel's inline right tracks the side panel's width, so both insets move
+   together and the panes stay flush); overflow hidden rounds the content
+   like the app's own sidebar card. The drag handles that straddled the
+   borders move fully inside so the clip keeps them reachable; the toggle
+   cluster follows the side panel's insets (the title-bar strip var keeps
+   the position-compat mode's offset when that mode writes it). ---------- */
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='panel']:not([class*='panelBody']):not([class*='panelResize']),
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='bottomPanel'] {
+  border: 1px solid rgba(19, 45, 83, 0.26);
+  border-radius: 20px;
+  background: var(--dsh-aqua-glass-card-light);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 34px rgba(19, 45, 83, 0.16);
+  overflow: hidden;
+}
+
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='panel']:not([class*='panelBody']):not([class*='panelResize']) {
+  margin: 12px;
+  border-right: 1px solid rgba(150, 190, 245, 0.65);
+}
+
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='bottomPanel'] {
+  margin: 0 12px 12px;
+}
+
+[data-dsh-aqua][data-dsh-float] body[data-ds-dark-theme] [data-dsh-better-sidebar] [class*='panel']:not([class*='panelBody']):not([class*='panelResize']),
+[data-dsh-aqua][data-dsh-float] body[data-ds-dark-theme] [data-dsh-better-sidebar] [class*='bottomPanel'] {
+  border-color: rgba(148, 180, 220, 0.32);
+  background: var(--dsh-aqua-glass-card-dark);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 30px rgba(2, 6, 14, 0.32);
+}
+
+[data-dsh-aqua][data-dsh-float] body[data-ds-dark-theme] [data-dsh-better-sidebar] [class*='panel']:not([class*='panelBody']):not([class*='panelResize']) {
+  border-right: 1px solid rgba(148, 180, 220, 0.2);
+}
+
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='toggleCluster'] {
+  top: calc(var(--dsh-title-bar-strip, 0px) + 15px);
+  right: 22px;
+}
+
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='panelResize'] {
+  left: 0;
+  width: 6px;
+}
+
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='bottomResize'] {
+  top: 0;
+  height: 6px;
+}
+
+[data-dsh-aqua][data-dsh-float] [data-dsh-better-sidebar] [class*='cornerHandle'] {
+  left: 0;
 }
 
 /* ---------- Reduced motion: keep the static look, drop every effect. ---------- */

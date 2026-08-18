@@ -20,6 +20,34 @@ blur(var(--dsh-aqua-blur))` on its hashed `panel` class fragment — the same
 attribute-seam and class-fragment matching the rest of the layer uses. Compat
 mode needs nothing: its global overrides already reach the tokens.
 
+Two fragment-matching gaps surfaced when the rendered result was measured on
+the live page, and both are closed in the same rules:
+
+- The blur selector's `panel` substring is case-sensitive, so the camelCase
+  `bottomPanel` fragment missed it: the bottom panel kept a translucent fill
+  without blur and read as an unfrosted wash. It is matched explicitly.
+- The interior `pane` sheet paints `bg-base` inside the blurred, filled
+  `panel`, so the two translucent fills stacked into one near-opaque wash
+  with the unfrosted layer on top. The pane family (minus `paneCard`, whose
+  empty-pane welcome cards keep their fill like the settings-page inner
+  cards; and minus the `panel` family, whose name contains the `pane`
+  fragment) now goes transparent — the panel alone is the glass sheet, the
+  trajectory-view treatment of inner surfaces.
+
+The panels then took the stock floating-card material to match the page's
+own cards: the frost-scaled `--dsh-aqua-glass-card-*` fill, the inset top
+highlight plus the soft outer shadow, the hairline border (the side panel
+carries the sidebar column's luminous right edge), and 12px floating insets
+with a 20px radius. Margins carry the floating geometry — the plugin writes
+width/left/right inline, and the bottom panel's inline right tracks the side
+panel's width, so both panels' insets move together and the shared corner
+stays flush. `overflow: hidden` clips the content to the rounded corners
+(the app's own sidebar card does the same); the drag handles that
+straddled the borders (`panelResize`, `bottomResize`, `cornerHandle`) move
+fully inside so the clip keeps them reachable, and the fixed toggle cluster
+follows the side panel's insets with the title-bar strip variable preserved
+for position-compat mode.
+
 ## Consequences
 
 - The adaptation lives in the repo's own theme bundle, so plugin updates keep
@@ -32,8 +60,11 @@ mode needs nothing: its global overrides already reach the tokens.
   own opacity floor (`effectiveTokenValue`), so only the chrome turns glass.
 - Values mirror `COMPAT_SURFACE_OVERRIDES` in `aqua-settings.ts` (plus the
   bg-base pane fill); changing the compat palette must update both homes.
-- Verified against the running web app (dark, floating, wallpaper on): the
-  panel computed background is the scoped glass tint and the blur follows the
-  knob; screenshot confirms the wallpaper shows through both panels. The
-  repo's aqua e2e journey cannot cover this — the plugin exists only in the
-  user profile layer, not the repo composition.
+- Verified against the running web app (dark, floating, wallpaper on): every
+  workbench surface's computed background and backdrop-filter sampled from
+  the live DOM, before and after the rebuild — the side and bottom panels
+  each carry exactly one translucent fill plus the knob's blur, the interior
+  sheets are transparent, and a screenshot review confirms the material
+  matches the page's own glass cards. The repo's aqua e2e journey cannot
+  cover this — the plugin exists only in the user profile layer, not the
+  repo composition.
