@@ -14,7 +14,7 @@ import {
   type NotifyPort,
 } from '../src/client/desktop-notify.ts'
 import type { DesktopNotifySettings } from '../src/desktop-notify-settings.ts'
-import { listState, summary } from './support.ts'
+import { listState, summary } from './support.client.ts'
 
 /** One recorded toast plus a replay for the click-through assertion. */
 function recordingPort(): { port: NotifyPort; shown: { payload: NotificationPayload; onClick: () => void }[] } {

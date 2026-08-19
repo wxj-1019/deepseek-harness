@@ -83,7 +83,7 @@ describe('NotificationRow', () => {
   })
 
   it('asks the browser first when permission is default, and persists only on granted', async () => {
-    const request = vi.fn(() => Promise.resolve('granted'))
+    const request = vi.fn((): Promise<NotificationPermission> => Promise.resolve('granted'))
     const props = rowProps({ permission: () => 'default', request })
     render(<NotificationRow {...props} />)
     fireEvent.click(screen.getByRole('button', { name: zh.rowTitle }))
@@ -95,7 +95,7 @@ describe('NotificationRow', () => {
   })
 
   it('stays off when the browser prompt is denied', async () => {
-    const request = vi.fn(() => Promise.resolve('denied'))
+    const request = vi.fn((): Promise<NotificationPermission> => Promise.resolve('denied'))
     const props = rowProps({ permission: () => 'default', request })
     render(<NotificationRow {...props} />)
     fireEvent.click(screen.getByRole('button', { name: zh.rowTitle }))

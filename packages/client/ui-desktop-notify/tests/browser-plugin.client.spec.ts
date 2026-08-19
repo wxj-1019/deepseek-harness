@@ -16,7 +16,7 @@ import { apply as applyNode } from '../src/index.ts'
 import { DesktopNotifySettingsSchema } from '../src/desktop-notify-settings.ts'
 import * as NotifyInvariant from '../src/invariant.ts'
 import { en, NS, zh } from '../src/client/locales.ts'
-import { listState, summary } from './support.ts'
+import { listState, summary } from './support.client.ts'
 
 afterEach(() => {
   vi.unstubAllGlobals()

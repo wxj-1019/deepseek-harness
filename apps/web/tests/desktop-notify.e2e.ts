@@ -29,7 +29,7 @@ const ROW_LABEL = 'Desktop notification on completion'
 /** Install a granted Web Notification API recording every construction. */
 async function stubGrantedNotifications(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const shown: { title: string; body?: string; tag?: string }[] = []
+    const shown: { title: string; body: string | undefined; tag: string | undefined }[] = []
     class StubNotification {
       static permission: NotificationPermission = 'granted'
       static readonly requestPermission = async (): Promise<NotificationPermission> => 'granted'
