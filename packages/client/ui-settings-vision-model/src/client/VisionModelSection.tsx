@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-web-react'
+import type { HostObservable, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { VisionModelSettingsStore, VisionModelState } from './store.ts'
 import type { en } from './locales.ts'
@@ -19,17 +19,20 @@ import styles from './VisionModelSection.module.css'
 export interface VisionModelSectionInjected {
   /** The page store (loaded on mount, refreshed on pushed invalidations). */
   controller: VisionModelSettingsStore
-  /** uSES subscription hook bound to the store. */
-  useSnapshot: SnapshotSelectorHook<VisionModelState>
+  /** Bare snapshot source; the renderer binds it into `useVisionModel`. */
+  hooks: { visionModel: HostObservable<VisionModelState> }
   /** Section copy. */
   t: (key: keyof typeof en) => string
 }
 
 /**
- * Props delivered by the slot outlet: the inject face spread flat (the
- * renderer erases the share boundary at the render call).
+ * Props delivered by the slot outlet: the inject face spread flat with its
+ * hooks compartment bound (the renderer erases the share boundary at the
+ * render call).
  */
-export type VisionModelSectionProps = Partial<VisionModelSectionInjected>
+export type VisionModelSectionProps = Partial<
+  Omit<VisionModelSectionInjected, 'hooks'> & { useVisionModel: SnapshotSelectorHook<VisionModelState> }
+>
 
 /** One route option inside the section's provider select. */
 interface ProviderOption {
@@ -45,14 +48,15 @@ interface ProviderOption {
  * reflects the host's single fact source.
  */
 export function VisionModelSection(props: VisionModelSectionProps) {
-  const { controller, useSnapshot, t } = props
-  if (controller === undefined || useSnapshot === undefined || t === undefined) return null
-  return <Loaded controller={controller} useSnapshot={useSnapshot} t={t} />
+  const { controller, useVisionModel, t } = props
+  if (controller === undefined || useVisionModel === undefined || t === undefined) return null
+  return <Loaded controller={controller} useVisionModel={useVisionModel} t={t} />
 }
 
 /** The loaded page body; hooks run only once the inject face is complete. */
-function Loaded({ controller, useSnapshot, t }: VisionModelSectionInjected) {
-  const snapshot = useSnapshot(state => state)
+function Loaded({ controller, useVisionModel, t }:
+  Omit<VisionModelSectionInjected, 'hooks'> & { useVisionModel: SnapshotSelectorHook<VisionModelState> }) {
+  const snapshot = useVisionModel(state => state)
   const [providerDraft, setProviderDraft] = useState<string>('')
   const [modelDraft, setModelDraft] = useState<string>('')
   const [notice, setNotice] = useState<string | null>(null)

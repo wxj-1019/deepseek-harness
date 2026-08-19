@@ -7,7 +7,7 @@
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConnectionHandle } from '@deepseek-ai/dsh-api-remotes/client'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
+import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the shell's SlotMap merge (the 'settings.section' entry).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
@@ -17,7 +17,7 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import { VisionModelSection } from './VisionModelSection.tsx'
 import type { VisionModelSectionInjected } from './VisionModelSection.tsx'
-import { VISION_MODEL_SETTINGS_NS, VisionModelSettingsStore } from './store.ts'
+import { VISION_MODEL_SETTINGS_NS, VisionModelSettingsStore, type VisionModelState } from './store.ts'
 import { en, zh, type VisionModelKey } from './locales.ts'
 
 export type { VisionModelSectionInjected, VisionModelSectionProps } from './VisionModelSection.tsx'
@@ -61,13 +61,16 @@ export function apply(ctx: ClientContext): void {
 
   const connection = ctx.get('connection') as ConnectionHandle
   const controller = new VisionModelSettingsStore(connection.api)
-  const useSnapshot = bindSnapshotSelector(controller.store)
+  // The page snapshot rides the reserved hooks compartment: the renderer
+  // binds the bare store into the component's `useVisionModel` selector hook
+  // (business components never carry subscription machinery).
+  const visionModelSource: HostObservable<VisionModelState> = controller.store
   // Registration-time text (the nav label thunk) and the inject face share
   // one bound translate; copy freshness rides the locale revision.
   const t = ctx.locale.bind(NS) as VisionModelSectionInjected['t']
   const injected = (): VisionModelSectionInjected => ({
     controller,
-    useSnapshot,
+    hooks: { visionModel: visionModelSource },
     t,
   })
 

@@ -6,6 +6,8 @@
 
 未发送的输入区图片仍是由浏览器持有的临时草稿。`validateImage` 运行相同的准入策略，但不执行持久化。`saveImages` 负责批次图片数量和总字节限制，先校验全部成员，再按顺序提交，并且只在完整批次成功后返回引用。后续存储失败不会返回部分引用，但较早写入的不可变内容寻址对象可能保持不可达，直至具备按引用感知的垃圾回收。`AttachmentError.code` 使用封闭的 `AttachmentErrorCode` 字符串联合类型。其 `ImageAdmissionErrorCode` 子集标记可由调用方修正的图片输入失败；`isImageAdmissionError` 在运行时识别该子集，使每个协议适配器可以映射自己的错误词汇。`saveImage` 会在发布任何模型可见的会话事件前提交一张已接受的图片，`readImage` 则根据已记录的元数据校验内容寻址对象。调用方可以取消 `readImage`；实现会在后端读取与校验工作的边界观察取消，并保留取消语义，而不会将其转换为存储失败。
 
+`admitEncodedImages(attachments, images)` 是每个接受浏览器上传的 RPC 端点（会话 prompt 端点与命令执行器）共用的 wire 入口：它对每个成员强制执行规范 base64，随后把批量准入——限额、校验、有序提交——委托给 `saveImages`。base64 上传形式为 `EncodedImageAttachment`，从 `@deepseek-ai/dsh-attachment/types` 导出，供 wire 契约引用。
+
 视频走同一对象存储，但准入更轻：`saveVideo` 校验声明的容器魔数（MP4 `ftyp`、WebM/Matroska EBML、Ogg）与 `videoLimits` 字节上限，然后提交不携带内在尺寸的 `VideoAttachmentRef`——存储不拥有解复用器，准入只证明容器格式良好，不证明流可解码。`readVideo` 重新校验摘要与容器。视频是单对象媒体（壁纸），因此没有批量校验成员：`saveVideo` 即校验关口。
 
 ## 模型体验
