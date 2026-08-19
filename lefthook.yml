@@ -32,7 +32,9 @@ pre-commit:
       run: node_modules/.bin/tsx scripts/gen-third-party-notices.ts && git add THIRD_PARTY_NOTICES.md
 
     - name: whitespace (staged)
-      run: git diff --cached --check
+      # pnpm patch files must keep upstream bytes verbatim, tab indentation
+      # included; they are byte payloads, not repo-authored source.
+      run: git diff --cached --check -- . ':(exclude)patches/*.patch'
 
     - name: vendor manifest guard
       run: scripts/check-vendor-manifest.sh

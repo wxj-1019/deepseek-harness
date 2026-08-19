@@ -1,0 +1,88 @@
+diff --git a/lib/client-registry.js b/lib/client-registry.js
+index 01409542ce0a875ea69c779ad468e13211cebf3d..056ac509a9a0edebc56bc7bf5c1883d59e1bf11d 100644
+--- a/lib/client-registry.js
++++ b/lib/client-registry.js
+@@ -2367,7 +2367,7 @@ window.__ModuleLoader__.load({
+ 							onClick: () => {
+ 								openInSidebar(path);
+ 							},
+-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, { size: 12 }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: name })]
++							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.FileIcon, { name: name, size: 12 }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: name })]
+ 						}, path);
+ 					}),
+ 					hidden > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+@@ -2829,7 +2829,7 @@ window.__ModuleLoader__.load({
+ 							openRowMenu(event, entry.path, false);
+ 						},
+ 						children: [
+-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, { size: 14 }),
++							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.FileIcon, { name: entry.name, size: 14 }),
+ 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+ 								className: sidebar_module_css_default.explorerName,
+ 								children: entry.name
+diff --git a/lib/client.js b/lib/client.js
+index 74cc03ea249ba689fd18347b73047d26f8251f5a..ab26602d9d100db0d37e9362d62952583eb6e310 100644
+--- a/lib/client.js
++++ b/lib/client.js
+@@ -2367,7 +2367,7 @@ window.__ModuleLoader__.load({
+ 							onClick: () => {
+ 								openInSidebar(path);
+ 							},
+-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, { size: 12 }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: name })]
++							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.FileIcon, { name: name, size: 12 }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: name })]
+ 						}, path);
+ 					}),
+ 					hidden > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+@@ -2829,7 +2829,7 @@ window.__ModuleLoader__.load({
+ 							openRowMenu(event, entry.path, false);
+ 						},
+ 						children: [
+-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCodeOutline16, { size: 14 }),
++							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.FileIcon, { name: entry.name, size: 14 }),
+ 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+ 								className: sidebar_module_css_default.explorerName,
+ 								children: entry.name
+diff --git a/src/client/FileTree.tsx b/src/client/FileTree.tsx
+index 7e85a9470eca466058f860861db503986c2ac8b5..25540d435cab9e263c5207365e27289a5d19d9ab 100644
+--- a/src/client/FileTree.tsx
++++ b/src/client/FileTree.tsx
+@@ -18,7 +18,7 @@
+ import { useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+ import clsx from 'clsx'
+ import {
+-  IconCodeOutline16, IconCopyOutline16, IconDownloadOutline16, IconFolderClose16, IconFolderOpen16,
++  FileIcon, IconCodeOutline16, IconCopyOutline16, IconDownloadOutline16, IconFolderClose16, IconFolderOpen16,
+   IconLinkOutline16, Menu, writeClipboard,
+ } from '@deepseek-ai/dsh-client-ui-primitives'
+ import { api, downloadUrl, type FsEntry } from './api.ts'
+@@ -207,7 +207,7 @@ export function FileTree(props: {
+           }}
+           onContextMenu={(event) => { openRowMenu(event, entry.path, false) }}
+         >
+-          <IconCodeOutline16 size={14} />
++          <FileIcon name={entry.name} size={14} />
+           <span className={css.explorerName}>{entry.name}</span>
+           {entry.isSymlink && <IconLinkOutline16 size={12} className={css.explorerSymlink} />}
+           {rowActions(entry)}
+diff --git a/src/client/intercept.tsx b/src/client/intercept.tsx
+index 7095c7a8a58c18dba40ea4ddefbd785b8ea9690c..521103c9a5c871c039e2e189ad9c3f673ce265b7 100644
+--- a/src/client/intercept.tsx
++++ b/src/client/intercept.tsx
+@@ -6,7 +6,7 @@
+  * deliverables entry; when nothing was produced the selector returns null
+  * and the original row renders unchanged.
+  */
+-import { IconCodeOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
++import { FileIcon } from '@deepseek-ai/dsh-client-ui-primitives'
+ import type { Context } from '../context-types.ts'
+ import type { SidebarStore } from './state.ts'
+ import { t } from './locales.ts'
+@@ -47,7 +47,7 @@ export function SidebarProducedFiles(props: {
+             title={path}
+             onClick={() => { openInSidebar(path) }}
+           >
+-            <IconCodeOutline16 size={12} />
++            <FileIcon name={name} size={12} />
+             <span>{name}</span>
+           </button>
+         )
