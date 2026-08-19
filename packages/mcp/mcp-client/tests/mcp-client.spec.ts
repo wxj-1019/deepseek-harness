@@ -1139,6 +1139,7 @@ describe('createTransport', () => {
       env: {},
       cwd: '/tmp',
       toolCallTimeoutMs: 60_000,
+      startupTimeoutMs: 60_000,
       failOnStartupError: false,
     }
     const transport = createTransport(config)
@@ -1154,6 +1155,7 @@ describe('createTransport', () => {
       url: 'http://localhost:3000/mcp',
       headers: {},
       toolCallTimeoutMs: 60_000,
+      startupTimeoutMs: 60_000,
       failOnStartupError: false,
     }
     const transport = createTransport(config)
@@ -1169,6 +1171,7 @@ describe('createTransport', () => {
       url: 'http://localhost:3000/mcp',
       headers: { Authorization: 'Bearer token' },
       toolCallTimeoutMs: 60_000,
+      startupTimeoutMs: 60_000,
       failOnStartupError: false,
     }
     const transport = createTransport(config)
@@ -1193,6 +1196,7 @@ describe('createTransport', () => {
         env: { EXTRA: 'injected' },
         cwd: '',
         toolCallTimeoutMs: 60_000,
+        startupTimeoutMs: 60_000,
         failOnStartupError: false,
       }
       // StdioClientTransport keeps its env private; the observable contract is
@@ -1219,6 +1223,7 @@ describe('createTransport', () => {
       env: { CUSTOM: 'value' },
       cwd: '',
       toolCallTimeoutMs: 60_000,
+      startupTimeoutMs: 60_000,
       failOnStartupError: false,
     }
     const transport = createTransport(config)

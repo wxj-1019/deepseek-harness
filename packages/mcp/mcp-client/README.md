@@ -31,6 +31,8 @@ One plugin instance per MCP server in `cordis.yml`:
 
 The model sees `mcp__github__create_issue`, `mcp__web__search`, … — the same server-qualified shape Claude Code and Codex use. HMR hot-swaps: editing the entry triggers disconnect + reconnect without process restart; an unchanged `serverName` reproduces identical tool names.
 
+For settings-driven composition (no `cordis.yml` rows), mount [`@deepseek-ai/dsh-mcp-servers`](../mcp-servers/README.md) — the base bundle already does — and declare servers under the `mcp` section of `$DSH_HOME/settings.yaml`; it applies the same per-instance config below and keeps the mounted set in step with committed edits.
+
 ## Config
 
 | Field | Transport | Required | Description |
@@ -44,6 +46,7 @@ The model sees `mcp__github__create_issue`, `mcp__web__search`, … — the same
 | `url` | http | yes | MCP server URL |
 | `headers` | http | no | Extra headers (e.g. auth tokens) |
 | `toolCallTimeoutMs` | both | no | Timeout per `callTool` invocation (default 60000) |
+| `startupTimeoutMs` | both | no | Budget for the initial connect + tool discovery + registration (default 60000); firing closes the in-flight attempt and routes the failure through `failOnStartupError` / the reconnect policy |
 | `failOnStartupError` | both | no | Reject plugin activation when initial connection or tool synchronization fails (default `false`) |
 | `reconnect.enabled` | both | no | Reconnect automatically after a lost connection (default `true`) |
 | `reconnect.initialDelayMs` | both | no | First reconnect delay in ms; doubles per consecutive failed attempt (default 500) |
@@ -111,7 +114,6 @@ Append-only; newly visible content follows the reusable request prefix and does 
 ## Known Limitations and Deferred Work
 
 - **Tools are the only bridged MCP capability** — Resources and Prompts have no harness consumer and are deferred.
-- **Startup timeout is inherited from the MCP SDK** — DSH does not yet expose a connection/discovery timeout. Each initialize or paginated `tools/list` request uses the SDK's 60-second default, so an unresponsive server or cursor chain can delay both activation and teardown while the initial synchronization settles.
 - **Reconnect triggers on transport close** — a crashed stdio child fires it; Streamable HTTP failures surface per request and through the SDK transport's own SSE-stream recovery, so an unreachable HTTP server is retried per call rather than respawned by the supervisor.
 - **Image is the only durable rich-result bridge** — PNG, JPEG, WebP, and GIF can enter Native context after exact capability proof. Audio and embedded-resource payloads remain execution-local with explicit diagnostics, while resource links preserve only their name and URI as text.
 - **Unsupported MCP output schemas are not enforced** — `structuredContent` falls back to `JsonValue` when the advertised schema uses vocabulary outside the harness subset.

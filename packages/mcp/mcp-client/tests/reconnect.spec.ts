@@ -101,6 +101,7 @@ function stdioConfig(reconnect?: Config['reconnect']): Config {
     env: {},
     cwd: '',
     toolCallTimeoutMs: 60_000,
+    startupTimeoutMs: 60_000,
     failOnStartupError: false,
     ...reconnect === undefined ? {} : { reconnect },
   }
@@ -471,6 +472,80 @@ describe('reconnect supervisor', () => {
     const staleHandler = mockSetNotificationHandler.mock.calls[0]![1] as () => Promise<void>
     await staleHandler()
     expect(mockListTools).toHaveBeenCalledTimes(listCalls)
+  })
+})
+
+// ---- Startup timeout ----
+
+describe('startup timeout', () => {
+  let ctx: Context
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    instances.length = 0
+    mockListTools.mockResolvedValue(listing('remote'))
+    ctx = await mountRegistry()
+  })
+
+  /**
+   * A hung server: connect never settles on its own, and only a close() (what
+   * the timeout fires) makes it reject — the shape of an unresponsive stdio
+   * child or an HTTP endpoint that accepts and never answers.
+   */
+  function hangConnectUntilClosed(): void {
+    let rejectConnect: ((error: Error) => void) | undefined
+    mockConnect.mockImplementation(() => new Promise<void>((_, reject) => { rejectConnect = reject }))
+    mockClose.mockImplementation(function (this: { onclose?: () => void }) {
+      this.onclose?.()
+      rejectConnect?.(new Error('transport closed during startup'))
+      return Promise.resolve()
+    })
+  }
+
+  it('times out a hung initial connect, closes the generation, and reports the timeout as the startup error', async () => {
+    const { warns } = captureLogs(ctx)
+    hangConnectUntilClosed()
+    const config = { ...stdioConfig({ initialDelayMs: 5, maxDelayMs: 40, maxAttempts: 5 }), startupTimeoutMs: 25 }
+
+    const handle = startConnection(ctx, config, resolveReconnectPolicy(config.reconnect, 'reconnect'))
+    const outcome = await handle.ready
+    expect(String(outcome.error)).toContain('timed out after 25ms')
+
+    // The timeout's close reached the hung attempt: it failed into the
+    // supervisor, which scheduled a bounded retry.
+    expect(mockClose).toHaveBeenCalled()
+    await vi.waitFor(() => {
+      expect(warns.some(line => line.includes('connection failed; retrying in 5ms (attempt 1/5)'))).toBe(true)
+    })
+    await handle.dispose()
+  })
+
+  it('a startup timeout under failOnStartupError rejects plugin activation', async () => {
+    hangConnectUntilClosed()
+    const config = {
+      ...stdioConfig({ initialDelayMs: 5, maxDelayMs: 40, maxAttempts: 5 }),
+      startupTimeoutMs: 25,
+      failOnStartupError: true,
+    }
+    await expect(apply(ctx, config)).rejects.toThrow(/initial connection or tool synchronization failed/)
+  })
+
+  it('a fast startup clears the timer and reports success', async () => {
+    mockConnect.mockResolvedValue(undefined)
+    mockClose.mockImplementation(function (this: { onclose?: () => void }) {
+      this.onclose?.()
+      return Promise.resolve()
+    })
+    const config = { ...stdioConfig(), startupTimeoutMs: 5_000 }
+
+    const handle = startConnection(ctx, config, resolveReconnectPolicy(undefined, 'reconnect'))
+    const outcome = await handle.ready
+    expect(outcome.error).toBeUndefined()
+    await vi.waitFor(() => { expect(ctx.tools.get('mcp__srv__remote')).toBeDefined() })
+    // The losing race arm must not fire later and close the live generation.
+    await sleep(20)
+    expect(mockClose).not.toHaveBeenCalled()
+    await handle.dispose()
   })
 })
 

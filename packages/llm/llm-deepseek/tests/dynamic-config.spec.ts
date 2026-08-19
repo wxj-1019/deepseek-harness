@@ -9,7 +9,11 @@ import type {
   ImageAttachmentLimits,
   ImageAttachmentRef,
   SaveImageAttachment,
+  SaveVideoAttachment,
   StoredImageAttachment,
+  StoredVideoAttachment,
+  VideoAttachmentLimits,
+  VideoAttachmentRef,
 } from '@deepseek-ai/dsh-attachment'
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import { LocalCredentialProvider } from '@deepseek-ai/dsh-credentials-local'
@@ -39,6 +43,11 @@ class StaticAttachmentStore extends AttachmentStore {
     mediaTypes: ['image/png'],
   }
 
+  readonly videoLimits: VideoAttachmentLimits = {
+    maxVideoBytes: 0,
+    mediaTypes: [],
+  }
+
   validateImage(_input: SaveImageAttachment): Promise<void> {
     return Promise.resolve()
   }
@@ -49,6 +58,18 @@ class StaticAttachmentStore extends AttachmentStore {
 
   readImage(ref: ImageAttachmentRef, _signal?: AbortSignal): Promise<StoredImageAttachment> {
     return Promise.resolve({ ref, data: Uint8Array.of(1, 2, 3) })
+  }
+
+  saveVideo(_input: SaveVideoAttachment): Promise<VideoAttachmentRef> {
+    return Promise.resolve({
+      attachmentId: AttachmentId(`sha256:${'v'.repeat(64)}`),
+      mediaType: 'video/mp4' as const,
+      bytes: 0,
+    })
+  }
+
+  readVideo(ref: VideoAttachmentRef, _signal?: AbortSignal): Promise<StoredVideoAttachment> {
+    return Promise.resolve({ ref, data: new Uint8Array() })
   }
 }
 

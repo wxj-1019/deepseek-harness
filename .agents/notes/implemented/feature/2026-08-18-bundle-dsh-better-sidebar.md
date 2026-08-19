@@ -1,23 +1,26 @@
-# Bundle dsh-better-sidebar into the web-app composition
+# Agent Note: Bundle dsh-better-sidebar into the web-app composition
 
-Date: 2026-08-18
-Area: `packages/bundle/web-app`
+Status: implemented
 
 English | [中文](2026-08-18-bundle-dsh-better-sidebar.zh.md)
 
-## Decision
+## Problem
 
 The community workbench plugin `dsh-better-sidebar` (VSCode-style right
 sidebar: explorer / editor / terminal / Git / browser, bottom panels, and the
-`ctx.betterSidebar` service for third-party tabs) joins the repository's web
-composition instead of the user-profile channel its README documents. The
-profile route (`dsh plugin --profile web add`) installs only on one machine and
-never reaches the fork; the bundle route makes the plugin ship with every
-`dsh web` boot of this repository and land in the remote on push. The change is
-two rows: `"dsh-better-sidebar": "^0.13.0"` in the web-app dependencies (the
-published npm package, prebuilt `lib/` — no repo build step) and one `insert`
-row (`id: better-sidebar`) in the web-app `cordis.patch.yml`, which satisfies
-the `verify-cordis-config` rule that bare plugin rows resolve from the owning
+`ctx.betterSidebar` service for third-party tabs) was only available through
+the user-profile channel (`dsh plugin --profile web add`), which installs only
+on one machine and never reaches the fork. The plugin did not ship with every
+`dsh web` boot of the repository and did not land in the remote on push.
+
+## Decision
+
+The plugin joins the repository's web composition via the bundle route instead
+of the user-profile channel. The change is two rows:
+`"dsh-better-sidebar": "^0.13.0"` in the web-app dependencies (the published
+npm package, prebuilt `lib/` — no repo build step) and one `insert` row
+(`id: better-sidebar`) in the web-app `cordis.patch.yml`, which satisfies the
+`verify-cordis-config` rule that bare plugin rows resolve from the owning
 manifest's dependencies.
 
 ## Consequences
@@ -37,3 +40,12 @@ manifest's dependencies.
 - Version pinned at `^0.13.0`; updating means bumping the dependency and the
   lockfile, plus re-running `gen-third-party-notices` (the notices gate tracks
   the shipped dependency).
+
+## Alternatives considered
+
+- **User-profile channel** (`dsh plugin --profile web add`) — rejected: installs
+  only on one machine and never reaches the fork; the bundle route makes the
+  plugin ship with every `dsh web` boot and land in the remote on push.
+- **Dev dependency with a manual cordis.yml entry** — rejected: the bundle route
+  with `insert` in `cordis.patch.yml` is the established pattern for web
+  composition plugins and satisfies `verify-cordis-config` automatically.

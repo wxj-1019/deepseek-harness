@@ -33,8 +33,15 @@ export const inject = ['tools']
 /** Default timeout for individual MCP tool calls (ms). */
 const DEFAULT_TOOL_CALL_TIMEOUT_MS = 60_000
 
+/**
+ * Default budget for the initial connect + tool discovery + registration
+ * (ms); without it an unresponsive server pins activation and teardown on the
+ * MCP SDK's per-request default for as long as its cursor chains run.
+ */
+const DEFAULT_STARTUP_TIMEOUT_MS = 60_000
+
 /** Valid `serverName`, kept below the public tool-name budget. */
-const SERVER_NAME_PATTERN = /^[A-Za-z0-9_-]{1,32}$/
+export const SERVER_NAME_PATTERN = /^[A-Za-z0-9_-]{1,32}$/
 
 /**
  * Live `serverName` reservations per app, keyed off `ctx.root` (multiple apps
@@ -66,6 +73,8 @@ export interface StdioConfig {
   cwd: string
   /** Per-tool-call timeout in milliseconds. */
   toolCallTimeoutMs: number
+  /** Budget for the initial connect + tool discovery + registration in milliseconds. */
+  startupTimeoutMs: number
   /** Fail plugin activation when the initial connection or tool synchronization fails. */
   failOnStartupError: boolean
   /** Automatic reconnect policy after a lost connection; omission uses the defaults. */
@@ -88,6 +97,8 @@ export interface StreamableHttpConfig {
   headers: Record<string, string>
   /** Per-tool-call timeout in milliseconds. */
   toolCallTimeoutMs: number
+  /** Budget for the initial connect + tool discovery + registration in milliseconds. */
+  startupTimeoutMs: number
   /** Fail plugin activation when the initial connection or tool synchronization fails. */
   failOnStartupError: boolean
   /** Automatic reconnect policy after a lost connection; omission uses the defaults. */
@@ -104,27 +115,51 @@ const Reconnect: z<ReconnectConfig> = z.object({
   maxAttempts: z.number().step(1).min(1).max(Number.MAX_SAFE_INTEGER).default(RECONNECT_DEFAULTS.maxAttempts),
 })
 
+/** One MCP server entry as composed by a dictionary key or group row, without the `serverName` a composition supplies. */
+export type StdioEntry = Omit<StdioConfig, 'serverName'>
+/** One Streamable HTTP server entry as composed by a dictionary key or group row, without the `serverName` a composition supplies. */
+export type HttpEntry = Omit<StreamableHttpConfig, 'serverName'>
+/** One stdio or Streamable HTTP MCP server entry lacking only its `serverName`. */
+export type ServerEntry = StdioEntry | HttpEntry
+
+/** Field descriptors of the stdio server entry, shared by {@link ServerEntryConfig} and {@link Config}. */
+const StdioEntryFields = {
+  transport: z.const('stdio'),
+  command: z.string().required(),
+  args: z.array(String).default([]),
+  env: z.dict(String).default({}),
+  cwd: z.string().default(''),
+  toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
+  startupTimeoutMs: z.number().min(1).default(DEFAULT_STARTUP_TIMEOUT_MS),
+  failOnStartupError: z.boolean().default(false),
+  reconnect: Reconnect,
+}
+
+/** Field descriptors of the Streamable HTTP server entry, shared by {@link ServerEntryConfig} and {@link Config}. */
+const HttpEntryFields = {
+  transport: z.const('streamable-http'),
+  url: z.string().required(),
+  headers: z.dict(String).default({}),
+  toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
+  startupTimeoutMs: z.number().min(1).default(DEFAULT_STARTUP_TIMEOUT_MS),
+  failOnStartupError: z.boolean().default(false),
+  reconnect: Reconnect,
+}
+
+const serverNameField = { serverName: z.string().required().pattern(SERVER_NAME_PATTERN) }
+
+/**
+ * Schema for one MCP server entry lacking only its `serverName` — the shape a
+ * composing dictionary (settings `mcp.servers`) or group row supplies separately.
+ */
+export const ServerEntryConfig = z.union([
+  z.object(StdioEntryFields),
+  z.object(HttpEntryFields),
+]) as unknown as z<ServerEntry>
+
 export const Config = z.union([
-  z.object({
-    transport: z.const('stdio'),
-    serverName: z.string().required().pattern(SERVER_NAME_PATTERN),
-    command: z.string().required(),
-    args: z.array(String).default([]),
-    env: z.dict(String).default({}),
-    cwd: z.string().default(''),
-    toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
-    failOnStartupError: z.boolean().default(false),
-    reconnect: Reconnect,
-  }),
-  z.object({
-    transport: z.const('streamable-http'),
-    serverName: z.string().required().pattern(SERVER_NAME_PATTERN),
-    url: z.string().required(),
-    headers: z.dict(String).default({}),
-    toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
-    failOnStartupError: z.boolean().default(false),
-    reconnect: Reconnect,
-  }),
+  z.object({ ...serverNameField, ...StdioEntryFields }),
+  z.object({ ...serverNameField, ...HttpEntryFields }),
 ]) as unknown as z<Config>
 
 // ---- Plugin apply ----

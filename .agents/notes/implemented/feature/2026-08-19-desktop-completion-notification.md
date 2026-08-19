@@ -1,9 +1,18 @@
-# Desktop completion notification on the Web surface
+# Agent Note: Desktop completion notification on the Web surface
 
-Date: 2026-08-19
-Area: `packages/client/ui-desktop-notify`
+Status: implemented
 
 English | [中文](2026-08-19-desktop-completion-notification.zh.md)
+
+## Problem
+
+Users had no desktop-level awareness when a task completed if they were not
+watching the session tab. The existing sidebar's green `completed` reminder
+(the manager's `completedNotifications` edge) is presentation state owned by
+the list projection: it fires once per run, clears on selection, and suppresses
+the watched session entirely. It cannot serve as an OS-level notification
+mechanism, and "everything is a plugin" demands a dedicated feature package
+with its own edge detector and settings namespace.
 
 ## Decision
 
@@ -28,22 +37,6 @@ unsupported hint. The host half of the same package registers the namespace;
 nothing about the feature is model-visible, so no session event, no SDK
 surface, and no agent-loop change exists.
 
-## Alternatives considered
-
-- Extend the sidebar's green `completed` reminder (the manager's
-  `completedNotifications` edge) instead of a new package — rejected: that
-  flag fires once per run, clears on selection, suppresses the watched
-  session entirely, and is presentation state owned by the list projection;
-  an OS integration needs its own edge detector and its own settings
-  namespace, and "everything is a plugin" puts both in a feature package.
-- Subscribe to durable `turn/end` events for per-reason copy — rejected for
-  now: `session/event` frames only reach sessions instantiated in this tab,
-  so the any-session toast cannot ride them; the limitation is recorded in
-  the package README.
-- An in-page toast stack on `shell.overlay` instead of the OS API — rejected:
-  the requirement is desktop-level awareness while the tab is not being
-  watched; a page toast cannot reach that.
-
 ## Consequences
 
 - The watcher is a pure client consumer: no RPC, no session events, no host
@@ -62,3 +55,19 @@ surface, and no agent-loop change exists.
   dictionaries with en/zh parity, the invariant companion, per-file 100%
   coverage, and the bundle/roster/dependency/tsconfig/knip/README
   registrations a new client package owes.
+
+## Alternatives considered
+
+- **Extend the sidebar's green `completed` reminder** (the manager's
+  `completedNotifications` edge) instead of a new package — rejected: that
+  flag fires once per run, clears on selection, suppresses the watched
+  session entirely, and is presentation state owned by the list projection;
+  an OS integration needs its own edge detector and its own settings
+  namespace, and "everything is a plugin" puts both in a feature package.
+- **Subscribe to durable `turn/end` events for per-reason copy** — rejected
+  for now: `session/event` frames only reach sessions instantiated in this
+  tab, so the any-session toast cannot ride them; the limitation is recorded
+  in the package README.
+- **An in-page toast stack on `shell.overlay` instead of the OS API** —
+  rejected: the requirement is desktop-level awareness while the tab is not
+  being watched; a page toast cannot reach that.

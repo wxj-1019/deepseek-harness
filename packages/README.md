@@ -24,8 +24,9 @@ Groups hold `packages/<group>/<pkg>/`; names stay `@deepseek-ai/dsh-<pkg>`. **Gr
 | [`terminal/`](terminal/README.md) | Persistent PTY capability family: owner-scoped sessions, local implementation, and model-facing tools | Product — stable API |
 | [`code-runtime/`](code-runtime/README.md) | Code-execution capability family: Service Definition + worker-thread provider + Code Mode Consumer | Product — stable API |
 | [`sandbox/`](sandbox/README.md) | Process-confinement seam; bwrap/Landlock/Seatbelt backends | Product — stable API |
-| [`fs/`](fs/README.md) | Filesystem capability family: seam, local impl, model-facing file tools, bash-backed discovery tools | Product — stable API |
+| [`fs/`](fs/README.md) | Filesystem capability family: seam, local impl, model-facing file tools, bash discovery tools | Product — stable API |
 | [`lsp/`](lsp/README.md) | LSP capability family: seam, generic stdio provider, and the `lsp` tool | Product — stable API |
+| [`mcp/`](mcp/README.md) | MCP bridge: server composition manager + client tool bridge | Product — stable API |
 | [`skill/`](skill/README.md) | Skill capability family: the provider registry, local provider, and model-facing catalog/loader | Product — stable API |
 | [`compaction/`](compaction/README.md) | Compaction capability family: Service Definition + basic provider + command Consumer | Product — stable API |
 | [`context/`](context/README.md) | Model-visible request context, including workspace instructions and time context | Product — stable API |
@@ -42,9 +43,10 @@ Groups hold `packages/<group>/<pkg>/`; names stay `@deepseek-ai/dsh-<pkg>`. **Gr
 | [`guard/`](guard/README.md) | Loop-hygiene guards: advisory repeat-call reminders + the `tools/execute` deadline enforcer | Product — stable API |
 | [`bundle/`](bundle/README.md) | Installable `dsh --profile` patch layers | Product — stable API |
 | [`extensions/`](extensions/README.md) | Agent runtime self-modification: live plugin/service inspection and model-written plugin mount/unmount ([design](../.agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.md)) | Product — stable API |
+| [`runtime-diagnostics/`](runtime-diagnostics/README.md) | Runtime diagnostics: invariant registration and health assertions | Product — stable API |
 | [`hooks/`](hooks/README.md) | Hook bridges + the shared Claude Code / Codex wire-protocol library | Product — stable API |
-| [`session/`](session/README.md) | Durable session data plane: persistence seam + JSONL/SQLite backends, projection seam, log-backed titles, session reporting | Product — stable API |
-| [`session-query/`](session-query/README.md) | Session retrieval family: logical corpus, bounded reads, lineage, event relationships, semantic filtering, and SQLite full-text search | Product — stable API |
+| [`session/`](session/README.md) | Durable session data: persistence seam, projection, log-backed titles, telemetry | Product — stable API |
+| [`session-query/`](session-query/README.md) | Session retrieval: corpus, lineage, event relationships, and full-text search | Product — stable API |
 | [`settings/`](settings/README.md) | User-settings seam + file-backed provider | Product — stable API |
 | [`credentials/`](credentials/README.md) | Credential-reference seam + env-over-`.env` provider | Product — stable API |
 | [`storage/`](storage/README.md) | Non-session storage hub + backends + domain form | Product — stable API |

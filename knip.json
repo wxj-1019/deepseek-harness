@@ -15,7 +15,8 @@
   ],
   "ignoreWorkspaces": [
     "vendor/*",
-    "python/sdk-runtime"
+    "python/sdk-runtime",
+    "plugins/*"
   ],
   "ignoreDependencies": [
     "@yarnpkg/cli-dist",
@@ -807,7 +808,13 @@
     },
     "packages/bundle/web-app": {
       "ignoreDependencies": [
-        "@deepseek-ai/.+"
+        "@deepseek-ai/.+",
+        "dsh-better-sidebar",
+        "@openviking/dsh-memory-plugin",
+        "@yeesy369/dsh-browser",
+        "@yeesy369/dsh-browser-playwright",
+        "@yeesy369/dsh-tool-browser",
+        "@yeesy369/dsh-web-permission"
       ]
     }
   }

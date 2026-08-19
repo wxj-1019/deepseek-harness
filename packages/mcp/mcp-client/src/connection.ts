@@ -307,19 +307,35 @@ export function startConnection(ctx: Context, config: Config, policy: ResolvedRe
   /** The in-flight (or last settled) connection attempt; dispose awaits it for quiescence. */
   let settling = connectGeneration(true)
 
-  // The ready promise settles when the first attempt finishes (regardless of
-  // success). If the first attempt fails and reconnect is enabled, the
-  // supervisor is already scheduling a retry — ready just reports the outcome.
-  const ready: Promise<ConnectionOutcome> = settling.then(() => {
-    // After settling: if client is set the initial connect+sync succeeded.
-    // If not, the supervisor either scheduled a retry (error logged) or gave
-    // up (error logged). Either way the outcome is reported with the real error.
-    // Note: settling.then() is a microtask; stdio onclose is a macrotask — so
-    // a server that crashes AFTER a successful initial sync cannot flip client
-    // to undefined before this continuation runs.
-    if (client !== undefined) return {}
-    /* v8 ignore next -- defensive: firstAttemptError is always set when connect/sync fails */
-    return { error: firstAttemptError ?? new Error(`${label}: initial connection failed`) }
+  // The initial attempt races a startup budget so an unresponsive server
+  // cannot pin activation (and teardown, which quiesces the attempt) on the
+  // SDK's per-request defaults. Firing closes the in-flight generation — its
+  // connect/listTools then fails into the supervisor's normal reconnect path —
+  // and `ready` reports the timeout as the startup error.
+  let startupTimer: NodeJS.Timeout | undefined
+  const timeoutError = new Error(`${label}: initial connection or tool synchronization timed out after ${config.startupTimeoutMs}ms`)
+  const ready: Promise<ConnectionOutcome> = Promise.race([
+    settling.then(() => {
+      // After settling: if client is set the initial connect+sync succeeded.
+      // If not, the supervisor either scheduled a retry (error logged) or gave
+      // up (error logged). Either way the outcome is reported with the real error.
+      // Note: settling.then() is a microtask; stdio onclose is a macrotask — so
+      // a server that crashes AFTER a successful initial sync cannot flip client
+      // to undefined before this continuation runs.
+      if (client !== undefined) return {}
+      /* v8 ignore next -- defensive: firstAttemptError is always set when connect/sync fails */
+      return { error: firstAttemptError ?? new Error(`${label}: initial connection failed`) }
+    }),
+    new Promise<ConnectionOutcome>((resolve) => {
+      startupTimer = setTimeout(() => {
+        const current = client
+        if (current !== undefined) void current.close().catch(() => { /* transport already gone */ })
+        resolve({ error: timeoutError })
+      }, config.startupTimeoutMs)
+      startupTimer.unref()
+    }),
+  ]).finally(() => {
+    if (startupTimer !== undefined) clearTimeout(startupTimer)
   })
 
   return {
@@ -329,6 +345,10 @@ export function startConnection(ctx: Context, config: Config, policy: ResolvedRe
       if (reconnectTimer !== undefined) {
         clearTimeout(reconnectTimer)
         reconnectTimer = undefined
+      }
+      if (startupTimer !== undefined) {
+        clearTimeout(startupTimer)
+        startupTimer = undefined
       }
       const current = client
       const currentClosed = clientClosed
