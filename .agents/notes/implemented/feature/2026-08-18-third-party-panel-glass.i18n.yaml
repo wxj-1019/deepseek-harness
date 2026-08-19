@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-third-party-panel-glass.md
-2026-08-18-third-party-panel-glass.md: 8a4fb34b4ce54dddac680d712487c7accde9b1e8
-2026-08-18-third-party-panel-glass.zh.md: 73c4513a7dbce56e805c5b570ea2c47394adba22
+2026-08-18-third-party-panel-glass.md: b99ee05e6a97d5eca5f1e4213fdb9545ffd6f56b
+2026-08-18-third-party-panel-glass.zh.md: 49abc73dcbf5ef8926ff3f97a01aed7f68a70dad
