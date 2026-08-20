@@ -464,6 +464,17 @@ export function InputBar({
     if (rejected !== null) showToast(rejected)
   }, [addImages, attachments, imageLimits, showToast, t])
 
+  // The click-to-upload entry: a hidden file input the attach button opens.
+  // Chosen files ride the exact intake path the drop and paste use (pre-check
+  // then addImages), so every gesture shares one admission policy; the input
+  // value resets after each pick so re-selecting the same file fires again.
+  const attachInputRef = useRef<HTMLInputElement | null>(null)
+  const onPickImages = (): void => { attachInputRef.current?.click() }
+  const onFilesChosen = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const files = Array.from(event.currentTarget.files ?? [])
+    event.currentTarget.value = ''
+    intakeImages(files)
+  }
   const canAcceptDrop = !locked && !machineBusy && addImages !== undefined
 
   const onSelect = (e: React.SyntheticEvent<HTMLTextAreaElement>): void => {
@@ -708,6 +719,34 @@ export function InputBar({
                 <IconPlusOutline16 size={14} />
               </button>
             </Tooltip>
+            {/* Click-to-upload images (the whole-page drop and paste paths stay
+                alternative entries): a hidden file input the button opens, so an
+                attach button appears only where an intake can follow. */}
+            <Tooltip label={t('input.attachImage')} side="top" delayMs={500}>
+              <button
+                type="button"
+                className={css.attach}
+                aria-label={t('input.attachImage')}
+                disabled={locked || machineBusy || addImages === undefined}
+                onMouseDown={keepFocus}
+                onClick={onPickImages}
+              >
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
+                  <rect x="2.4" y="2.6" width="11.2" height="10.8" rx="1.6" fill="none" stroke="currentColor" strokeWidth="1.2" />
+                  <circle cx="5.7" cy="5.8" r="1.3" fill="currentColor" />
+                  <path d="M2.4 11.2l3-3 2 2 3.1-3.1 3.1 3.1V13.4h-11.2z" fill="currentColor" />
+                </svg>
+              </button>
+            </Tooltip>
+            <input
+              ref={attachInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              aria-label={t('input.attachImage')}
+              onChange={onFilesChosen}
+            />
             <div className={css.modes}>
               {accessSelect}
               {renderSlot('conversation.input.plan', { locked })}

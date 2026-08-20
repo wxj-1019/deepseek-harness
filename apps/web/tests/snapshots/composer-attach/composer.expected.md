@@ -1,0 +1,14 @@
+- group "Pending images":
+  - button "composer.png":
+    - img "composer.png"
+  - button "Remove image composer.png":
+    - img
+- textbox "Describe what you want to build"
+- button "Commands":
+  - img
+- button "Attach image"
+- 'button "Access mode, current: Workspace Write"': Workspace Write
+- button "Select model, current DeepSeek-V4-Flash":
+  - text: DeepSeek-V4-Flash
+  - img
+- button "Send message"

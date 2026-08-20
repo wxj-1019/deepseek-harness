@@ -90,6 +90,8 @@ interface BenchOptions {
   rightItems?: React.ReactNode
   attachments?: readonly ComposerAttachment[]
   addImages?: (files: readonly File[]) => string | null
+  /** Compose without an attachment service face (the upload button disappears intakes). */
+  noAttachmentFace?: boolean
   commandMenuOpen?: boolean
   busyEnter?: 'queue' | 'steer'
   toggleCommandMenu?: (selection: { start: number; end: number }) => void
@@ -170,7 +172,7 @@ function bench(over?: BenchOptions) {
     useInput: bindSnapshotSelector(shell.state),
     inputActions: shell.actions,
     keyboard: shell,
-    addImages: over?.addImages ?? (() => null),
+    addImages: over?.noAttachmentFace === true ? undefined : (over?.addImages ?? (() => null)),
     removeImage,
     draftImages: ids => ids.flatMap((id) => {
       const attachment = over?.attachments?.find(candidate => candidate.id === id)
@@ -238,6 +240,39 @@ describe('image draft rail', () => {
     })
     expect(addImages).toHaveBeenCalledWith([image])
     expect(shell.snapshot.draft).toBe('同时粘贴的文字')
+  })
+
+  it('opens the hidden file input when the attach button is pressed', () => {
+    const { view } = bench({ addImages: vi.fn(() => null) })
+    const input = view.container.querySelector('input[type="file"]') as HTMLInputElement | null
+    expect(input).not.toBeNull()
+    const click = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {})
+    fireEvent.click(view.getByRole('button', { name: zh['input.attachImage'] }))
+    expect(click).toHaveBeenCalledTimes(1)
+    click.mockRestore()
+  })
+
+  it('forwards chosen files through the same intake path as drop and paste', () => {
+    const addImages = vi.fn(() => null)
+    const { view } = bench({ addImages })
+    const input = view.container.querySelector('input[type="file"]') as HTMLInputElement
+    const image = new File([Uint8Array.of(1, 2)], 'picked.png', { type: 'image/png' })
+    fireEvent.change(input, { target: { files: [image] } })
+    expect(addImages).toHaveBeenCalledWith([image])
+    // The pick resets so re-selecting the same file fires change again.
+    expect(input.value).toBe('')
+    fireEvent.change(input, { target: { files: [image] } })
+    expect(addImages).toHaveBeenCalledTimes(2)
+  })
+
+  it('disables the attach button while the composer is locked', () => {
+    const { view } = bench({ disabled: true })
+    expect((view.getByRole('button', { name: zh['input.attachImage'] }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('disables the attach button without an attachment service face', () => {
+    const { view } = bench({ noAttachmentFace: true })
+    expect((view.getByRole('button', { name: zh['input.attachImage'] }) as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('pre-checks projected limits at intake: whole-batch refusal with product copy, none added', () => {

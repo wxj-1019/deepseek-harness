@@ -336,6 +336,30 @@
   cursor: default;
 }
 
+/* The image-upload entry: the same ghost-chip icon control as the commands
+   button, so the toolbar reads as one family of round affordances. */
+.attach {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  background: var(--dsw-specific-selector);
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+}
+
+.attach:hover:not(:disabled) {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+}
+
+.attach:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* Plan / Read-only / model — native <select>, chip-like closed chrome
    (figma ToggleButton: 13/20 medium secondary, 12px chevron). */
 .select {
