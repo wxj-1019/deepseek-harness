@@ -205,6 +205,12 @@
     - id: ui-settings-general
       name: '@deepseek-ai/dsh-client-ui-settings-general'
 
+    # MCP servers card in the Plugins configurable tab: the mcp settings
+    # namespace's server list (enable/disable, add/edit, remove) over
+    # revision-fenced path-op mutations; edits apply without a restart.
+    - id: ui-settings-mcp
+      name: '@deepseek-ai/dsh-client-ui-settings-mcp'
+
     - id: ui-settings-models
       name: '@deepseek-ai/dsh-client-ui-settings-models'
 

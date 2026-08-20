@@ -86,11 +86,15 @@ export class AppWebEntry {
 
   /** Prefetch stage-one bundles; their import path owns any eventual failure. */
   private async prefetchImmediateTier(): Promise<void> {
-    await Promise.all(this.manifest.plugins
-      .filter(row => row.immediately)
-      .map(row => this.modules.prefetch(row.id).catch((_prefetchError: unknown) => {
-        // Prefetch only starts transport early; the Loader import retries and reports this bundle failure.
-      })))
+    const immediate = this.manifest.plugins.filter(row => row.immediately)
+    this.page.setPrefetchTotal(immediate.length)
+    await Promise.all(immediate.map(row =>
+      this.modules.prefetch(row.id)
+        .catch((_prefetchError: unknown) => {
+          // Prefetch only starts transport early; the Loader import retries and reports this bundle failure.
+        })
+        .then(() => this.page.stepPrefetch()),
+    ))
   }
 
   /** Mount the Loader, create all graph entries, await quiescence, and audit activation. */

@@ -1,0 +1,131 @@
+/* MCP servers card: alias tokens over the theme stack, like every settings card. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--dsw-alias-border-l2, rgb(0 0 0 / 10%));
+  background: var(--dsw-alias-bg-base, #fff);
+  color: var(--dsw-alias-label-primary, inherit);
+  list-style: none;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.description {
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary, #61666b);
+}
+
+.empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary, #61666b);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.rowName {
+  font-weight: 600;
+  min-width: 8em;
+  overflow-wrap: anywhere;
+}
+
+.rowTransport {
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary, #61666b);
+  flex: 1;
+}
+
+.editingRow {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l2, rgb(0 0 0 / 10%));
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--dsw-alias-label-secondary, inherit);
+}
+
+.field input,
+.field select,
+.field textarea {
+  font: inherit;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--dsw-alias-border-l2, rgb(0 0 0 / 15%));
+  background: var(--dsw-alias-bg-base, #fff);
+  color: var(--dsw-alias-label-primary, inherit);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.advanced {
+  font-size: 12px;
+}
+
+.advanced summary {
+  cursor: pointer;
+  color: var(--dsw-alias-label-tertiary, #61666b);
+}
+
+.advanced[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+}
+
+.add {
+  align-self: flex-start;
+}
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dsw-alias-status-danger, #c13f3f);
+}

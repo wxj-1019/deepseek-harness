@@ -754,7 +754,7 @@ describe('hand-declared providers', () => {
     await mountSection({ providers: { openai: { apiKeyEnv: 'OPENAI_API_KEY' } } })
     openEditor('openai')
     fireEvent.click(screen.getByText(en.customized))
-    expect(fields()).toEqual([en.keyInput, en.baseUrl])
+    expect(fields()).toEqual([en.keyInput, en.baseUrl, en.customRetries])
     cleanup()
 
     // A hand-declared route named its own protocol at creation, so editing it
@@ -764,7 +764,7 @@ describe('hand-declared providers', () => {
       declaredRoutes: ['acme-gateway'],
     })
     openEditor('acme-gateway')
-    expect(fields()).toEqual([en.keyInput, en.customDisplayName, en.baseUrl, en.customApi])
+    expect(fields()).toEqual([en.keyInput, en.customDisplayName, en.baseUrl, en.customApi, en.customRetries])
   })
 
   it('renames a declared route and falls back to its id when the name is cleared', async () => {
@@ -880,6 +880,38 @@ describe('hand-declared providers', () => {
     expect(firstMutate(mutate)).toEqual({
       ns: 'llm-pi-ai',
       ops: [{ op: 'set', path: ['providers', 'acme-gateway', 'api'], value: 'anthropic-messages' }],
+      expectedRevision: 3,
+    })
+  })
+
+  it('edits the retry count as one policy field, preserving a hand-written backoff, and clears to inherit', async () => {
+    const { mutate } = await mountSection({
+      providers: {
+        'acme-gateway': {
+          api: 'openai-completions',
+          baseURL: 'https://gateway.acme.example/v1',
+          models: [{ id: 'acme-large' }],
+          retryPolicy: { mode: 'normal', maxRetries: 3, backoff: { initialDelayMs: 100, maxDelayMs: 5_000 } },
+        },
+      },
+      declaredRoutes: ['acme-gateway'],
+    })
+    openEditor('acme-gateway')
+
+    const retries = screen.getByLabelText<HTMLInputElement>(en.customRetries)
+    expect(retries.value).toBe('3')
+    fireEvent.change(retries, { target: { value: '7' } })
+    fireEvent.click(screen.getByText(en.apply))
+
+    await waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
+    // Only the count travels: the hand-written backoff survives the edit.
+    expect(firstMutate(mutate)).toEqual({
+      ns: 'llm-pi-ai',
+      ops: [{
+        op: 'set',
+        path: ['providers', 'acme-gateway', 'retryPolicy'],
+        value: { mode: 'normal', maxRetries: 7, backoff: { initialDelayMs: 100, maxDelayMs: 5_000 } },
+      }],
       expectedRevision: 3,
     })
   })

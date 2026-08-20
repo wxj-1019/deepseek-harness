@@ -21,7 +21,7 @@ import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import * as FsPolicy from '@deepseek-ai/dsh-fs-observation-policy'
 import LocalAttachmentStore from '@deepseek-ai/dsh-attachment-local'
 import { AttachmentError, AttachmentId, AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import type { ImageAttachmentLimits, ImageAttachmentRef, SaveImageAttachment, StoredImageAttachment } from '@deepseek-ai/dsh-attachment'
+import type { ImageAttachmentLimits, ImageAttachmentRef, SaveImageAttachment, SaveVideoAttachment, StoredImageAttachment, StoredVideoAttachment, VideoAttachmentLimits, VideoAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import * as ToolFs from '@deepseek-ai/dsh-tool-fs'
 import {
   applyReadImageTool,
@@ -466,6 +466,19 @@ describe('image admission failures', () => {
       }
 
       readImage(_ref: ImageAttachmentRef): Promise<StoredImageAttachment> {
+        throw new Error('unreachable in this test')
+      }
+
+      readonly videoLimits: VideoAttachmentLimits = Object.freeze({
+        maxVideoBytes: 0,
+        mediaTypes: Object.freeze([] as const),
+      })
+
+      async saveVideo(_input: SaveVideoAttachment): Promise<VideoAttachmentRef> {
+        throw new Error('unreachable in this test')
+      }
+
+      async readVideo(_ref: VideoAttachmentRef): Promise<StoredVideoAttachment> {
         throw new Error('unreachable in this test')
       }
     }

@@ -14,6 +14,17 @@ function div(className: string | undefined, text?: string): HTMLDivElement {
   return el
 }
 
+/**
+ * Collapse a loader entry name to its distinguishing short form: the last
+ * path segment without the harness client-package prefix
+ * (`@deepseek-ai/dsh-client-ui-layout` → `ui-layout`; a bare third-party
+ * name stays as is).
+ */
+export function shortEntryName(name: string): string {
+  const last = name.split('/').pop() ?? name
+  return last.replace(/^dsh-client-/, '')
+}
+
 /** Kernel-owned page mounted below the application's root element. */
 export class BootPage {
   private readonly root: HTMLDivElement
@@ -21,9 +32,13 @@ export class BootPage {
   private readonly wordmark: HTMLDivElement
   private readonly spinner: HTMLDivElement
   private readonly hint: HTMLDivElement
+  private readonly progress: HTMLDivElement
   private readonly states = new Map<string, LoaderEntryState>()
   private readonly active = new Set<string>()
   private total = 0
+  private prefetchTotal = 0
+  private prefetchDone = 0
+  private lastActivated: string | undefined
   private failure: string | undefined
 
   /**
@@ -38,7 +53,8 @@ export class BootPage {
     this.spinner = div(css.spinner)
     this.spinner.dataset.dshBootSpinner = ''
     this.hint = div(css.hint, 'Loading plugins…')
-    this.card.append(this.wordmark, this.spinner, this.hint)
+    this.progress = div(css.hint)
+    this.card.append(this.wordmark, this.spinner, this.hint, this.progress)
     this.root.append(this.card)
     container.append(this.root)
     this.updateProgress()
@@ -51,6 +67,24 @@ export class BootPage {
   setTotal(total: number): void {
     this.total = total
     this.updateProgress()
+    this.renderProgress()
+  }
+
+  /**
+   * Set the number of first-tier bundle prefetches the arc also tracks.
+   * @param total - Immediate-tier bundle count.
+   */
+  setPrefetchTotal(total: number): void {
+    this.prefetchTotal = total
+    this.updateProgress()
+    this.renderProgress()
+  }
+
+  /** Count one finished prefetch (arrival or swallowed transport failure). */
+  stepPrefetch(): void {
+    this.prefetchDone += 1
+    this.updateProgress()
+    this.renderProgress()
   }
 
   /**
@@ -60,7 +94,10 @@ export class BootPage {
    */
   setState(id: string, state: LoaderEntryState): void {
     this.states.set(id, state)
-    if (state === 'active') this.active.add(id)
+    if (state === 'active') {
+      this.active.add(id)
+      this.lastActivated = shortEntryName(id)
+    }
     this.updateProgress()
     this.render()
   }
@@ -84,8 +121,9 @@ export class BootPage {
     const failed = [...this.states].filter(([, state]) => state === 'failed').map(([id]) => id)
     if (this.failure === undefined && failed.length === 0) {
       if (this.spinner.parentElement !== this.card) {
-        this.card.replaceChildren(this.wordmark, this.spinner, this.hint)
+        this.card.replaceChildren(this.wordmark, this.spinner, this.hint, this.progress)
       }
+      this.renderProgress()
       return
     }
     const report = div(css.failed)
@@ -95,9 +133,23 @@ export class BootPage {
     this.card.replaceChildren(this.wordmark, report)
   }
 
-  /** Grow the rotating arc monotonically as loader entries activate. */
+  /** Render the `done/total · last-activated` line under the hint. */
+  private renderProgress(): void {
+    const total = this.total + this.prefetchTotal
+    if (total === 0) {
+      this.progress.textContent = ''
+      return
+    }
+    const done = this.active.size + this.prefetchDone
+    const name = this.lastActivated === undefined ? '' : ` · ${this.lastActivated}`
+    this.progress.textContent = `${done}/${total}${name}`
+  }
+
+  /** Grow the rotating arc monotonically as prefetches arrive and entries activate. */
   private updateProgress(): void {
-    const ratio = this.total === 0 ? 0 : Math.min(this.active.size / this.total, 1)
+    const total = this.total + this.prefetchTotal
+    const done = this.active.size + this.prefetchDone
+    const ratio = total === 0 ? 0 : Math.min(done / total, 1)
     this.spinner.style.setProperty('--dsh-boot-arc', `${String(Math.round(72 + ratio * 216))}deg`)
   }
 }

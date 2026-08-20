@@ -212,6 +212,35 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
       : schema.setPath(current, [key], value))
   }
 
+  /** The draft's retry count, or undefined when it inherits the deployment default. */
+  const retriesAt = (source: unknown): number | undefined => {
+    const value = schema.getPath(source, ['retryPolicy', 'maxRetries'])
+    return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined
+  }
+  /**
+   * Write the retry count as one field of the route's retry policy, merging
+   * into whatever the draft already carries so a hand-written backoff or
+   * `mode: 'always'` survives a count edit; clearing removes only the count
+   * (and a then-redundant `mode: 'normal'`), never the rest of the policy.
+   */
+  const setRetries = (raw: string): void => {
+    const trimmed = raw.trim()
+    setDraft(current => {
+      const existing = schema.getPath(current, ['retryPolicy'])
+      const policy: Record<string, unknown> = typeof existing === 'object' && existing !== null
+        ? { ...(existing as Record<string, unknown>) }
+        : {}
+      if (/^\d+$/.test(trimmed)) {
+        return schema.setPath(current, ['retryPolicy'], { ...policy, mode: 'normal', maxRetries: Number.parseInt(trimmed, 10) })
+      }
+      delete policy.maxRetries
+      if (policy.mode === 'normal') delete policy.mode
+      return Object.keys(policy).length === 0
+        ? schema.deletePath(current, ['retryPolicy'])
+        : schema.setPath(current, ['retryPolicy'], policy)
+    })
+  }
+
   // The model list is validated by the same per-row checker for both families,
   // so a bad row is named by its position rather than by a blanket message.
   const modelFailure = validateDeepSeekModels(schema.getPath(draft, ['models']))
@@ -461,6 +490,24 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
             {/* Both families edit the same rows through the same contract; only
                 the extras differ — DeepSeek's inherited capacities, pi-ai's
                 endpoint interrogation. */}
+            {/* The retry count is the one retry-policy knob a card exposes; the
+                placeholder names the layer beneath the draft (the composition
+                base or the deployment default) exactly as the base-URL field
+                does. Backoff shaping and the retryable-code set stay
+                settings.yaml-only. */}
+            <div className={styles['field']}>
+              <span className={styles['fieldLabel']}>{t('customRetries')}</span>
+              <input
+                className={styles['input']}
+                type="text"
+                inputMode="numeric"
+                value={retriesAt(draft) === undefined ? '' : String(retriesAt(draft))}
+                placeholder={String(retriesAt(fallback) ?? retriesAt(schema.getPath(namespace.base, settingsPath)) ?? 5)}
+                aria-label={t('customRetries')}
+                disabled={disabled}
+                onChange={(event) => { setRetries(event.target.value) }}
+              />
+            </div>
             {family === 'deepseek'
               ? (
                 <DeepSeekModelsEditor
