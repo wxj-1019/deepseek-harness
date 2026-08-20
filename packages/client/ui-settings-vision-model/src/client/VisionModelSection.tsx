@@ -66,7 +66,11 @@ function Loaded({ controller, useVisionModel, t }:
 
   const current = snapshot.current
   const provider = providerDraft || current?.provider || ''
-  const model = modelDraft || current?.model || ''
+  // Once a different provider is drafted, the stored model no longer belongs:
+  // the model select must not fall back to another provider's model id, or the
+  // page would save a provider/model pair that never existed.
+  const draftingOtherProvider = providerDraft !== '' && providerDraft !== (current?.provider ?? '')
+  const model = modelDraft || (draftingOtherProvider ? '' : (current?.model ?? ''))
   const groups = snapshot.groups
   const providers: ProviderOption[] = useMemo(
     () => groups.map(group => ({ id: group.id, name: group.name })),
@@ -79,8 +83,12 @@ function Loaded({ controller, useVisionModel, t }:
   const configured = current !== null
   const dirty = (providerDraft !== '' || modelDraft !== '')
     && (providerDraft !== (current?.provider ?? '') || modelDraft !== (current?.model ?? ''))
+  // The route must be complete before it can be committed; the model falls to
+  // '' while a new provider awaits a pick, so the Save stays disabled there.
+  const incomplete = provider === '' || model === ''
 
   const save = async (): Promise<void> => {
+    /* v8 ignore next -- the Save button is disabled while the route is incomplete */
     if (provider === '' || model === '') return
     setBusy(true)
     setNotice(null)
@@ -118,6 +126,7 @@ function Loaded({ controller, useVisionModel, t }:
     <div className={styles.section}>
       <p className={styles.hint}>{configured ? t('configuredHint') : t('unconfiguredHint')}</p>
       {snapshot.status === 'error' ? (
+        /* v8 ignore next -- an error status always carries text; the fallback satisfies the nullable type */
         <p className={styles.error}>{snapshot.error ?? t('loadFailed')}</p>
       ) : snapshot.status === 'ready' && groups.length === 0 ? (
         <p className={styles.error}>{t('noImageModels')}</p>
@@ -154,7 +163,7 @@ function Loaded({ controller, useVisionModel, t }:
           <div className={styles.actions}>
             <Button
               variant="primary"
-              disabled={disabled || !dirty}
+              disabled={disabled || !dirty || incomplete}
               onClick={() => { void save() }}
             >
               {t('save')}

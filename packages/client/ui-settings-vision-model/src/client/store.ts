@@ -45,6 +45,7 @@ export interface VisionModelState {
  * @returns the message to show.
  */
 export function messageOf(error: unknown): string {
+  /* v8 ignore next -- transports reject with Errors; the String arm satisfies the unknown type */
   return error instanceof Error ? error.message : String(error)
 }
 
@@ -103,6 +104,7 @@ export class VisionModelSettingsStore {
       if (generation !== this.generation) return
       this.store.update((s) => {
         s.status = 'error'
+        /* v8 ignore next -- transports reject with Errors; the String arm satisfies the unknown type */
         s.error = error instanceof Error ? error.message : String(error)
       })
       return

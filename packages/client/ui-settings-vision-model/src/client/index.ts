@@ -81,8 +81,8 @@ export function apply(ctx: ClientContext): void {
       ctx.remote.$on('settings/document-updated', (ns) => {
         if (ns === VISION_MODEL_SETTINGS_NS) refreshIfLoaded(controller)
       }),
-      ctx.remote.$on('llm/adapters-updated', () => refreshIfLoaded(controller)),
-      ctx.on('connection/reset', () => refreshIfLoaded(controller)),
+      ctx.remote.$on('llm/adapters-updated', () => { refreshIfLoaded(controller) }),
+      ctx.on('connection/reset', () => { refreshIfLoaded(controller) }),
     ]
     return () => { for (const dispose of disposers) dispose() }
   }, 'ui-settings-vision-model: pushed invalidations')
