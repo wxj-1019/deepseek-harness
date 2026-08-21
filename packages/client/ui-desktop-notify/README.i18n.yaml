@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-desktop-notify/README.md
 README.md: 7d92ee4a44c1e2de89c4e050aee23b9dae3cdaa6
-README.zh.md: 8b0c650b2b0d351f7d9b974ac2be27c6f752e5f8
+README.zh.md: ad805d35e47429e8180a5b158150f767233734a1

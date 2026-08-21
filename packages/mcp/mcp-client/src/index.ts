@@ -122,7 +122,7 @@ export type HttpEntry = Omit<StreamableHttpConfig, 'serverName'>
 /** One stdio or Streamable HTTP MCP server entry lacking only its `serverName`. */
 export type ServerEntry = StdioEntry | HttpEntry
 
-/** Field descriptors of the stdio server entry, shared by {@link ServerEntryConfig} and {@link Config}. */
+/** Field descriptors of the stdio server entry, shared by the two {@link ServerEntryConfig} union members. */
 const StdioEntryFields = {
   transport: z.const('stdio'),
   command: z.string().required(),
@@ -135,7 +135,7 @@ const StdioEntryFields = {
   reconnect: Reconnect,
 }
 
-/** Field descriptors of the Streamable HTTP server entry, shared by {@link ServerEntryConfig} and {@link Config}. */
+/** Field descriptors of the Streamable HTTP server entry, shared by the two {@link ServerEntryConfig} union members. */
 const HttpEntryFields = {
   transport: z.const('streamable-http'),
   url: z.string().required(),
@@ -145,8 +145,6 @@ const HttpEntryFields = {
   failOnStartupError: z.boolean().default(false),
   reconnect: Reconnect,
 }
-
-const serverNameField = { serverName: z.string().required().pattern(SERVER_NAME_PATTERN) }
 
 /**
  * Schema for one MCP server entry lacking only its `serverName` — the shape a
@@ -158,8 +156,28 @@ export const ServerEntryConfig = z.union([
 ]) as unknown as z<ServerEntry>
 
 export const Config = z.union([
-  z.object({ ...serverNameField, ...StdioEntryFields }),
-  z.object({ ...serverNameField, ...HttpEntryFields }),
+  z.object({
+    transport: z.const('stdio'),
+    serverName: z.string().required().pattern(SERVER_NAME_PATTERN),
+    command: z.string().required(),
+    args: z.array(String).default([]),
+    env: z.dict(String).default({}),
+    cwd: z.string().default(''),
+    toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
+    startupTimeoutMs: z.number().min(1).default(DEFAULT_STARTUP_TIMEOUT_MS),
+    failOnStartupError: z.boolean().default(false),
+    reconnect: Reconnect,
+  }),
+  z.object({
+    transport: z.const('streamable-http'),
+    serverName: z.string().required().pattern(SERVER_NAME_PATTERN),
+    url: z.string().required(),
+    headers: z.dict(String).default({}),
+    toolCallTimeoutMs: z.number().default(DEFAULT_TOOL_CALL_TIMEOUT_MS),
+    startupTimeoutMs: z.number().min(1).default(DEFAULT_STARTUP_TIMEOUT_MS),
+    failOnStartupError: z.boolean().default(false),
+    reconnect: Reconnect,
+  }),
 ]) as unknown as z<Config>
 
 // ---- Plugin apply ----

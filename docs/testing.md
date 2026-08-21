@@ -13,7 +13,7 @@ How this repo tests, tier by tier, and the rules that keep a green suite meaning
 - **Web browser snapshot** (`pnpm run test:web`; required Linux PR gate): Chromium compares replayed browser output with `apps/web/tests/snapshots/`. CI forces read-only `DSH_SNAPSHOT=replay`, never writing expected outputs; record/refresh stay local and every diff is reviewed ([web e2e lane](../.agents/notes/implemented/testing/2026-07-24-web-gui-browser-e2e-lane.md), [CI gate decision](../.agents/notes/implemented/testing/2026-07-30-web-browser-snapshot-ci-gate.md)). `test:web` [builds first](../.agents/notes/implemented/bug-fix/2026-07-28-themed-scrollbars-and-reserved-gutter.md) for plugin CSS.
 - **Local toggles** — `dev-checks` in `$DSH_HOME/settings.yaml` (web settings → **Dev checks**): `e2e`, `coverage`, `snapshot`, `docSync`, `prePushTypecheck` via `scripts/dev-check-run.ts`, `buildHygiene` advisory for agent selection; all default on and are ignored under `CI=true` or explicit full runs.
 
-Committed session-format JSONL uses the canonical packed-row layout, and the keyless snapshot gate discovers every such fixture by its `session` header; the [temporary migrator](../scripts/migrate-packed-session-fixtures.ts) rewrites older fixture layouts.
+Session fixtures keep headers and payloads but omit body sequence/time envelopes. Replay synthesizes them; runtime persistence is unchanged. Fixtures use canonical packed rows; [the migrator](../scripts/migrate-packed-session-fixtures.ts) rewrites old layouts.
 
 ## The with-key policy: inference is cheap here
 

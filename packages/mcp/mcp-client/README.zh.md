@@ -31,7 +31,7 @@ MCP 客户端桥接插件：连接外部 [Model Context Protocol](https://modelc
 
 模型会看到 `mcp__github__create_issue`、`mcp__web__search` 等工具，这与 Claude Code 和 Codex 使用的服务器限定形状相同。HMR（热模块替换）支持热替换：编辑配置项会触发断开 + 重新连接，无需重启进程；`serverName` 不变时会生成完全相同的工具名称。
 
-若要以 settings 驱动组装（不写 `cordis.yml` 行），挂载 [`@deepseek-ai/dsh-mcp-servers`](../mcp-servers/README.md)——base bundle 已这样挂载——并在 `$DSH_HOME/settings.yaml` 的 `mcp` 段声明服务器；它会应用下述同样的单实例配置，并让挂载集随已提交的编辑保持同步。
+若要以 settings 驱动组装（不写 `cordis.yml` 行），挂载 [`@deepseek-ai/dsh-mcp-servers`](../mcp-servers/README.zh.md)——base bundle 已这样挂载——并在 `$DSH_HOME/settings.yaml` 的 `mcp` 段声明服务器；它会应用下述同样的单实例配置，并让挂载集随已提交的编辑保持同步。
 
 ## 配置
 

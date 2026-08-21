@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-19-composer-image-upload-entry.md
 2026-08-19-composer-image-upload-entry.md: 147c0cceb2b3b4e00aa0bf41289c2d292fd53a6f
-2026-08-19-composer-image-upload-entry.zh.md: 014e447b0b17e5712640e87ae3a944c744d71fc0
+2026-08-19-composer-image-upload-entry.zh.md: fbb1db297bda54cdd88db5a5374a8ded5834e945

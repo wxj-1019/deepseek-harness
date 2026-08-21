@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/user/guide/providers.md
 providers.md: 8f393583d8cf72637b89968e17f3d3dfb6622bf5
-providers.zh.md: 477b3837cf4e1bd20cae15faee221ea92ae6769f
+providers.zh.md: 73fae15048ac13741ef7fd9c2940e95e6aec997c

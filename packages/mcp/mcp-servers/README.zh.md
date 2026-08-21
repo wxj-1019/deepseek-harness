@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-MCP 服务器组装管理器：为用户 settings 文档 `mcp` 段里声明的每个服务器挂载一个 [`@deepseek-ai/dsh-mcp-client`](../mcp-client/README.md) loader 行，并让挂载集随已提交的 settings 编辑保持同步——无需重启，也无需为每个服务器写 `cordis.yml` 行。
+MCP 服务器组装管理器：为用户 settings 文档 `mcp` 段里声明的每个服务器挂载一个 [`@deepseek-ai/dsh-mcp-client`](../mcp-client/README.zh.md) loader 行，并让挂载集随已提交的 settings 编辑保持同步——无需重启，也无需为每个服务器写 `cordis.yml` 行。
 
 ## 用法
 
@@ -32,7 +32,7 @@ mcp:
 
 ## 配置
 
-插件本身没有 config；`mcp` settings 段即契约。服务器条目字段与 mcp-client 行相同，仅少一个 `serverName`（由字典键提供）：见 [mcp-client Config 表](../mcp-client/README.md#config)。
+插件本身没有 config；`mcp` settings 段即契约。服务器条目字段与 mcp-client 行相同，仅少一个 `serverName`（由字典键提供）：见 [mcp-client Config 表](../mcp-client/README.zh.md#config)。
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
@@ -73,4 +73,4 @@ mcp:
 
 - **一次提交内逐服务器原子编辑** —— settings 字典按服务器 merge，但一次改动多个服务器的提交会在一个事务性 group 更新里应用；一个显式致命（`failOnStartupError`）的服务器会回滚整个更新而不是跳过。
 - **暂无设置 UI 卡片** —— `mcp` 段靠文件编辑；需要时 Web 设置卡可复用同一命名空间。
-- **继承 mcp-client 的遗留工作** —— Resources/Prompts 未桥接，Streamable HTTP 断连按调用重试而非经 supervisor；见 [mcp-client 限制](../mcp-client/README.md#known-limitations-and-deferred-work)。
+- **继承 mcp-client 的遗留工作** —— Resources/Prompts 未桥接，Streamable HTTP 断连按调用重试而非经 supervisor；见 [mcp-client 限制](../mcp-client/README.zh.md#known-limitations-and-deferred-work)。

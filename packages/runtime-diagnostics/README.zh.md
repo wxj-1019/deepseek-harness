@@ -6,4 +6,4 @@ DeepSeek Harness 的包级运行时诊断：不变量注册、健康断言和伴
 
 | 包 | 职责 |
 |---|---|
-| [`invariants/`](invariants/README.md) | 不变量注册表服务：按包所有权保留、跨包健康断言和伴随插件接入 |
+| [`invariants/`](invariants/README.zh.md) | 不变量注册表服务：按包所有权保留、跨包健康断言和伴随插件接入 |

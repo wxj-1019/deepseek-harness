@@ -6,7 +6,7 @@ Status: implemented
 
 ## 问题
 
-第一版背景特性落地（[2026-08-15-web-client-background](2026-08-15-web-client-background.md)）后，与第三方玻璃主题 [DSH-Transparent-UI-Plugin](https://github.com/WYH66666666/DSH-Transparent-UI-Plugin) 的并行试用给出了产品答案：aqua 系统——磨砂表面、WebGL 流体背景、视频壁纸——主导，树内的平涂面纱呈现不是用户想要的样子。但 aqua 把所有偏好存浏览器本地（localStorage 旋钮、IndexedDB blob、Chromium File System Access 句柄）：浏览器重置即丢、不跟随账户、也没有可编程的缝。
+第一版背景特性落地（[2026-08-15-web-client-background](2026-08-15-web-client-background.zh.md)）后，与第三方玻璃主题 [DSH-Transparent-UI-Plugin](https://github.com/WYH66666666/DSH-Transparent-UI-Plugin) 的并行试用给出了产品答案：aqua 系统——磨砂表面、WebGL 流体背景、视频壁纸——主导，树内的平涂面纱呈现不是用户想要的样子。但 aqua 把所有偏好存浏览器本地（localStorage 旋钮、IndexedDB blob、Chromium File System Access 句柄）：浏览器重置即丢、不跟随账户、也没有可编程的缝。
 
 ## 决策
 

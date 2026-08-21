@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-15-web-client-background.md
 2026-08-15-web-client-background.md: 22bb3510f68f89df639cd07441669bd380a83fc0
-2026-08-15-web-client-background.zh.md: a253c0b5bffdd691f62efe7dee0fc63119e808d6
+2026-08-15-web-client-background.zh.md: 0a4c9ec071a1efb4dba78181b3248cf683ca1028
