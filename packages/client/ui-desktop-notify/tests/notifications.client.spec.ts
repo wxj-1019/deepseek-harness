@@ -5,12 +5,12 @@
 import { describe, expect, it } from 'vitest'
 import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 import { completedSince, runningOf, shouldNotify } from '../src/client/notifications.ts'
-import { listState, summary } from './support.ts'
+import { listState, summary } from './support.client.ts'
 
 describe('runningOf', () => {
   it('collects the running bit of every listed session', () => {
     const state = listState([summary('a', true), summary('b', false)])
-    expect(runningOf(state)).toEqual(new Map<SessionId, boolean>([['a', true], ['b', false]]))
+    expect(runningOf(state)).toEqual(new Map<SessionId, boolean>([['a' as SessionId, true], ['b' as SessionId, false]]))
   })
 })
 

@@ -186,6 +186,7 @@ export class DesktopNotifyRuntime {
     if (!this.enabled.getSnapshot() || this.notify === undefined) return
     for (const id of done) {
       const summary = state.byId[id]
+      if (summary === undefined) continue
       if (!shouldNotify(id, state.current, this.isHidden())) continue
       this.notify.show(
         { title: summary.displayTitle, body: this.bodyText(), tag: id },

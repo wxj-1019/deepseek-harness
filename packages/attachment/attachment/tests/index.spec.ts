@@ -87,6 +87,10 @@ class RecordingStore extends AttachmentStore {
 
 class UnsupportedProjectionStore extends AttachmentStore {
   readonly imageLimits = LIMITS
+  readonly videoLimits = Object.freeze({
+    maxVideoBytes: 1024,
+    mediaTypes: Object.freeze(['video/mp4'] as const),
+  })
 
   validateImage(): Promise<void> {
     return Promise.resolve()
@@ -97,6 +101,14 @@ class UnsupportedProjectionStore extends AttachmentStore {
   }
 
   readImage(): Promise<StoredImageAttachment> {
+    throw new Error('not used')
+  }
+
+  saveVideo(): Promise<never> {
+    throw new Error('not used')
+  }
+
+  readVideo(): Promise<never> {
     throw new Error('not used')
   }
 }

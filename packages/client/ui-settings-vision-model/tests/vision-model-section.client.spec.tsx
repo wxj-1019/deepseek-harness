@@ -50,7 +50,7 @@ function fakeApi(initial?: Route, writable = true) {
       let next: Partial<Route> = { ...route }
       for (const op of payload.ops) {
         if (op.op === 'set' && op.value !== undefined) {
-          next = { ...next, [op.path[0]]: op.value }
+          next = { ...next, [op.path[0]!]: op.value }
         } else {
           const dropped = op.path[0] as keyof Route
           next = Object.fromEntries(Object.entries(next).filter(([key]) => key !== dropped))
@@ -84,7 +84,7 @@ async function flush(): Promise<void> {
   await act(async () => { await Promise.resolve() })
 }
 
-const t = makeTranslate(zh) as VisionModelSectionProps['t']
+const t = makeTranslate(zh) as NonNullable<VisionModelSectionProps['t']>
 
 describe('VisionModelSection', () => {
   it('renders nothing before the inject face is complete', () => {
@@ -193,7 +193,8 @@ describe('VisionModelSection', () => {
     fireEvent.change(screen.getByRole('combobox', { name: t('provider') }), { target: { value: 'qwen-dashscope' } })
     fireEvent.change(screen.getByRole('combobox', { name: t('model') }), { target: { value: 'qwen3-vl-plus' } })
     await flush()
-    expect(screen.getByRole('button', { name: t('save') }).disabled).toBe(true)
+    const saveButton = screen.getByRole('button', { name: t('save') }) as HTMLButtonElement
+    expect(saveButton.disabled).toBe(true)
   })
 
   it('announces a write conflict and keeps the drafts', async () => {

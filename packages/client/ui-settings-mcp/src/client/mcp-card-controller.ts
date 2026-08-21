@@ -92,7 +92,7 @@ export class McpCardController {
     private readonly messages: { conflict: string; unavailable: string },
   ) {
     this.store = createSnapshotStore<McpCardState>(this.project())
-    scope.subscribe(() => this.store.set(this.project()))
+    scope.subscribe(() => { this.store.set(this.project()) })
   }
 
   /** Park one server in or out of composition without touching its entry. */

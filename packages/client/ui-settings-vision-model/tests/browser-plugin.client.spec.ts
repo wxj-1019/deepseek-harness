@@ -126,7 +126,7 @@ describe('ui-settings-vision-model browser half', () => {
 describe('ui-settings-vision-model node half', () => {
   it('contributes no host behavior without a settings service', () => {
     // The node half exists only so the plugin appears in the Loader tree.
-    expect(() => { applyNode(new Context()) }).not.toThrow()
+    expect(() => { applyNode() }).not.toThrow()
   })
 })
 

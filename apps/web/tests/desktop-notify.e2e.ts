@@ -38,7 +38,11 @@ async function stubGrantedNotifications(page: Page): Promise<void> {
         public readonly title: string,
         public readonly options?: { body?: string; tag?: string },
       ) {
-        shown.push({ title, body: options?.body, tag: options?.tag })
+        shown.push({
+          title,
+          ...(options?.body === undefined ? {} : { body: options.body }),
+          ...(options?.tag === undefined ? {} : { tag: options.tag }),
+        })
       }
     }
     Object.defineProperty(window, 'Notification', { value: StubNotification, configurable: true })

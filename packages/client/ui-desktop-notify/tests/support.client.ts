@@ -8,9 +8,9 @@ import type {
 } from '@deepseek-ai/dsh-client-runtime/client'
 
 /** One summary with every required field and caller-chosen running/title. */
-export function summary(id: SessionId, running: boolean, displayTitle = id): SessionSummary {
+export function summary(id: string, running: boolean, displayTitle = id): SessionSummary {
   return {
-    id,
+    id: id as SessionId,
     displayTitle,
     running,
     blank: false,
@@ -19,13 +19,13 @@ export function summary(id: SessionId, running: boolean, displayTitle = id): Ses
 }
 
 /** A list snapshot over the given rows with the given selection. */
-export function listState(rows: readonly SessionSummary[], current?: SessionId): SessionListState {
+export function listState(rows: readonly SessionSummary[], current?: string): SessionListState {
   const byId: Record<SessionId, SessionSummary> = {}
   for (const row of rows) byId[row.id] = row
   return {
     ids: rows.map(row => row.id),
     byId,
-    current,
+    current: current === undefined ? undefined : current as SessionId,
     phase: 'ready',
     subagentsByParent: {},
     jobsBySession: {},

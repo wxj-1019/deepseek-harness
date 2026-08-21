@@ -3,6 +3,7 @@
  * projection, stored-route read, and the optimistic revision-guarded writes.
  */
 import { describe, expect, it, vi } from 'vitest'
+import type { IApiClient } from '@deepseek-ai/dsh-api-remotes/client'
 import { VISION_MODEL_SETTINGS_NS, VisionModelSettingsStore } from '../src/client/store.ts'
 
 /** One successful RPC envelope. */
@@ -34,8 +35,8 @@ type MutateEnvelope =
 
 /** A wire face over controllable llm/settings domains. */
 function face(overrides: {
-  models?: () => Promise<CatalogEnvelope>
-  describe?: () => Promise<SettingsEnvelope>
+  models?: () => Promise<CatalogEnvelope | { result: { ok: false; error: { code: string; message: string; details: object } } }>
+  describe?: () => Promise<SettingsEnvelope | { result: { ok: false; error: { code: string; message: string; details: object } } }>
   mutate?: (payload: object) => Promise<MutateEnvelope>
 } = {}) {
   const models = overrides.models ?? (() => Promise.resolve(ok({ groups: [] })))
@@ -43,7 +44,7 @@ function face(overrides: {
     ok({ writable: true, hasDocument: false, namespaces: [] }),
   ))
   const mutate = overrides.mutate ?? (() => Promise.resolve(ok({})))
-  return { llm: { models }, settings: { describe, mutate } }}
+  return { llm: { models }, settings: { describe, mutate } } as unknown as Pick<IApiClient, 'llm' | 'settings'>}
 
 const CATALOG = (() => ok({
   groups: [{
@@ -238,7 +239,7 @@ describe('VisionModelSettingsStore.save', () => {
   })
 
   it('omits the expected revision before the first load and reports a denied write', async () => {
-    const mutate = vi.fn(() => Promise.resolve(fail('settings-conflict')))
+    const mutate = vi.fn((_payload: object) => Promise.resolve(fail('settings-conflict')))
     const store = new VisionModelSettingsStore(face({ mutate }))
     const failure = await store.save('qwen-dashscope', 'qwen3-vl-plus')
     expect(failure).toBe('settings-conflict')
@@ -252,7 +253,7 @@ describe('VisionModelSettingsStore.save', () => {
   })
 
   it('maps a transport throw to its message without a write', async () => {
-    const mutate = vi.fn(() => Promise.reject(new Error('offline')))
+    const mutate = vi.fn((_payload: object) => Promise.reject(new Error('offline')))
     const store = new VisionModelSettingsStore(face({ mutate }))
     const failure = await store.save('qwen-dashscope', 'qwen3-vl-plus')
     expect(failure).toBe('offline')
@@ -285,7 +286,7 @@ describe('VisionModelSettingsStore.clear', () => {
   })
 
   it('maps a clear transport throw to its message and omits the revision before the first load', async () => {
-    const mutate = vi.fn(() => Promise.reject(new Error('offline')))
+    const mutate = vi.fn((_payload: object) => Promise.reject(new Error('offline')))
     const store = new VisionModelSettingsStore(face({ mutate }))
     expect(await store.clear()).toBe('offline')
     expect(mutate.mock.calls[0]![0]).not.toHaveProperty('expectedRevision')

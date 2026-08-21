@@ -89,6 +89,8 @@
     "apps/web/tests/pwsh-terminal.e2e.ts",
     "apps/web/tests/workflow-run.e2e.ts",
     "apps/web/tests/dev-checks-settings.e2e.ts",
+    "apps/web/tests/composer-attach.e2e.ts",
+    "apps/web/tests/desktop-notify.e2e.ts",
     "apps/web/stress-tests/reasoning-chunks.stress.ts",
     "apps/cli/tests/**/*.ts",
     "examples/*/src/**/*.ts",

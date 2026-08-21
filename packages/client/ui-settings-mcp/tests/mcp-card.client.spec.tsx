@@ -7,7 +7,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { SettingsScope, SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
-import type { IApiClient, SettingsMutationResponse } from '@deepseek-ai/dsh-api-remotes/client'
+import type { IApiClient, RpcResponse, SettingsNamespaceView } from '@deepseek-ai/dsh-api-remotes/client'
 import { McpCardController, type McpSettingsView } from '../src/client/mcp-card-controller.ts'
 import { McpCard } from '../src/client/McpCard.tsx'
 import { en } from '../src/client/locales.ts'
@@ -45,7 +45,7 @@ function fakeScope(initial: Partial<SettingsScopeSnapshot<McpSettingsView>>): Se
 }
 
 function fakeApi(): { api: Pick<IApiClient, 'settings'>; mutate: ReturnType<typeof vi.fn> } {
-  const mutate = vi.fn(async (): Promise<SettingsMutationResponse> => ({
+  const mutate = vi.fn(async (): Promise<RpcResponse<SettingsNamespaceView>> => ({
     result: {
       ok: true as const,
       value: {
@@ -56,23 +56,34 @@ function fakeApi(): { api: Pick<IApiClient, 'settings'>; mutate: ReturnType<type
         writable: true,
         mode: 'host' as const,
         status: 'ready' as const,
-      },
+      } as unknown as SettingsNamespaceView,
     },
-  }))
-  return { api: { settings: { mutate } }, mutate }
+  }) as unknown as RpcResponse<SettingsNamespaceView>)
+  const settings = {
+    describe: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
+    openDocument: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
+    update: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
+    replace: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
+    mutate,
+  }
+  return { api: { settings }, mutate }
 }
 
 const MESSAGES = { conflict: 'conflict-copy', unavailable: 'rejected-copy' }
 
+// Global standard kit stubs: the card does not consume the hooks.
+const unusedHook = (() => { throw new Error('unused by the MCP card') }) as never
+
 function mountCard(controller: McpCardController): void {
   render(
     <McpCard
-      t={(key) => (en as Record<string, string>)[key] ?? key}
+      t={key => (en as Record<string, string>)[key] ?? key}
       useMcpCard={selector => selector(controller.store.getSnapshot())}
       setEnabled={(name, enabled) => { void controller.setEnabled(name, enabled) }}
       remove={(name) => { void controller.remove(name) }}
       save={(name, entry) => { void controller.save(name, entry) }}
-      hooks={{ mcpCard: controller.store }}
+      useSessions={unusedHook}
+      useWorkspaces={unusedHook}
     />,
   )
 }
@@ -135,10 +146,12 @@ describe('McpCardController', () => {
 
   it('reports a revision conflict through the card state', async () => {
     const scope = fakeScope({ value: { servers: {}, disabled: [] } })
-    const mutate = vi.fn(async (): Promise<SettingsMutationResponse> => ({
+    const mutate = vi.fn(async (): Promise<RpcResponse<SettingsNamespaceView>> => ({
       result: { ok: false as const, error: { code: 'settings-conflict' as const, message: 'conflict' } },
-    }))
-    const controller = new McpCardController(scope, { settings: { mutate } }, MESSAGES)
+    }) as unknown as RpcResponse<SettingsNamespaceView>)
+    const controller = new McpCardController(scope, {
+      settings: { describe: vi.fn(), openDocument: vi.fn(), update: vi.fn(), replace: vi.fn(), mutate },
+    }, MESSAGES)
     await controller.save('gh', { transport: 'stdio', command: 'npx' })
     expect(controller.store.getSnapshot().error).toBe('conflict-copy')
     expect(controller.store.getSnapshot().busy).toBe(false)
@@ -160,7 +173,7 @@ describe('McpCard', () => {
     mountCard(new McpCardController(scope, api, MESSAGES))
     const rows = [...screen.getByRole('list').querySelectorAll('li')]
     expect(rows.map(row => row.textContent)).toEqual(
-      expect.arrayContaining(['github', 'web'].map(() => expect.stringContaining('stdio'))),
+      expect.arrayContaining([expect.stringContaining('stdio'), expect.stringContaining('stdio')]),
     )
     expect(screen.getByText('streamable-http')).toBeDefined()
     expect(screen.getByText(en['mcpCard.enable'])).toBeDefined()
