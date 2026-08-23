@@ -149,3 +149,7 @@ Docs accompany every code change: update affected README and JSDoc contracts tog
 ## Vendoring policy
 
 `vendor/` packages are pinned source copies (manifest with upstream SHAs in [vendor/README.md](vendor/README.md)). Update via the sync procedure there; re-apply or retire the logged local modifications; rerun `pnpm run test && pnpm run build`.
+
+## ~/.dsh config backup (this fork, host-local)
+
+Machine-local dsh profiles, `settings.yaml`, and agent presets are versioned in the private repo `wxj-1019/dsh-config` rooted at `~/.dsh` (whitelist `.gitignore`; `credentials.yaml`, sessions, storages, and `node_modules/` are never committed). After any plugin/profile/settings/preset change, commit and push from `~/.dsh`; on this host pushes require `git -c credential.https://github.com.usehttppath=false push` (the global `usehttppath` config makes the store helper miss the stored credential). The web profile's `cordis.patch.yml` carries the `web-ui-better-sidebar` dedup disable; losing it makes `dsh web` die at boot on a duplicate `/sidebar/api` route. Full procedure: `~/.dsh/README.md`.
