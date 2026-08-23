@@ -12,6 +12,7 @@
 | [`loader-smoke/`](loader-smoke/README.zh.md) | 启动由 Loader 组合的应用以执行冒烟测试 |
 | [`llm-mock-server/`](llm-mock-server/README.zh.md) | 提供确定性的 OpenAI 兼容故障服务器 |
 | [`llm-replay/`](llm-replay/README.zh.md) | 为无密钥测试和演示回放已记录的模型响应 |
+| [`client-runtime/`](client-runtime/README.zh.md) | 在真实 Cordis 上下文上运行客户端特性规范，并提供类型化的会话/工作区替身 |
 
 当一个包获得产品约定和产品消费方时，它会移出 `test-support/`。
 

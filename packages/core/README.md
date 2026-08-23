@@ -13,6 +13,7 @@ The session log, system-prompt assembly, tool registry, agent vocabulary, deploy
 | [`agent/`](agent/README.md) | Agent interface, registry, and event vocabulary | `ctx.agents` |
 | [`agent-default-model/`](agent-default-model/README.md) | Default model selection shared by Agent entry points | `ctx.agentDefaultModel` |
 | [`agent-loop/`](agent-loop/README.md) | Default concrete agent driver | `ctx.agentLoop` |
+| [`agent-tool-presentation/`](agent-tool-presentation/README.md) | Per-preset choice of which tool forms the model sees | `ctx.tools.presentAs()` |
 
 `scope` supplies the shared scoping primitive. `agent` owns the public contract, while `agent-loop` is its default implementation; extension plugins depend on the seam so the driver remains swappable. `agent-default-model` owns the deployment selection an Agent entry point uses only when a session has no selection of its own.
 

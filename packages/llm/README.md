@@ -11,6 +11,7 @@ The LLM seam and its provider adapters. The `llm` package owns both the Service 
 | [`llm-retry/`](llm-retry/README.md) | Provider-scoped retry policy | listens to `agent/request-error` |
 | [`llm-deepseek/`](llm-deepseek/README.md) | Direct DeepSeek adapter | registers on `ctx.llm` |
 | [`llm-pi-ai/`](llm-pi-ai/README.md) | Multi-provider pi-ai adapter | registers on `ctx.llm` |
+| [`llm-vision-route/`](llm-vision-route/README.md) | Routes image-bearing requests to a configured vision model | listens to `agent/pre-step` and `agent/request` |
 
 Adapters register provider routes on the seam; retry and token measurement remain separate consumers. The child READMEs own routing, metadata, replay, and provider-wire details; the [LLM architecture decisions](../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.md) own the rationale.
 

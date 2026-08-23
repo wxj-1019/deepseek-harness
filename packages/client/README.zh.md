@@ -16,13 +16,17 @@ dsh web GUI 的浏览器侧：shell 启动、浏览器与宿主通信、共享 U
 | [`test-runtime/`](../test-support/client-runtime/README.zh.md) | 为客户端功能包提供共享的仓库测试支持。 |
 | [`ui-slots/`](ui-slots/README.zh.md) | 定义 UI 功能注册和组合扩展 slot 的方式。 |
 | [`ui-theme/`](ui-theme/README.zh.md) | 应用所选颜色主题。 |
+| [`ui-aqua/`](ui-aqua/README.zh.md) | 应用 Aqua 玻璃视觉系统：主题令牌、可调模糊与磨砂，以及 WebGL 或壁纸背景。 |
 | [`ui-primitives/`](ui-primitives/README.zh.md) | 提供共享 React 控件、图标和内容渲染器。 |
 | [`ui-attachment/`](ui-attachment/README.zh.md) | 注册输入框与消息图片的附件呈现。 |
 | [`ui-layout/`](ui-layout/README.zh.md) | 排列应用的主要区域。 |
 | [`ui-sidebar/`](ui-sidebar/README.zh.md) | 展示工作区与会话导航。 |
 | [`ui-brand-official/`](ui-brand-official/README.zh.md) | 使用官方名称和标记填充通用浏览器品牌 slot。 |
 | [`ui-workspace/`](ui-workspace/README.zh.md) | 提供工作区选择与创建界面。 |
+| [`ui-directory-picker-browse/`](ui-directory-picker-browse/README.zh.md) | 工作区流程的应用内目录浏览对话框，驱动 Host 的目录原语，无需系统选择器。 |
+| [`ui-directory-picker-native/`](ui-directory-picker-native/README.zh.md) | 无渲染占位组件，通过 Host 的原生系统选择器应答工作区目录选择。 |
 | [`ui-conversation/`](ui-conversation/README.zh.md) | 展示当前对话及其输入界面。 |
+| [`ui-deliverables/`](ui-deliverables/README.zh.md) | 在收尾回复中展示当轮生成的文件行与可点击的内联引用。 |
 | [`ui-tool/`](ui-tool/README.zh.md) | 编排工具调用树和按工具键控的视图。 |
 | [`ui-workflow-run/`](ui-workflow-run/README.zh.md) | 把持久工作流运行回放为 Chat 嵌套折叠项，并只为实时子 Session 提供导航。 |
 | [`ui-goal/`](ui-goal/README.zh.md) | 展示和管理当前目标。 |
@@ -39,10 +43,14 @@ dsh web GUI 的浏览器侧：shell 启动、浏览器与宿主通信、共享 U
 | [`ui-plan/`](ui-plan/README.zh.md) | 展示生效中的 plan mode 状态及其退出控件。 |
 | [`ui-settings-plugins/`](ui-settings-plugins/README.zh.md) | 拥有“插件”设置分区、它的标签页扩展点，以及可配置的宿主平面插件卡片。 |
 | [`ui-user-questions/`](ui-user-questions/README.zh.md) | 展示 agent 请求的交互式问题。 |
+| [`ui-message-feedback/`](ui-message-feedback/README.zh.md) | 在助手操作条中增加逐条消息的点赞/点踩与备注控件。 |
 | [`ui-agent-preset/`](ui-agent-preset/README.zh.md) | 选择会话的 agent 预设，并编写预设组合。 |
 | [`ui-settings/`](ui-settings/README.zh.md) | 承载设置界面及其扩展区域。 |
 | [`ui-settings-general/`](ui-settings-general/README.zh.md) | 提供常规设置分区。 |
+| [`ui-settings-dev-checks/`](ui-settings-dev-checks/README.zh.md) | 注册“开发检查”设置页，提供按机器的质量门禁开关。 |
 | [`ui-settings-models/`](ui-settings-models/README.zh.md) | 提供模型提供方配置与 DeepSeek 配置引导。 |
+| [`ui-settings-vision-model/`](ui-settings-vision-model/README.zh.md) | 注册“视觉模型”设置页，配置图片请求的路由模型。 |
+| [`ui-settings-mcp/`](ui-settings-mcp/README.zh.md) | 在“插件”设置标签页中渲染 MCP 服务器列表与编辑表单。 |
 | [`ui-settings-plugin-inventory/`](ui-settings-plugin-inventory/README.zh.md) | 向“插件”设置贡献只读的 Host Loader 清单标签页。 |
 
 每个子文档负责自身的约定和详细行为。[slot 系统标准](../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)与 [Web 客户端架构 Agent Note](../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)负责跨包组合与加载决策。

@@ -12,6 +12,7 @@ These packages support repository development, tests, and examples rather than p
 | [`loader-smoke/`](loader-smoke/README.md) | Launches Loader-composed applications for smoke tests |
 | [`llm-mock-server/`](llm-mock-server/README.md) | Provides a deterministic OpenAI-compatible fault server |
 | [`llm-replay/`](llm-replay/README.md) | Replays recorded model responses for keyless tests and demos |
+| [`client-runtime/`](client-runtime/README.md) | Runs client feature specs on a real Cordis context with typed session/workspace doubles |
 
 A package moves out of `test-support/` when it gains a product contract and product consumers.
 
