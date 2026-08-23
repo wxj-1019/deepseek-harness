@@ -114,6 +114,18 @@ import { canOpenNativePath, openNativePath, openNativeTextFile } from './native-
 /** Page size when history is called without maxMessages. */
 const DEFAULT_MAX_MESSAGES = 50
 
+/**
+ * Upper bound on raw events per history page. Message-count paging alone is
+ * unbounded in raw events, and a delta-per-character provider (CJK streaming)
+ * logs ~1000 chunk events per message: a 50-message page reaches tens of
+ * thousands of events that the client must sort, index, and fold into view
+ * models synchronously on the main thread — long conversations then open to a
+ * blank or frozen transcript. The bound trips at a message-group boundary; a
+ * group larger than the bound alone still lands whole (it is the page's only
+ * content and stays reachable), so the worst page is one message group.
+ */
+const MAX_PAGE_EVENTS = 10_000
+
 /** Provider work budget: at most 100 calls and 2,000 inspected hits. */
 const SESSION_SEARCH_PROVIDER_CALL_LIMIT = 100
 
@@ -224,6 +236,13 @@ function isAborted(signal: AbortSignal): boolean {
  * replacement. The cut is the starting seq of the oldest message group (chunks
  * group via sourceEventSeqs — never cut mid-message). The tail page naturally
  * includes the in-progress partial.
+ *
+ * The page is additionally bounded by {@link MAX_PAGE_EVENTS} raw events: when
+ * admitting the next message group would exceed the bound, the cut lands at
+ * the newest accepted group's start instead, so paging with beforeSeq still
+ * reaches every older message (a rejected group becomes the sole tail message
+ * of the next page). The bound never cuts inside a group, and the tail-most
+ * message is always admitted so a page is never left empty.
  */
 function paginate(
   events: readonly SessionEvent[],
@@ -233,6 +252,7 @@ function paginate(
   const window = beforeSeq === undefined ? [...events] : events.filter(event => event.seq < beforeSeq)
   let count = 0
   let cut = 0
+  let acceptedStart: number | undefined
   for (let i = window.length - 1; i >= 0; i--) {
     const event = window[i] as SessionEvent
     if (!MESSAGE_TYPES.has(event.type) || !isAppendSurfaceEvent(event)) continue
@@ -248,9 +268,35 @@ function paginate(
       cut = groupStart
       break
     }
+    if (
+      acceptedStart !== undefined
+      && window.length - lowerBoundSeq(window, groupStart) > MAX_PAGE_EVENTS
+    ) {
+      cut = acceptedStart
+      break
+    }
+    acceptedStart = groupStart
   }
   const page = window.filter(event => event.seq >= cut)
   return { events: page, hasMore: cut > 0 }
+}
+
+/**
+ * Index of the first window event at or above `seq`; the window is the session
+ * log in append order, so seq values ascend.
+ * @param window - ascending-seq event window.
+ * @param seq - lower bound (inclusive).
+ * @returns first index whose event seq is >= seq, or window length when none.
+ */
+function lowerBoundSeq(window: readonly SessionEvent[], seq: number): number {
+  let low = 0
+  let high = window.length
+  while (low < high) {
+    const mid = (low + high) >>> 1
+    if ((window[mid] as SessionEvent).seq < seq) low = mid + 1
+    else high = mid
+  }
+  return low
 }
 
 /** Wrap an ok result echoing the request's rpcId. */

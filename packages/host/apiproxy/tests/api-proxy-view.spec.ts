@@ -324,6 +324,72 @@ describe('mux live view computation', () => {
     }
   })
 
+  it('bounds a chunk-heavy page by raw event count at message-group boundaries', async () => {
+    const { ctx } = await harness()
+    const api = createApiProxy(ctx, { defaultModelSelection: () => ({ provider: 'p', model: 'm' }), cwd: '/tmp' })
+    const session = ctx.sessions.create()
+    ctx.agents.register({ id: session.id, session, status: 'idle', ctx } as Agent)
+    const turnStart = session.append('turn/start', { turn: 1 })
+
+    // Three delta-per-character messages: two just past half the event bound
+    // (5_501 raw events each, 11_002 together) and one larger than the bound
+    // alone (10_501) to pin the never-cut-mid-message invariant.
+    const chunkCount = (sources: number[], step: number): number[] => {
+      for (let index = 0; index < sources.length; index++) {
+        sources[index] = session.append('assistant/chunk', {
+          turn: 1,
+          step,
+          chunk: { type: 'text-delta', index, text: 'x' },
+        }).seq
+      }
+      return sources
+    }
+    const group = (chunkTotal: number, step: number): { sources: number[]; message: SessionEvent } => {
+      const sources = chunkCount(Array.from({ length: chunkTotal }, () => 0), step)
+      const message = session.append('assistant/message', {
+        turn: 1,
+        step,
+        message: createMessage({
+          role: 'assistant',
+          content: [{ type: 'text', text: 'x'.repeat(chunkTotal) }],
+          source: { kind: 'model', provider: 'p', model: 'm' },
+        }),
+      }, { surfaceOp: 'append', sourceEventSeqs: sources })
+      return { sources, message }
+    }
+    const first = group(10_500, 1)
+    const second = group(5_500, 2)
+    const third = group(5_500, 3)
+
+    const history = (beforeSeq?: number) => api.sessions.history({
+      rpcId: RpcId(`t-hist-chunky-${beforeSeq ?? 'tail'}`),
+      payload: { sessionId: session.id, maxMessages: 50, ...beforeSeq !== undefined ? { beforeSeq } : {} },
+    })
+
+    // Tail page: the third message is admitted; folding in the second would
+    // exceed the raw-event bound, so the cut lands at the third group's start.
+    const page1 = (await history()).result
+    if (!page1.ok) throw new Error('unreachable')
+    expect(page1.value.events.map(entry => entry.event.seq)).toEqual([...third.sources, third.message.seq])
+    expect(page1.value.hasMore).toBe(true)
+
+    // Paging with beforeSeq reaches the second group the same way.
+    const page2 = (await history(third.sources[0] as number)).result
+    if (!page2.ok) throw new Error('unreachable')
+    expect(page2.value.events.map(entry => entry.event.seq)).toEqual([...second.sources, second.message.seq])
+    expect(page2.value.hasMore).toBe(true)
+
+    // A single group larger than the bound still lands whole — the tail-most
+    // message is always admitted and the page never cuts mid-message. The
+    // remaining window fits without tripping the bound, so the page is the
+    // whole window (cut 0), turn/start included.
+    const page3 = (await history(second.sources[0] as number)).result
+    if (!page3.ok) throw new Error('unreachable')
+    expect(page3.value.events.map(entry => entry.event.seq))
+      .toEqual([turnStart.seq, ...first.sources, first.message.seq])
+    expect(page3.value.hasMore).toBe(false)
+  })
+
   it('drops a disposed session from the live open-call table (result after dispose gets no view)', async () => {
     const { ctx } = await harness()
     const api = createApiProxy(ctx, { defaultModelSelection: () => ({ provider: 'p', model: 'm' }), cwd: '/tmp' })
