@@ -2,9 +2,37 @@
 
 English | [中文](README.zh.md)
 
+<p align="center">
+  <img src="assets/banner.svg" alt="DeepSeek Harness banner" width="960">
+</p>
+
+<p align="center">
+  <strong>Everything is a plugin.</strong> One Cordis-powered runtime carries the agent loop, the tools, and the Web UI — compose it, extend it, replace it.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@deepseek-ai/dsh"><img src="https://img.shields.io/npm/v/@deepseek-ai/dsh" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3DA639" alt="license"></a>
+  <a href="docs/development.md"><img src="https://img.shields.io/badge/node-%E2%89%A5%2022.19%20%7C%7C%20%E2%89%A5%2024-339933" alt="node engines"></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness/commits"><img src="https://img.shields.io/github/last-commit/deepseek-ai/deepseek-harness" alt="last commit"></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness/stargazers"><img src="https://img.shields.io/github/stars/deepseek-ai/deepseek-harness?style=social" alt="stars"></a>
+  <a href="https://discord.gg/Ycq5dCaS4"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord community"></a>
+</p>
+
 DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
 
 It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
+
+## Highlights
+
+| | |
+| --- | --- |
+| 🔌 **Everything is a plugin** | The agent loop, tools, and Web UI are all Cordis plugins composed through `cordis.yml` — extend or replace any part without forking the loop. |
+| 🖥️ **Web UI included** | `dsh web` serves a local Web UI with sessions, plans, and approval-gated tool calls. |
+| 🧭 **Several control surfaces** | The same runtime drives the Web UI, an ACP automation server, and one-shot headless CLI tasks. |
+| 🧾 **Replayable session logs** | Everything the model saw is reconstructable from the session log; transcripts replay keylessly in snapshot tests. |
+| 🧰 **Two SDKs, one loop** | The TypeScript and Python SDKs project the same agent-loop surface. |
+| 🔒 **Sandboxed execution** | Tool subprocesses run on Linux under landlock isolation through a native Node addon. |
 
 ## Developer preview
 
@@ -14,7 +42,7 @@ DeepSeek Harness is currently in _developer preview_ and is iterating rapidly. *
 
 ### Run from `npm`
 
-Install `Node.js`, then run:
+Install `Node.js` (`^22.19 || >=24`), then run:
 
 ```sh
 npx @deepseek-ai/dsh web
@@ -35,6 +63,15 @@ pnpm dsh web
 ```
 
 `pnpm run build` prepares the repository artifacts. `pnpm dsh web` uses those built artifacts without rebuilding.
+
+## Documentation
+
+| Topic | Guide |
+| --- | --- |
+| Web UI | [Web UI guide](docs/user/guide/index.md) |
+| Model configuration | [Model providers guide](docs/user/guide/providers.md) |
+| Python SDK | [Python SDK guide](docs/user/guide/python-sdk.md) |
+| Plugin development | [Extension cookbook](docs/cookbook/extension-cookbook.md) |
 
 ## Community and support
 

@@ -2,9 +2,37 @@
 
 [English](README.md) | 中文
 
+<p align="center">
+  <img src="assets/banner.svg" alt="DeepSeek Harness 横幅" width="960">
+</p>
+
+<p align="center">
+  <strong>一切皆插件。</strong>同一个由 Cordis 驱动的运行时承载 agent loop（智能体循环）、工具与 Web UI——可组合、可扩展、可替换。
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@deepseek-ai/dsh"><img src="https://img.shields.io/npm/v/@deepseek-ai/dsh" alt="npm 版本"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3DA639" alt="许可证"></a>
+  <a href="docs/development.zh.md"><img src="https://img.shields.io/badge/node-%E2%89%A5%2022.19%20%7C%7C%20%E2%89%A5%2024-339933" alt="Node 版本要求"></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness/commits"><img src="https://img.shields.io/github/last-commit/deepseek-ai/deepseek-harness" alt="最近提交"></a>
+  <a href="https://github.com/deepseek-ai/deepseek-harness/stargazers"><img src="https://img.shields.io/github/stars/deepseek-ai/deepseek-harness?style=social" alt="star 数"></a>
+  <a href="https://discord.gg/Ycq5dCaS4"><img src="https://img.shields.io/badge/discord-join-5865F2?logo=discord&logoColor=white" alt="Discord 社区"></a>
+</p>
+
 DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的开源 agent harness（智能体框架）。
 
 它采用**一切皆插件**的架构，并由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
+
+## 功能亮点
+
+| | |
+| --- | --- |
+| 🔌 **一切皆插件** | agent loop、工具与 Web UI 都是通过 `cordis.yml` 组合的 Cordis 插件——无需改动循环本体即可扩展或替换任何部分。 |
+| 🖥️ **内置 Web UI** | `dsh web` 在本地启动带有会话、计划与审批门控工具调用的 Web UI。 |
+| 🧭 **多种驱动入口** | 同一运行时可由 Web UI、ACP 自动化服务器或一次性 headless CLI 任务驱动。 |
+| 🧾 **可重放的会话日志** | 模型看到的一切都可以从会话日志重建；完整记录可在快照测试中无密钥重放。 |
+| 🧰 **双 SDK，同一循环** | TypeScript 与 Python SDK 投影同一 agent loop 表面。 |
+| 🔒 **沙箱化执行** | 工具子进程在 Linux 上通过原生 Node 扩展实现 landlock 隔离运行。 |
 
 ## 开发者预览
 
@@ -16,7 +44,7 @@ DeepSeek Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**
 
 ### 通过 `npm` 运行
 
-安装 `Node.js`，然后运行：
+安装 `Node.js`（`^22.19 || >=24`），然后运行：
 
 ```sh
 npx @deepseek-ai/dsh web
@@ -39,6 +67,15 @@ pnpm dsh web
 ```
 
 `pnpm run build` 会准备仓库产物。`pnpm dsh web` 会直接使用这些已构建产物，不会重新构建。
+
+## 文档
+
+| 主题 | 指南 |
+| --- | --- |
+| Web UI | [Web UI 使用指南](docs/user/guide/index.zh.md) |
+| 模型配置 | [模型提供商指南](docs/user/guide/providers.zh.md) |
+| Python SDK | [Python SDK 指南](docs/user/guide/python-sdk.zh.md) |
+| 插件开发 | [扩展开发指南](docs/cookbook/extension-cookbook.zh.md) |
 
 ## 社区与支持
 
@@ -65,7 +102,7 @@ pnpm dsh web
 
 ## 参与贡献
 
-参见 [CONTRIBUTING.md](CONTRIBUTING.zh.md)。
+参见 [CONTRIBUTING.zh.md](CONTRIBUTING.zh.md)。
 
 ## 开发
 
