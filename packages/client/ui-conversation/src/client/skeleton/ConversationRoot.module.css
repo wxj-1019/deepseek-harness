@@ -220,6 +220,11 @@
    sticky). The scroll body holds the transcript and the sticky composer seat
    so wheel over the footer moves the flow. */
 .root[data-phase='active'] {
+  /* Fallback height constraint for webviews where the html/body/#root chain
+     breaks and `height: 100%` resolves against auto content: as the center
+     column's flex item these two lines still cap the root at the column. */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -249,8 +254,17 @@
 }
 
 .root[data-phase='active'] .viewArea {
-  flex: 1 0 auto;
-  min-height: auto;
+  flex: 0 0 auto;
+  /* Short transcripts must still fill the scrollport so the sticky composer
+     seat lands at the column bottom. This must NOT use main-axis free-space
+     distribution — neither `flex-grow` on this box nor `margin-top: auto`
+     on the seat: in the embedded webview the column scroll container
+     computes that free space against the scrollable content height instead
+     of the scrollport height, so the "free" band persists after the history
+     overflows (measured: 459px of phantom scroll space between the last
+     message and the composer). A percentage min-height resolves against the
+     scrollport's content box directly and never creates scroll space. */
+  min-height: 100%;
 }
 
 .root[data-phase='active'] .composerSeat {
@@ -327,6 +341,18 @@
      width as the docked composer at every viewport. */
   width: min(calc(var(--dsh-composer-card-max-width) + 2 * var(--dsh-composer-side-clearance)), 100%);
   z-index: 1;
+}
+
+/* The glow is a decorative backdrop that bleeds past the stack by design.
+   Left unclipped, its absolutely positioned overflow also becomes part of
+   the hero scrollport's scrollable overflow, stretching the scrollbar and
+   letting the blank state scroll down forever. This wrapper clips the glow
+   to the stack's own box so decoration never creates scroll space. */
+.heroGlowClip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 /* Blue backdrop ellipse (figma 313:14109), centered on the input card: the

@@ -3,6 +3,12 @@
   display: grid;
   grid-template-rows: 100%;
   height: 100%;
+  /* Some local/native webviews do not apply the shell's html/body/#root
+     height chain, so `height: 100%` resolves against auto content and the
+     frame grows past the viewport — the composer then sits below the fold.
+     `100vh` is the same usable viewport height and keeps the app from
+     becoming a page-level scroll container. */
+  height: 100vh;
   overflow: hidden;
   background: var(--dsw-alias-bg-base);
   /* Collapse/expand animates the tracks on the deepsuite sider curve
