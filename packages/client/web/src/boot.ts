@@ -64,6 +64,10 @@ export class AppWebEntry {
         ...transport?.loadBundle === undefined ? {} : { loadBundle: transport.loadBundle },
         ...this.seams,
       })
+      // Surface the boot-created module system to lazy third-party client
+      // code (e.g. chunked community plugins) that resolves externals through
+      // the shell-installed `__DSH_MODULES__` global.
+      ;(globalThis as { __DSH_MODULES__?: unknown }).__DSH_MODULES__ = this.modules
       this.manifest = this.modules.manifest
 
       const prefetching = this.prefetchImmediateTier()
