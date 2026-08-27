@@ -49,6 +49,7 @@ export const inject = ['slots', 'locale', 'remote', 'remote.userTodos']
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-user-todo: copy dictionaries')
 
+  const t = ctx.locale.bind(NS)
   const remote: UserTodosRemoteFace = ctx.remote.userTodos
   const controller = new UserTodoController(remote)
   const actions: Omit<UserTodoInjected, 'hooks'> = {
@@ -61,6 +62,7 @@ export function apply(ctx: ClientContext): void {
     setSessionLink: (id, sessionId) => controller.setSessionLink(id, sessionId),
     openSession: (sessionId) => { ctx.sessions.open(sessionId) },
     setNote: (id, note) => controller.setNote(id, note),
+    setDue: (id, dueMs) => controller.setDue(id, dueMs),
     remove: id => controller.remove(id),
   }
 
@@ -76,6 +78,25 @@ export function apply(ctx: ClientContext): void {
     ]
     return () => { for (const dispose of disposers) dispose() }
   }, 'ui-user-todo: pushed invalidations')
+
+  // Due reminders: a desktop notification per item as its due instant
+  // passes, fired only while this mount is alive and only when the site
+  // already holds notification permission (we never prompt). The per-item
+  // fired set lives for the mount, so a surviving window re-arms on reload.
+  ctx.effect(() => {
+    const notified = new Set<string>()
+    const timer = setInterval(() => {
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
+      const now = Date.now()
+      for (const item of controller.getSnapshot().items) {
+        if (item.done || item.dueAt === undefined || item.dueAt > now || notified.has(item.id)) continue
+        notified.add(item.id)
+        const notification = new Notification(t('notify.title'), { body: item.title, tag: `user-todo:${item.id}` })
+        notification.onclick = (): void => { window.focus(); notification.close() }
+      }
+    }, 30_000)
+    return () => clearInterval(timer)
+  }, 'ui-user-todo: due reminders')
 
   ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
     name: 'sidebar.footer.action',

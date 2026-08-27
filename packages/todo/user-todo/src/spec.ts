@@ -24,6 +24,7 @@ export const userTodoItemSchema = z.object({
   done: z.boolean(),
   createdAt: z.number().int().nonnegative(),
   completedAt: z.number().int().nonnegative().optional(),
+  dueAt: z.number().int().nonnegative().optional(),
   workspaceId: z.string().min(1).transform(value => value as LinkedWorkspaceId).optional(),
   sessionId: z.string().min(1).transform(value => value as SessionId).optional(),
 }).superRefine((item, ctx) => {
@@ -50,7 +51,9 @@ export const userTodoItemSchema = z.object({
  */
 export const userTodoDomainSpec = defineDomain({
   name: 'user_todo',
-  version: 0,
+  // v1 added `dueAt`; the pre-release stance lets the bump invalidate the
+  // handful of v0 media instead of carrying a migration.
+  version: 1,
   tables: {
     items: domainTable<UserTodoId, UserTodoRecord>(userTodoItemSchema),
   },

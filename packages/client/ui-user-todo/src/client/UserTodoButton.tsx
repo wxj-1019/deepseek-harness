@@ -16,7 +16,7 @@ import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-
 import type { UserTodoId, UserTodoRecord } from '@deepseek-ai/dsh-user-todo/types'
 import type { UserTodoState } from './controller.ts'
 import type { UserTodoInjected } from './slots.ts'
-import { localDayKey } from './day.ts'
+import { formatDueLabel, localDayKey, toLocalInputValue } from './day.ts'
 import { earlierCompleted, todayItems } from './view.ts'
 import { NS } from './locales.ts'
 import css from './UserTodoButton.module.css'
@@ -25,7 +25,7 @@ import css from './UserTodoButton.module.css'
 export type UserTodoButtonProps =
   & PropsRuntime<'sidebar.footer.action'>
   & PropsLocale<typeof NS>
-  & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'setNote' | 'remove'>
+  & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'setNote' | 'setDue' | 'remove'>
   & { useTodo: SnapshotSelectorHook<UserTodoState> }
 
 /**
@@ -36,9 +36,9 @@ export type UserTodoButtonProps =
 export function UserTodoButton(props: UserTodoButtonProps) {
   const {
     wide, useSessions, useWorkspaces, useTodo, t,
-    ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, remove,
+    ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove,
   } = props
-  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, remove }
+  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove }
   /** Run one verb and surface its rejection text until the next action. */
   const run = (pending: Promise<string | undefined>): void => {
     setActionError(null)
@@ -54,6 +54,7 @@ export function UserTodoButton(props: UserTodoButtonProps) {
   const [editing, setEditing] = useState<{ id: UserTodoId; text: string } | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [noteEditing, setNoteEditing] = useState<{ id: UserTodoId; text: string } | null>(null)
+  const [dueEditing, setDueEditing] = useState<{ id: UserTodoId } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   const pendingCount = state.items.reduce((count, item) => count + (item.done ? 0 : 1), 0)
@@ -165,6 +166,18 @@ export function UserTodoButton(props: UserTodoButtonProps) {
               {item.title}
             </button>
           )}
+        <button
+          type="button"
+          className={[
+            css.dueChip,
+            item.dueAt !== undefined && item.dueAt < Date.now() ? css.dueOverdue : '',
+          ].filter(Boolean).join(' ')}
+          aria-label={t('due.open')}
+          title={t('due.open')}
+          onClick={() => setDueEditing(dueEditing?.id === item.id ? null : { id: item.id })}
+        >
+          {item.dueAt !== undefined ? formatDueLabel(item.dueAt, Date.now()) : t('due.none')}
+        </button>
         {linkedSession !== undefined && (
           <button
             type="button"
@@ -223,6 +236,33 @@ export function UserTodoButton(props: UserTodoButtonProps) {
         >
           <IconTrashOutline16 />
         </button>
+        {dueEditing?.id === item.id && (
+          <div className={css.noteRow}>
+            <input
+              type="datetime-local"
+              className={css.noteInput}
+              value={item.dueAt === undefined ? '' : toLocalInputValue(item.dueAt)}
+              aria-label={t('due.open')}
+              onChange={(event) => {
+                console.log('DUE_ONCHANGE', JSON.stringify(event.target.value))
+                const value = event.target.value
+                setDueEditing({ id: item.id })
+                run(actions.setDue(item.id, value === '' ? null : Date.parse(value)))
+              }}
+            />
+            <button
+              type="button"
+              className={css.iconAction}
+              aria-label={t('due.clear')}
+              onClick={() => {
+                run(actions.setDue(item.id, null))
+                setDueEditing(null)
+              }}
+            >
+              <IconTrashOutline16 />
+            </button>
+          </div>
+        )}
         {noteEditing?.id === item.id && (
           <div className={css.noteRow}>
             <textarea

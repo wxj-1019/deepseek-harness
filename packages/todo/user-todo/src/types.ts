@@ -44,6 +44,12 @@ export interface UserTodoRecord {
   readonly createdAt: number
   /** Host-assigned completion time in epoch milliseconds; absent while open. */
   readonly completedAt?: number
+  /**
+   * Optional due time in epoch milliseconds. Reminders and the overdue chip
+   * are client-side projections; the Host stores the instant and treats it
+   * like every other editable field.
+   */
+  readonly dueAt?: number
   /** Optional linked project (workspace). Present whenever `sessionId` is. */
   readonly workspaceId?: LinkedWorkspaceId
   /**
@@ -66,6 +72,8 @@ export interface UserTodoPutRequest {
   readonly workspaceId?: LinkedWorkspaceId | null
   /** Desired session link; `null` clears, omitted keeps the current link. */
   readonly sessionId?: SessionId | null
+  /** Desired due time; `null` clears, omitted keeps the current value. */
+  readonly dueAt?: number | null
 }
 
 /** Flip one item between open and done. */

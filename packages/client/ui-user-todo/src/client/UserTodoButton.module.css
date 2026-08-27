@@ -207,6 +207,28 @@
   opacity: 0.65;
 }
 
+.dueChip {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.dueChip:hover {
+  opacity: 1;
+}
+
+.dueOverdue {
+  border-color: var(--dsw-danger-border, rgba(255, 96, 96, 0.6));
+  color: var(--dsw-danger-text, #ff8080);
+  opacity: 1;
+}
+
 .date {
   flex: none;
   font-size: 11px;

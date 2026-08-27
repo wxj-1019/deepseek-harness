@@ -10,7 +10,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { Context, Service } from '@deepseek-ai/cordis'
-import { SessionId } from '@deepseek-ai/dsh-session'
+import { agentEvents, Inbox, type Agent, type PreStepDecision } from '@deepseek-ai/dsh-agent'
+import { Session, SessionId, type UserMessage } from '@deepseek-ai/dsh-session'
 import Storage from '@deepseek-ai/dsh-storage'
 import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
 import * as StorageJson from '@deepseek-ai/dsh-storage-json'
@@ -21,20 +22,19 @@ import UserTodoService, { UserTodoId } from '../src/index.ts'
 class FakeWorkspaceRegistry extends Service {
   static inject: string[] = []
 
-  private readonly workspaces = new Map<string, readonly string[]>()
+  private readonly workspaces = new Map<string, { sessionIds: readonly string[]; title: string }>()
 
   constructor(ctx: Context) {
     super(ctx, 'workspaceRegistry')
   }
 
-  /** Seed one workspace's accounted sessions. */
-  seed(workspaceId: string, sessionIds: readonly string[]): void {
-    this.workspaces.set(workspaceId, sessionIds)
+  /** Seed one workspace's accounted sessions and display title. */
+  seed(workspaceId: string, sessionIds: readonly string[], title = workspaceId): void {
+    this.workspaces.set(workspaceId, { sessionIds, title })
   }
 
-  get(id: ReturnType<typeof WorkspaceId>): { sessionIds: readonly string[] } | undefined {
-    const found = this.workspaces.get(id)
-    return found === undefined ? undefined : { sessionIds: found }
+  get(id: ReturnType<typeof WorkspaceId>): { sessionIds: readonly string[]; title: string } | undefined {
+    return this.workspaces.get(id)
   }
 }
 
@@ -46,7 +46,7 @@ interface Fixture {
 }
 
 /** Compose the service over the real storage hub/domain/JSON backend. */
-async function setupFixture(): Promise<Fixture> {
+async function setupFixture(config: { modelVisible?: boolean } = {}): Promise<Fixture> {
   const root = await mkdtemp(join(tmpdir(), 'dsh-user-todo-test-'))
   let changes = 0
   const ctx = new Context()
@@ -55,7 +55,7 @@ async function setupFixture(): Promise<Fixture> {
     await ctx.plugin(StorageJson, { root })
     await ctx.plugin(StorageDomain, { backend: 'json' })
     await ctx.plugin(FakeWorkspaceRegistry)
-    await ctx.plugin(UserTodoService)
+    await ctx.plugin(UserTodoService, config)
     ctx.on('user-todo/changed', () => { changes += 1 })
     return {
       service: ctx.userTodos,
@@ -79,6 +79,7 @@ async function titles(service: UserTodoService): Promise<string[]> {
   if (!listed.ok) throw new Error('list unexpectedly rejected')
   return [...listed.value.items.map(item => item.title)]
 }
+
 
 describe('user todo service', () => {
   test('create, list in creation order, toggle both ways, delete idempotently', async () => {
@@ -236,3 +237,130 @@ describe('user todo service', () => {
     }
   })
 })
+
+
+// ---- model-facing projection (pre-step catalog) ----
+
+/** A minimal agent over one real session, mirroring the skill-catalog tests. */
+function fakeAgent(session: Session): Agent {
+  return {
+    id: SessionId('user-todo-agent'),
+    options: {},
+    session,
+    inbox: new Inbox(session, { inserted: () => {}, discarded: () => {}, claimed: () => {} }),
+    status: 'running',
+    ctx: new Context(),
+    send: () => {},
+    followup: () => {},
+    steer: () => {},
+    inject: () => { throw new Error('step-boundary catalog must not use agent.inject()') },
+    cancel() {},
+    runMaintenance: task => task(new AbortController().signal),
+    whenIdle: () => Promise.resolve(),
+  }
+}
+
+/** Drive one pre-step and commit the decision's user-todos message to the log. */
+async function fireStep(
+  ctx: Context,
+  agent: Agent,
+  turn: number,
+  step: number,
+): Promise<PreStepDecision> {
+  const decision = await agentEvents(ctx, agent).waterfall(
+    'agent/pre-step',
+    { messages: [], turn, step, signal: new AbortController().signal },
+    () => Promise.resolve({ kind: 'enter' as const, messages: [] }),
+  )
+  if (decision.kind === 'enter') {
+    for (const message of decision.messages as readonly UserMessage[]) {
+      agent.session.append('user/message', message, { surfaceOp: 'append' })
+    }
+  }
+  return decision
+}
+
+/** The user-todos messages carried by one decision. */
+function todosMessages(decision: PreStepDecision): readonly UserMessage[] {
+  return decision.kind === 'enter'
+    ? (decision.messages as readonly UserMessage[]).filter(message => message.source.kind === 'user-todos')
+    : []
+}
+
+describe('user todo model projection', () => {
+  test('modelVisible off means no listener, no catalog ever', async () => {
+    const fix = await setupFixture()
+    try {
+      await fix.service.put({ title: 'Visible?' })
+      const agent = fakeAgent(Session.create(SessionId('off-agent'), []))
+      const decision = await fireStep(ctxOf(fix), agent, 1, 1)
+      expect(todosMessages(decision)).toEqual([])
+    } finally {
+      await fix.dispose()
+    }
+  })
+
+  test('modelVisible on: publish once, dedupe unchanged, replace on change', async () => {
+    const fix = await setupFixture({ modelVisible: true })
+    try {
+      fix.registry.seed('ws-1', [], 'Demo WS')
+      await fix.service.put({ title: 'Buy milk', note: '2 percent', dueAt: Date.UTC(2026, 7, 30, 9), workspaceId: 'ws-1' as never })
+      await fix.service.put({ title: 'Water the plants' })
+      const agent = fakeAgent(Session.create(SessionId('proj-agent'), []))
+
+      const first = await fireStep(ctxOf(fix), agent, 1, 1)
+      const initial = todosMessages(first)
+      expect(initial).toHaveLength(1)
+      const text = (initial[0]?.content[0] as { text: string }).text
+      expect(text).toContain('<user_todos>')
+      expect(text).toContain('- [ ] Buy milk (note: 2 percent) (due:')
+      expect(text).toContain('(project: Demo WS)')
+      expect(text).toContain('- [ ] Water the plants')
+
+      // Unchanged list: the next step carries nothing.
+      const second = await fireStep(ctxOf(fix), agent, 1, 2)
+      expect(todosMessages(second)).toEqual([])
+
+      // Completing an item publishes a full-replacement update with the rest.
+      const listed = await fix.service.list()
+      expect(listed.ok).toBe(true)
+      if (listed.ok) {
+        const target = listed.value.items.find(item => item.title === 'Buy milk')
+        expect(target).toBeDefined()
+        if (target) await fix.service.toggle({ id: target.id, done: true })
+      }
+      const third = await fireStep(ctxOf(fix), agent, 1, 3)
+      const update = todosMessages(third)
+      expect(update).toHaveLength(1)
+      expect(((update[0]?.source as unknown as { form: string })).form).toBe('catalog-update')
+      const updateText = (update[0]?.content[0] as { text: string }).text
+      expect(updateText).toContain('Water the plants')
+      expect(updateText).not.toContain('Buy milk')
+    } finally {
+      await fix.dispose()
+    }
+  })
+
+  test('emptying a published list publishes the explicit empty replacement', async () => {
+    const fix = await setupFixture({ modelVisible: true })
+    try {
+      const created = await fix.service.put({ title: 'Only' })
+      expect(created.ok).toBe(true)
+      const agent = fakeAgent(Session.create(SessionId('empty-agent'), []))
+      const first = await fireStep(ctxOf(fix), agent, 1, 1)
+      expect(todosMessages(first)).toHaveLength(1)
+      if (created.ok) await fix.service.delete({ id: created.value.id })
+      const second = await fireStep(ctxOf(fix), agent, 1, 2)
+      const messages = todosMessages(second)
+      expect(messages).toHaveLength(1)
+      expect(((messages[0]?.source as unknown as { todos: unknown[] })).todos).toEqual([])
+    } finally {
+      await fix.dispose()
+    }
+  })
+})
+
+/** The service cast back out of the fixture context (typed access for tests). */
+function ctxOf(fix: Fixture): Context {
+  return (fix.service as unknown as { ctx: Context }).ctx
+}

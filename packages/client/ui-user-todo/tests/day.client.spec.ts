@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { localDayKey, sameLocalDay } from '../src/client/day.ts'
+import { formatDueLabel, localDayKey, sameLocalDay, toLocalInputValue } from '../src/client/day.ts'
 import { earlierCompleted, todayItems } from '../src/client/view.ts'
 
 const DAY = (utcIso: string): number => Date.parse(utcIso)
@@ -93,5 +93,34 @@ describe('panel view derivations', () => {
     ]
     const combined = [...todayItems(items, now, 'UTC'), ...earlierCompleted(items, now, 'UTC')]
     expect(new Set(combined.map(entry => entry.id))).toEqual(new Set(['a', 'b', 'c']))
+  })
+})
+
+
+describe('due helpers', () => {
+  const UTC = 'UTC'
+
+  it('formatDueLabel is deterministic under a pinned zone', () => {
+    const instant = Date.UTC(2026, 7, 30, 1, 5)
+    expect(formatDueLabel(instant, Date.now(), UTC)).toBe('2026-08-30 01:05')
+  })
+
+  it('toLocalInputValue round-trips through the local parser under the same zone', () => {
+    const instant = Date.UTC(2026, 7, 30, 1, 5)
+    const value = toLocalInputValue(instant, UTC)
+    expect(value).toBe('2026-08-30T01:05')
+    expect(Date.parse(value + ':00Z')).toBe(instant)
+  })
+
+  it('todayItems sorts due items first, soonest due at the top', () => {
+    const now = Date.UTC(2026, 7, 27, 12)
+    const items = [
+      item('undated-old', { createdAt: DAY('2026-08-20T08:00:00Z') }),
+      item('undated-new', { createdAt: DAY('2026-08-26T08:00:00Z') }),
+      item('due-late', { dueAt: DAY('2026-08-29T00:00:00Z') }),
+      item('due-soon', { dueAt: DAY('2026-08-28T00:00:00Z') }),
+    ]
+    expect(todayItems(items, now, UTC).map(entry => entry.id))
+      .toEqual(['due-soon', 'due-late', 'undated-old', 'undated-new'])
   })
 })

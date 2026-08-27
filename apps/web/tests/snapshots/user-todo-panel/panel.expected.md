@@ -10,6 +10,7 @@
     - listitem:
       - button "Mark as done"
       - button "Water the plants"
+      - button "Due date": No due
       - button "Note":
         - img
       - combobox "Linked project":
@@ -20,6 +21,7 @@
       - button "Mark as open":
         - img
       - button "Buy milk"
+      - button "Due date": No due
       - button "Note":
         - img
       - combobox "Linked project":

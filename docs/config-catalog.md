@@ -3082,11 +3082,19 @@ Source: [`packages/interaction/user-approval/src/index.ts:177`](../packages/inte
 Requires: `storageDomain` · `workspaceRegistry`
 
 ```ts config-catalog
-/** The service takes no composition config. */
-export interface Config {}
+/** Deployment policy for the model-facing projection of the list. */
+export interface Config {
+  /**
+   * When true, every live agent's pre-step receives a persistent
+   * `user-todos` catalog message describing the open items, full-replacement
+   * style (the skill-catalog pattern). The list stays user-owned either way;
+   * this switch only decides whether the model sees it.
+   */
+  readonly modelVisible?: boolean
+}
 ```
 
-Source: [`packages/todo/user-todo/src/index.ts:39`](../packages/todo/user-todo/src/index.ts)
+Source: [`packages/todo/user-todo/src/index.ts:42`](../packages/todo/user-todo/src/index.ts)
 
 <a id="deepseek-aidsh-web"></a>
 

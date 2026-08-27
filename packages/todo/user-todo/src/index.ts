@@ -3,12 +3,15 @@
  * @module @deepseek-ai/dsh-user-todo
  */
 
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { Context, Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
+import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
 // Type-only side-effect import: pulls the owner's `workspaceRegistry` Context
 // merge into this program.
 import type {} from '@deepseek-ai/dsh-workspace'
+import type { UserMessage } from '@deepseek-ai/dsh-session'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { WorkspaceId } from '@deepseek-ai/dsh-workspace'
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
@@ -35,8 +38,16 @@ export { UserTodoId } from './types.ts'
 export type * from './types.ts'
 export { userTodoDomainSpec, userTodoIdSchema, userTodoItemSchema } from './spec.ts'
 
-/** The service takes no composition config. */
-export interface Config {}
+/** Deployment policy for the model-facing projection of the list. */
+export interface Config {
+  /**
+   * When true, every live agent's pre-step receives a persistent
+   * `user-todos` catalog message describing the open items, full-replacement
+   * style (the skill-catalog pattern). The list stays user-owned either way;
+   * this switch only decides whether the model sees it.
+   */
+  readonly modelVisible?: boolean
+}
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -63,6 +74,7 @@ function snapshotItem(item: UserTodoRecord): UserTodoRecord {
     done: item.done,
     createdAt: item.createdAt,
     ...(item.completedAt === undefined ? {} : { completedAt: item.completedAt }),
+    ...(item.dueAt === undefined ? {} : { dueAt: item.dueAt }),
     ...(item.workspaceId === undefined ? {} : { workspaceId: item.workspaceId }),
     ...(item.sessionId === undefined ? {} : { sessionId: item.sessionId }),
   })
@@ -79,24 +91,29 @@ interface ResolvedLinks {
  * items: day bucketing and carry-over are client-side view derivations over
  * `createdAt`/`completedAt`, so the Host stores none of that bookkeeping.
  *
- * The list is user-facing only — nothing here enters a session log or any
- * model request.
+ * The list is user-owned. When the deployment sets `modelVisible`, the
+ * service additionally projects the open items into each agent's pre-step
+ * as a full-replacement catalog message (the skill-catalog pattern), which
+ * is the only path where list content reaches a model request — and it is
+ * logged with the message itself, keeping the model-visible ⟺ logged rule.
  */
 export class UserTodoService extends TypertRemoteService {
   static inject = ['storageDomain', 'workspaceRegistry']
 
-  /** No composition config; declared empty for loader symmetry with siblings. */
-  static Config: z<Config> = z.object({})
+  static Config: z<Config> = z.object({
+    modelVisible: z.boolean().default(false),
+  })
 
+  private readonly modelVisible: boolean
   private table?: KvTable<UserTodoId, UserTodoRecord>
 
   /**
    * @param ctx - Host context carrying the storage-domain form and the workspace registry.
-   * @param config - unused; the service has no deployment-varying choices.
+   * @param config - deployment policy; `modelVisible` gates the pre-step projection.
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'userTodos')
-    void config
+    this.modelVisible = config.modelVisible ?? false
   }
 
   /** Open and own the one user-todo domain. */
@@ -106,6 +123,70 @@ export class UserTodoService extends TypertRemoteService {
       await domain.close()
     }, 'user-todo.domainClose')
     this.table = domain.table('items')
+    if (this.modelVisible) this.registerModelProjection()
+  }
+
+  /**
+   * The model-facing projection: a per-turn full-replacement catalog over
+   * the open items, published through the pre-step enter decision exactly
+   * like the skill catalog. Digest-gated, so a turn whose list did not
+   * change carries nothing, and an emptied list publishes an explicit empty
+   * replacement once the first catalog is out.
+   */
+  private registerModelProjection(): void {
+    this.ctx.on('agent/pre-step', async (
+      { agent },
+      next,
+    ): Promise<PreStepDecision> => {
+      const decision = await next()
+      if (decision.kind === 'reject') return decision
+
+      const todos = this.openTodos()
+      const digest = digestTodos(todos)
+      const history = todosCatalogHistory(agent)
+      const existing = todosMessage(decision.messages)
+      if (history.visibleDigest === digest) {
+        return existing === undefined
+          ? decision
+          : { kind: 'enter', messages: decision.messages.filter(message => message.id !== existing.id) }
+      }
+      if (existing !== undefined && digestTodos(readTodos(existing.source) ?? []) === digest) return decision
+      if (!history.published && todos.length === 0) {
+        return existing === undefined
+          ? decision
+          : { kind: 'enter', messages: decision.messages.filter(message => message.id !== existing.id) }
+      }
+
+      const catalog = history.published
+        ? renderTodosUpdate(todos)
+        : renderTodosMessage(todos)
+      return {
+        kind: 'enter',
+        messages: existing === undefined
+          ? [...decision.messages, catalog]
+          : decision.messages.map(message => message.id === existing.id ? catalog : message),
+      }
+    })
+  }
+
+  /** The open items in creation order, with their workspace titles resolved. */
+  private openTodos(): readonly UserTodoSourceEntry[] {
+    const table = this.requireTable()
+    return [...table.entries()]
+      .map(([, record]) => record)
+      .filter(record => !record.done)
+      .sort((left, right) => left.createdAt - right.createdAt)
+      .map((record) => {
+        const project = record.workspaceId === undefined
+          ? undefined
+          : this.ctx.workspaceRegistry.get(record.workspaceId)?.title
+        return {
+          title: record.title,
+          ...(record.note === undefined ? {} : { note: record.note }),
+          ...(record.dueAt === undefined ? {} : { dueAt: record.dueAt }),
+          ...(project === undefined ? {} : { project }),
+        }
+      })
   }
 
   /**
@@ -161,6 +242,11 @@ export class UserTodoService extends TypertRemoteService {
       : request.note === null
         ? undefined
         : request.note
+    const dueAt = request.dueAt === undefined
+      ? current.dueAt
+      : request.dueAt === null
+        ? undefined
+        : request.dueAt
 
     const next = snapshotItem({
       id: current.id,
@@ -169,6 +255,7 @@ export class UserTodoService extends TypertRemoteService {
       done: current.done,
       createdAt: current.createdAt,
       ...(current.completedAt === undefined ? {} : { completedAt: current.completedAt }),
+      ...(dueAt === undefined ? {} : { dueAt }),
       ...(links.value.workspaceId === undefined ? {} : { workspaceId: links.value.workspaceId }),
       ...(links.value.sessionId === undefined ? {} : { sessionId: links.value.sessionId }),
     })
@@ -176,6 +263,7 @@ export class UserTodoService extends TypertRemoteService {
     // the stored values is a no-op that neither writes nor emits.
     const material = next.title !== current.title
       || next.note !== current.note
+      || next.dueAt !== current.dueAt
       || next.workspaceId !== current.workspaceId
       || next.sessionId !== current.sessionId
     if (material) {
@@ -243,6 +331,7 @@ export class UserTodoService extends TypertRemoteService {
       id: UserTodoId(randomUUID()),
       title: title.value,
       ...(request.note === undefined || request.note === null ? {} : { note: request.note }),
+      ...(request.dueAt === undefined || request.dueAt === null ? {} : { dueAt: request.dueAt }),
       done: false,
       createdAt: Date.now(),
       ...(links.value.workspaceId === undefined ? {} : { workspaceId: links.value.workspaceId }),
@@ -301,6 +390,128 @@ export class UserTodoService extends TypertRemoteService {
     }
     return this.table
   }
+}
+
+
+/** One open item as the model-facing catalog publishes it. */
+export interface UserTodoSourceEntry {
+  readonly title: string
+  readonly note?: string
+  readonly dueAt?: number
+  readonly project?: string
+}
+
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'user-todos': { kind: 'user-todos'; form: 'catalog' | 'catalog-update'; todos: readonly UserTodoSourceEntry[] }
+  }
+}
+
+/** Digest over the serialized catalog entries; stable across processes. */
+function digestTodos(todos: readonly UserTodoSourceEntry[]): string {
+  return createHash('sha256').update(JSON.stringify(todos)).digest('hex')
+}
+
+/** The catalog entry list recorded on a user-todos source, or undefined. */
+function readTodos(source: unknown): readonly UserTodoSourceEntry[] | undefined {
+  const todos = (source as { todos?: unknown }).todos
+  return Array.isArray(todos) ? todos as readonly UserTodoSourceEntry[] : undefined
+}
+
+/** The user-todos catalog message already present in this turn's decision, if any. */
+function todosMessage(messages: readonly UserMessage[]): UserMessage | undefined {
+  return messages.find(message => message.source.kind === 'user-todos')
+}
+
+/**
+ * History for one agent, read by back-scanning the session's own log for the
+ * LAST user-todos catalog event. Compaction shadowing is not modeled: the
+ * most recent catalog is the comparison baseline whether or not an older
+ * surface still renders it, which keeps the scan free of surface-shape
+ * assumptions across session implementations.
+ */
+function todosCatalogHistory(agent: Agent): { visibleDigest?: string; published: boolean } {
+  const events = agent.session.events
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index]
+    if (event === undefined || event.type !== 'user/message') continue
+    if (event.data.source.kind !== 'user-todos') continue
+    const todos = readTodos(event.data.source)
+    if (todos === undefined) continue
+    return { visibleDigest: digestTodos(todos), published: true }
+  }
+  return { published: false }
+}
+
+/** UTC `YYYY-MM-DD HH:mm` label for a due instant — zone-pinned so the catalog text is deterministic. */
+function dueLabel(dueAt: number): string {
+  const pad = (value: number): string => String(value).padStart(2, '0')
+  const date = new Date(dueAt)
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`
+}
+
+/** The catalog text for one open item, annotations included. */
+function renderTodoLine(todo: UserTodoSourceEntry, overdue: boolean): string {
+  const parts = [`- [ ] ${todo.title}`]
+  if (todo.note !== undefined) parts.push(`(note: ${todo.note})`)
+  if (todo.dueAt !== undefined) parts.push(`(due: ${dueLabel(todo.dueAt)}${overdue ? ', OVERDUE' : ''})`)
+  if (todo.project !== undefined) parts.push(`(project: ${todo.project})`)
+  return parts.join(' ')
+}
+
+/** First publication: full catalog over the open items, or the empty list. */
+function renderTodosMessage(todos: readonly UserTodoSourceEntry[]): UserMessage {
+  const now = Date.now()
+  const body = todos.length === 0
+    ? 'The list is currently empty.'
+    : [
+      'Open items:',
+      ...todos.map(todo => renderTodoLine(todo, todo.dueAt !== undefined && todo.dueAt < now)),
+    ].join('\n')
+  return createUserMessage({
+    content: [{
+      type: 'text',
+      text: [
+        '<system-reminder>',
+        'The user maintains a personal, cross-session todo list. It is user-owned and edited in the UI; treat it as standing context and never modify it.',
+        '',
+        '<user_todos>',
+        body,
+        '</user_todos>',
+        '',
+        'Consider these items when planning or prioritizing work for this session; do not repeat the list back unless asked.',
+        '</system-reminder>',
+      ].join('\n'),
+    }],
+    source: {
+      kind: 'user-todos',
+      form: 'catalog',
+      todos: [...todos],
+    },
+  })
+}
+
+/** Replacement publication after the first: same body, update framing. */
+function renderTodosUpdate(todos: readonly UserTodoSourceEntry[]): UserMessage {
+  const message = renderTodosMessage(todos)
+  const text = message.content[0]
+  const replaced = typeof text === 'object' && text !== null && 'text' in text
+    ? (text as { text: string }).text
+    : ''
+  return createUserMessage({
+    content: [{
+      type: 'text',
+      text: replaced.replace(
+        'The user maintains a personal, cross-session todo list.',
+        'Updated user todo list (full replacement of the previous catalog):',
+      ),
+    }],
+    source: {
+      kind: 'user-todos',
+      form: 'catalog-update',
+      todos: [...todos],
+    },
+  })
 }
 
 export default UserTodoService

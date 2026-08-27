@@ -70,6 +70,8 @@
     # the sidebar-foot button (client row `ui-user-todo`); model-invisible.
     - id: user-todo
       name: '@deepseek-ai/dsh-user-todo'
+      config:
+        modelVisible: true
 
     # Browser Session export: `/export` command plus the shared download dialog.
     - id: session-log-download

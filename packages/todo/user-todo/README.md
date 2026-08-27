@@ -14,14 +14,23 @@ The service takes no composition config: nothing about the list is deployment-va
 
 ## Model Experience
 
-None, as the domain is user-owned application data that never reaches a request assembly; the model never sees these items in v0, and model visibility would require session events plus both SDK projections, deliberately deferred.
+### User-todos catalog projection
+
+#### What the model sees
+
+A persistent `user/message` catalog on every live agent's pre-step, published full-replacement style exactly like the skill catalog (first publication frames the list; changes replace it; emptying a published list publishes an explicit empty replacement), and logged as the message itself so the projection stays reconstructable from the session log. With `modelVisible` off nothing is registered. The catalog is a `<system-reminder>` block whose `<user_todos>` body lists one line per open item in creation order — `- [ ] Title (note: ...) (due: YYYY-MM-DD HH:mm UTC, OVERDUE) (project: Workspace)` — followed by guidance to treat the list as user-owned standing context and never modify it. Closed items, completion stamps, and session ids are not projected.
+
+#### Token effect
+
+Roughly one line per open item plus fixed framing, paid only on turns where the list changed (digest-gated: an unchanged list contributes nothing). Long notes are the main size driver.
 
 #### KV Cache effect
 
-None; the package never assembles or sends provider requests.
+The catalog rides a persistent user message, so it extends the conversation prefix when it changes and splits cache identity at that turn; unchanged turns add nothing to the prefix.
 
 ## Known Limitations and Deferred Work
 
 - **No compare-and-set** — single-user edits race only with themselves across devices; a lost multi-window race converges on the next refetch rather than surfacing a conflict.
 - **Session links are not lifecycle-fenced** — deleting a linked session leaves the reference in place, mirroring how the workspace registry keeps sessions it cannot revalidate.
 - **History is a client concern** — earlier completions are durable and surfaced by the web panel's history section; a CLI or other surface would own its own projection.
+- **The projection is deployment-wide and digest-baseline** — when enabled it reaches every agent, and the comparison baseline is the last logged catalog (compaction shadowing of an older catalog is not detected; the replacement republishes). Reminders themselves are a client-side watcher: they fire only while a browser window holding the panel mount is open and the site already holds notification permission.

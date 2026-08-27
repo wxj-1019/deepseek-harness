@@ -37,6 +37,8 @@ export interface UserTodoInjected {
   openSession(sessionId: SessionId): void
   /** Replace an item's note; null clears it. */
   setNote(id: UserTodoId, note: string | null): Promise<string | undefined>
+  /** Set or clear an item's due time (epoch milliseconds); null clears. */
+  setDue(id: UserTodoId, dueMs: number | null): Promise<string | undefined>
   /** Delete one item. */
   remove(id: UserTodoId): Promise<string | undefined>
 }

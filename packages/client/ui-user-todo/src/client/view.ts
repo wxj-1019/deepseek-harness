@@ -27,6 +27,14 @@ export function todayItems(
     if (!item.done) pending.push(item)
     else if (item.completedAt !== undefined && sameLocalDay(item.completedAt, nowMs, timeZone)) completedToday.push(item)
   }
+  // Due items surface first, soonest due at the top; undated items keep
+  // creation order behind them.
+  pending.sort((left, right) => {
+    const leftDue = left.dueAt ?? Number.MAX_SAFE_INTEGER
+    const rightDue = right.dueAt ?? Number.MAX_SAFE_INTEGER
+    if (leftDue !== rightDue) return leftDue - rightDue
+    return left.createdAt - right.createdAt
+  })
   completedToday = completedToday.sort((left, right) => (right.completedAt ?? 0) - (left.completedAt ?? 0))
   return [...pending, ...completedToday]
 }

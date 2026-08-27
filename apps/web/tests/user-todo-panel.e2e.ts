@@ -40,6 +40,7 @@ describe('web e2e: daily-todo sidebar panel', () => {
     tripwire = watchConsole(page)
     await page.goto(scaffold.baseUrl, { waitUntil: 'load' })
     await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+    page.on('console', (m) => { if (m.text().startsWith('DUE_ONCHANGE') || m.text().startsWith('SETDUE')) console.log('PC:', m.text()) })
     await pageTwo.goto(scaffold.baseUrl, { waitUntil: 'load' })
     await pageTwo.waitForSelector('[class*="frame"]', { timeout: 30_000 })
   }, 120_000)
@@ -149,6 +150,42 @@ describe('web e2e: daily-todo sidebar panel', () => {
     await reopenedRow.getByRole('button', { name: 'Save note' }).click()
     await expect.poll(async () =>
       reopenedEditor.count(), { timeout: 10_000 }).toBe(0)
+    expect(tripwire.pageErrors).toEqual([])
+  }, 60_000)
+
+  it('sets a due date, sorts the row first, and the due survives a reload', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-user-todo-due'))
+    if (await page.getByRole('region', { name: REGION }).count() === 0) await openPanel()
+    const region = page.getByRole('region', { name: REGION })
+    const row = region.locator('li', { hasText: 'Push probe' })
+    await row.getByRole('button', { name: 'Due date' }).click()
+    const dueInput = row.locator('input[type="datetime-local"]')
+    await dueInput.waitFor({ timeout: 10_000 })
+    await dueInput.evaluate((element, value) => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+      setter?.call(element, value)
+      element.dispatchEvent(new Event('input', { bubbles: true }))
+      element.dispatchEvent(new Event('change', { bubbles: true }))
+    }, '2026-08-30T09:00')
+    // The change event commits; the chip takes the formatted local label.
+    await expect.poll(async () =>
+      row.getByRole('button', { name: 'Due date' }).textContent() ?? '', { timeout: 10_000 })
+      .toContain('2026-08-30')
+
+    // The due item leaves the creation-order slot and leads the pending rows.
+    const firstRowText = await region.locator('ul >> li').first().textContent()
+    expect(firstRowText).toContain('Push probe')
+
+    await page.reload({ waitUntil: 'load' })
+    await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+    if (await page.getByRole('region', { name: REGION }).count() === 0) {
+      await page.getByRole('button', { name: TRIGGER, exact: true }).click()
+    }
+    const reopened = page.getByRole('region', { name: REGION })
+    await reopened.getByRole('button', { name: 'Due date' }).first().waitFor({ timeout: 10_000 })
+    await expect.poll(async () =>
+      reopened.locator('li', { hasText: 'Push probe' }).getByRole('button', { name: 'Due date' }).textContent() ?? '',
+    { timeout: 10_000 }).toContain('2026-08-30')
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 

@@ -46,6 +46,7 @@ export interface UserTodosRemoteFace {
     note?: string | null
     workspaceId?: LinkedWorkspaceId | null
     sessionId?: SessionId | null
+    dueAt?: number | null
   }) => Promise<RemoteResult<
     | { readonly ok: true; readonly value: UserTodoRecord }
     | UserTodoRejected<PutFailure>
@@ -215,6 +216,16 @@ export class UserTodoController implements HostObservable<UserTodoState> {
    */
   async setNote(id: UserTodoId, note: string | null): Promise<string | undefined> {
     return this.mutate(remote => remote.put({ id, note }))
+  }
+
+  /**
+   * Set or clear an item's due time (epoch milliseconds).
+   * @param id - the addressed item.
+   * @param dueMs - the due instant, or null to clear.
+   * @returns the failure message, or undefined once committed.
+   */
+  async setDue(id: UserTodoId, dueMs: number | null): Promise<string | undefined> {
+    return this.mutate(remote => remote.put({ id, dueAt: dueMs }))
   }
 
   async remove(id: UserTodoId): Promise<string | undefined> {
