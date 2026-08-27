@@ -117,8 +117,10 @@ export class UserTodoController implements HostObservable<UserTodoState> {
    * @returns resolution when the read settles.
    */
   async resync(): Promise<void> {
-    const loading = !this.cold
-    if (!loading) {
+    // Only the first read advertises a loading state; later reads converge
+    // silently so an open panel never flashes a spinner on top of data.
+    const firstRead = this.cold
+    if (firstRead) {
       this.store.update((state) => {
         state.status = 'loading'
         state.error = null
@@ -239,7 +241,7 @@ export class UserTodoController implements HostObservable<UserTodoState> {
     try {
       const response = await run(this.remote)
       if (!response.ok) return response.error.message
-      if (!response.value.ok) return String(response.value.error.code)
+      if (!response.value.ok) return `code:${String(response.value.error.code)}`
     } catch (error) {
       return messageOf(error)
     }

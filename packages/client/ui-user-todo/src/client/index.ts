@@ -84,13 +84,19 @@ export function apply(ctx: ClientContext): void {
   // already holds notification permission (we never prompt). The per-item
   // fired set lives for the mount, so a surviving window re-arms on reload.
   ctx.effect(() => {
+    // Load once at mount: reminders must work without the panel ever opening.
+    void controller.ensure()
     const notified = new Set<string>()
     const timer = setInterval(() => {
       if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
       const now = Date.now()
       for (const item of controller.getSnapshot().items) {
-        if (item.done || item.dueAt === undefined || item.dueAt > now || notified.has(item.id)) continue
-        notified.add(item.id)
+        if (item.done || item.dueAt === undefined || item.dueAt > now) continue
+        // Re-arm when a re-dated item moves its instant: the fired key is
+        // the (id, instant) pair, not the id alone.
+        const firedKey = `${item.id}:${item.dueAt}`
+        if (notified.has(firedKey)) continue
+        notified.add(firedKey)
         const notification = new Notification(t('notify.title'), { body: item.title, tag: `user-todo:${item.id}` })
         notification.onclick = (): void => { window.focus(); notification.close() }
       }

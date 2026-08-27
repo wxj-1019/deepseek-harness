@@ -161,6 +161,9 @@ describe('web e2e: daily-todo sidebar panel', () => {
     await row.getByRole('button', { name: 'Due date' }).click()
     const dueInput = row.locator('input[type="datetime-local"]')
     await dueInput.waitFor({ timeout: 10_000 })
+    // The native-setter + input dispatch is deliberate: a plain fill() does
+    // not reach React's value tracker for this controlled input in headless
+    // Chromium, so the onChange never fires.
     await dueInput.evaluate((element, value) => {
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
       setter?.call(element, value)

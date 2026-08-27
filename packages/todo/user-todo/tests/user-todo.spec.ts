@@ -162,6 +162,39 @@ describe('user todo service', () => {
     }
   })
 
+  test('due dates set, update, clear, and a same-value set emits nothing', async () => {
+    const fix = await setupFixture()
+    try {
+      const created = await fix.service.put({ title: 'Deadline' })
+      expect(created.ok).toBe(true)
+      if (!created.ok) return
+      const id = created.value.id
+
+      const dueOne = 1_700_000_000_000
+      const first = await fix.service.put({ id, dueAt: dueOne })
+      expect(first.ok).toBe(true)
+      if (first.ok) expect(first.value.dueAt).toBe(dueOne)
+
+      const changesBeforeNoop = fix.changes()
+      const noop = await fix.service.put({ id, dueAt: dueOne })
+      expect(noop.ok).toBe(true)
+      expect(fix.changes()).toBe(changesBeforeNoop)
+
+      const dueTwo = dueOne + 60_000
+      const moved = await fix.service.put({ id, dueAt: dueTwo })
+      expect(moved.ok).toBe(true)
+      if (moved.ok) expect(moved.value.dueAt).toBe(dueTwo)
+      expect(fix.changes()).toBe(changesBeforeNoop + 1)
+
+      const cleared = await fix.service.put({ id, dueAt: null })
+      expect(cleared.ok).toBe(true)
+      if (cleared.ok) expect(cleared.value.dueAt).toBeUndefined()
+      expect(fix.changes()).toBe(changesBeforeNoop + 2)
+    } finally {
+      await fix.dispose()
+    }
+  })
+
   test('session links require their workspace and real membership', async () => {
     const fix = await setupFixture()
     try {

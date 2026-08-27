@@ -39,12 +39,10 @@ export function sameLocalDay(left: number, right: number, timeZone?: string): bo
  * A local `YYYY-MM-DD HH:mm` label for one instant, suitable for the due
  * chip (tabular, zone-explicit, deterministic under a pinned zone).
  * @param epochMs - the instant to label.
- * @param nowMs - unused sibling of the label contract kept for symmetry with
- * the other day helpers; callers pass it so call sites read uniformly.
  * @param timeZone - an IANA time-zone name; omitted resolves the system zone.
  * @returns the formatted local label.
  */
-export function formatDueLabel(epochMs: number, _nowMs: number, timeZone?: string): string {
+export function formatDueLabel(epochMs: number, timeZone?: string): string {
   const zone = timeZone === undefined ? {} : { timeZone }
   const date = new Intl.DateTimeFormat(DAY_KEY_LOCALE, {
     ...zone,
@@ -65,5 +63,5 @@ export function formatDueLabel(epochMs: number, _nowMs: number, timeZone?: strin
  * @returns the `YYYY-MM-DDTHH:mm` input value.
  */
 export function toLocalInputValue(epochMs: number, timeZone?: string): string {
-  return formatDueLabel(epochMs, epochMs, timeZone).replace(' ', 'T')
+  return formatDueLabel(epochMs, timeZone).replace(' ', 'T')
 }

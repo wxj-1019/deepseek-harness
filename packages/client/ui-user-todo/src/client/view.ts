@@ -55,5 +55,6 @@ export function earlierCompleted(
     .filter(item => item.done
       && item.completedAt !== undefined
       && !sameLocalDay(item.completedAt, nowMs, timeZone))
-    .sort((left, right) => (right.completedAt ?? 0) - (left.completedAt ?? 0))
+    .sort((left, right) => (right.completedAt ?? 0) - (left.completedAt ?? 0)
+      || left.createdAt - right.createdAt)
 }

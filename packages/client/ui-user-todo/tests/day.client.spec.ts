@@ -102,7 +102,7 @@ describe('due helpers', () => {
 
   it('formatDueLabel is deterministic under a pinned zone', () => {
     const instant = Date.UTC(2026, 7, 30, 1, 5)
-    expect(formatDueLabel(instant, Date.now(), UTC)).toBe('2026-08-30 01:05')
+    expect(formatDueLabel(instant, UTC)).toBe('2026-08-30 01:05')
   })
 
   it('toLocalInputValue round-trips through the local parser under the same zone', () => {

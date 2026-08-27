@@ -459,8 +459,11 @@ function renderTodoLine(todo: UserTodoSourceEntry, overdue: boolean): string {
   return parts.join(' ')
 }
 
-/** First publication: full catalog over the open items, or the empty list. */
-function renderTodosMessage(todos: readonly UserTodoSourceEntry[]): UserMessage {
+/**
+ * The catalog over the open items (or the explicit empty list), framed by
+ * the given opening sentence.
+ */
+function renderTodosCatalog(todos: readonly UserTodoSourceEntry[], opening: string): UserMessage {
   const now = Date.now()
   const body = todos.length === 0
     ? 'The list is currently empty.'
@@ -473,7 +476,7 @@ function renderTodosMessage(todos: readonly UserTodoSourceEntry[]): UserMessage 
       type: 'text',
       text: [
         '<system-reminder>',
-        'The user maintains a personal, cross-session todo list. It is user-owned and edited in the UI; treat it as standing context and never modify it.',
+        opening,
         '',
         '<user_todos>',
         body,
@@ -491,21 +494,16 @@ function renderTodosMessage(todos: readonly UserTodoSourceEntry[]): UserMessage 
   })
 }
 
+/** First publication: full catalog framed as the standing context. */
+function renderTodosMessage(todos: readonly UserTodoSourceEntry[]): UserMessage {
+  return renderTodosCatalog(todos, 'The user maintains a personal, cross-session todo list. It is user-owned and edited in the UI; treat it as standing context and never modify it.')
+}
+
 /** Replacement publication after the first: same body, update framing. */
 function renderTodosUpdate(todos: readonly UserTodoSourceEntry[]): UserMessage {
-  const message = renderTodosMessage(todos)
-  const text = message.content[0]
-  const replaced = typeof text === 'object' && text !== null && 'text' in text
-    ? (text as { text: string }).text
-    : ''
+  const message = renderTodosCatalog(todos, 'Updated user todo list (full replacement of the previous catalog):')
   return createUserMessage({
-    content: [{
-      type: 'text',
-      text: replaced.replace(
-        'The user maintains a personal, cross-session todo list.',
-        'Updated user todo list (full replacement of the previous catalog):',
-      ),
-    }],
+    content: message.content,
     source: {
       kind: 'user-todos',
       form: 'catalog-update',

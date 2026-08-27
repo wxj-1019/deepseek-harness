@@ -32,6 +32,11 @@ export const zh = {
   'link.none': '不关联项目',
   'error.load': '加载失败：{message}',
   'error.action': '操作失败：{message}',
+  'error.code.title-blank': '标题不能为空',
+  'error.code.item-not-found': '条目不存在',
+  'error.code.workspace-not-found': '项目不存在',
+  'error.code.session-link-without-workspace': '会话链接必须跟随项目',
+  'error.code.session-not-in-workspace': '会话不属于所选项目',
 } as const
 
 /** English dictionary, key-identical to the Chinese source of truth. */
@@ -63,6 +68,11 @@ export const en: Record<UserTodoKey, string> = {
   'link.none': 'No project',
   'error.load': 'Failed to load: {message}',
   'error.action': 'Action failed: {message}',
+  'error.code.title-blank': 'Title cannot be blank',
+  'error.code.item-not-found': 'Item not found',
+  'error.code.workspace-not-found': 'Project not found',
+  'error.code.session-link-without-workspace': 'A session link needs its project',
+  'error.code.session-not-in-workspace': 'Session is not in the chosen project',
 }
 
 /** Key domain of the `userTodo` namespace (zh is the source of truth). */

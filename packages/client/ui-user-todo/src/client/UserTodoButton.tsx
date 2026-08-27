@@ -39,10 +39,30 @@ export function UserTodoButton(props: UserTodoButtonProps) {
     ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove,
   } = props
   const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove }
+  /** Business-rejection codes the Host can return, mapped to locale keys. */
+  const ERROR_CODES = {
+    'title-blank': 'error.code.title-blank',
+    'item-not-found': 'error.code.item-not-found',
+    'workspace-not-found': 'error.code.workspace-not-found',
+    'session-link-without-workspace': 'error.code.session-link-without-workspace',
+    'session-not-in-workspace': 'error.code.session-not-in-workspace',
+  } as const
   /** Run one verb and surface its rejection text until the next action. */
   const run = (pending: Promise<string | undefined>): void => {
     setActionError(null)
-    void pending.then(message => setActionError(message ?? null))
+    void pending.then((message) => {
+      if (message === undefined) {
+        setActionError(null)
+        return
+      }
+      if (message.startsWith('code:')) {
+        const code = message.slice(5) as keyof typeof ERROR_CODES
+        const key = ERROR_CODES[code]
+        setActionError(key === undefined ? code : t(key))
+        return
+      }
+      setActionError(message)
+    })
   }
   const state = useTodo(current => current)
   const workspaces = useWorkspaces(current => current.items)
@@ -176,7 +196,7 @@ export function UserTodoButton(props: UserTodoButtonProps) {
           title={t('due.open')}
           onClick={() => setDueEditing(dueEditing?.id === item.id ? null : { id: item.id })}
         >
-          {item.dueAt !== undefined ? formatDueLabel(item.dueAt, Date.now()) : t('due.none')}
+          {item.dueAt !== undefined ? formatDueLabel(item.dueAt) : t('due.none')}
         </button>
         {linkedSession !== undefined && (
           <button
@@ -275,7 +295,10 @@ export function UserTodoButton(props: UserTodoButtonProps) {
               onChange={(event) => { setNoteEditing({ id: noteEditing.id, text: event.target.value }) }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) commitNote()
-                if (event.key === 'Escape') setNoteEditing(null)
+                if (event.key === 'Escape') {
+                  event.stopPropagation()
+                  setNoteEditing(null)
+                }
               }}
             />
             <button type="button" className={css.iconAction} aria-label={t('note.save')} onClick={commitNote}>
