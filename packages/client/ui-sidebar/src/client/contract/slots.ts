@@ -27,6 +27,14 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'sidebar.brand.name': { kind: 'single'; scope: 'root'; owner: SidebarBrandNameOwnerProps }
     /**
+     * The pinned-session section between the controls and the browsing
+     * region. Declared by this package's 'sidebar' entry; absent occupants
+     * leave the section unrendered. The occupant receives only the column
+     * state; pinned ids and their sessions arrive through its own inject.
+     */
+    'sidebar.pinned': { kind: 'single'; scope: 'root'; owner: SidebarPinnedOwnerProps }
+
+    /**
      * The workspace/session browsing region: section header, search, the
      * grouped/flat session list, and every workspace dialog. Declared by this
      * package's 'sidebar' entry (declaring is claiming); ui-workspace
@@ -79,6 +87,14 @@ export interface SidebarSettingsOwnerProps {
   wide: boolean
 }
 
+/** Owner share of the pinned-session section occupant. */
+export interface SidebarPinnedOwnerProps {
+  /** Whether the sidebar renders wide content (false = 56px rail). */
+  wide: boolean
+  /** Rail state requests expansion before showing pinned content. */
+  expandSidebar: () => void
+}
+
 /** Owner share of an action rendered beside Settings at the sidebar foot. */
 export interface SidebarFooterActionOwnerProps {
   /** Whether the sidebar renders wide content (false = 56px rail). */
@@ -111,6 +127,7 @@ export type SidebarRootComponentProps =
   & PropsRenderSlots<
     | 'sidebar.brand.mark'
     | 'sidebar.brand.name'
+    | 'sidebar.pinned'
     | 'sidebar.workspaces'
     | 'sidebar.settings'
     | 'sidebar.footer.action'

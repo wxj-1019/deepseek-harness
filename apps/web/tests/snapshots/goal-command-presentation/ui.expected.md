@@ -3,6 +3,7 @@
     - button "workspace" [disabled]
   - img
   - text: Standard mode
+  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -17,6 +18,7 @@
 - textbox "Message the agent"
 - button "Commands":
   - img
+- button "Attach image"
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

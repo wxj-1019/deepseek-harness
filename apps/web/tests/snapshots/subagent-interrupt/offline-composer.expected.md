@@ -5,6 +5,7 @@
     - 'button "Switch subagent: event-sourcing researcher"': event-sourcing researcher
   - img
   - text: Standard mode
+  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -23,6 +24,7 @@
 - textbox "Parent session offline; sending is unavailable but you can still stop the run" [disabled]
 - button "Commands" [disabled]:
   - img
+- button "Attach image" [disabled]
 - 'button "Access mode, current: Custom" [disabled]': Custom
 - button "Stop generating"
 - button "Send message" [disabled]

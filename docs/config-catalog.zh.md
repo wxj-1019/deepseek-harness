@@ -1811,6 +1811,19 @@ export type JournalMode = 'wal' | 'delete' | 'truncate' | 'persist'
 
 来源：[`packages/session/session-persistence-sqlite/src/index.ts:36`](../packages/session/session-persistence-sqlite/src/index.ts)
 
+<a id="deepseek-aidsh-session-pins"></a>
+
+## `@deepseek-ai/dsh-session-pins`
+
+需要：`storageDomain` · `sessionPersistence` · `sessions`
+
+```ts config-catalog
+/** The service takes no composition config. */
+export interface Config {}
+```
+
+来源：[`packages/session/session-pins/src/index.ts:34`](../packages/session/session-pins/src/index.ts)
+
 <a id="deepseek-aidsh-session-projection-cache"></a>
 
 ## `@deepseek-ai/dsh-session-projection-cache`
@@ -3309,6 +3322,7 @@ export interface Config {
 - `@deepseek-ai/dsh-client-ui-plan`（[`packages/client/ui-plan/src/index.ts`](../packages/client/ui-plan/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-reference`（[`packages/client/ui-reference/src/index.ts`](../packages/client/ui-reference/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-renderer`（[`packages/client/ui-renderer/src/index.ts`](../packages/client/ui-renderer/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-session-pins`（[`packages/client/ui-session-pins/src/index.ts`](../packages/client/ui-session-pins/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings`（[`packages/client/ui-settings/src/index.ts`](../packages/client/ui-settings/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings-dev-checks`（[`packages/client/ui-settings-dev-checks/src/index.ts`](../packages/client/ui-settings-dev-checks/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-settings-general`（[`packages/client/ui-settings-general/src/index.ts`](../packages/client/ui-settings-general/src/index.ts)）

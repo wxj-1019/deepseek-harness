@@ -1,0 +1,7 @@
+- region "Pinned sessions":
+  - text: Pinned sessions
+  - list:
+    - listitem:
+      - button "Use the read tool twice"
+      - button "Unpin":
+        - img

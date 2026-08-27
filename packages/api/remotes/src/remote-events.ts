@@ -26,5 +26,6 @@ export const API_REMOTE_FORWARDED_EVENTS = [
   'cordis/inspect-query-resolved',
   'llm/adapters-updated',
   'settings/document-updated',
+  'session-pins/changed',
   'user-todo/changed',
 ] as const

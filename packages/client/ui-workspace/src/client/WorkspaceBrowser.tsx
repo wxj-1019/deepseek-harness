@@ -12,8 +12,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
-  Button, IconCloseFill14, IconPersonalizationOutline16,
-  IconProjectAddOutline16, IconSearchOutline16, Menu, Modal, Tooltip,
+  Button, IconChevronRightOutline14, IconCloseFill14, IconPersonalizationOutline16,
+  IconProjectAddOutline16, IconRefreshOutline14, IconSearchOutline16, Menu, Modal, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type {
   SessionId, SessionListState, SessionSearchResultItem, WorkspaceId, WorkspaceView,
@@ -245,6 +245,61 @@ type SessionTreeProps = Pick<
   onSessionArchive: (sessionId: SessionNode['id']) => void
   /** Session order behavior: fixed after edits, or additionally promoted by user activity. */
   orderBy: SessionOrderBy
+}
+
+/**
+ * The collapsible archived block under the list: sessions hidden from every
+ * grouping surface, restorable in place (their accounting slot never left).
+ */
+function ArchivedSessions({
+  useSessions, open, sessionIds, onUnarchive, t,
+}: {
+  useSessions: WorkspaceBrowserProps['useSessions']
+  open: WorkspaceBrowserProps['open']
+  sessionIds: readonly SessionNode['id'][]
+  onUnarchive: (sessionId: SessionNode['id']) => void
+  t: WorkspaceBrowserProps['t']
+}) {
+  const byId = useSessions(s => s.byId)
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <section className={css.archivedBlock} aria-label={t('archived.label')}>
+      <button
+        type="button"
+        className={css.archivedToggle}
+        aria-expanded={expanded}
+        onClick={() => { setExpanded(value => !value) }}
+      >
+        <IconChevronRightOutline14 />
+        <span>{t('archived.label', { n: sessionIds.length })}</span>
+      </button>
+      {expanded && (
+        <ul className={css.archivedList}>
+          {sessionIds.map(sessionId => (
+            <li key={sessionId} className={css.archivedRow}>
+              <button
+                type="button"
+                className={css.archivedTitle}
+                title={byId[sessionId]?.displayTitle}
+                onClick={() => { open(sessionId) }}
+              >
+                {byId[sessionId]?.displayTitle ?? String(sessionId).slice(0, 8)}
+              </button>
+              <button
+                type="button"
+                className={css.archivedRestore}
+                aria-label={t('archived.restore')}
+                title={t('archived.restore')}
+                onClick={() => { onUnarchive(sessionId) }}
+              >
+                <IconRefreshOutline14 />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
 }
 
 /** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
@@ -756,6 +811,7 @@ export function WorkspaceBrowser({
   deleteWorkspace,
   insertWorkspaceBefore,
   archiveSession,
+  unarchiveSession,
   insertSessionBefore,
   createWorkspace,
   searchSessions,
@@ -969,6 +1025,13 @@ export function WorkspaceBrowser({
   const onSessionArchive = (sessionId: SessionNode['id']) => {
     archiveSession(sessionId).catch((reason: unknown) => {
       console.warn('session archive rejected:', reason)
+    })
+  }
+
+  // Unarchive mirrors archive: non-destructive, dialog-free, console posture.
+  const onSessionUnarchive = (sessionId: SessionNode['id']) => {
+    unarchiveSession(sessionId).catch((reason: unknown) => {
+      console.warn('session unarchive rejected:', reason)
     })
   }
 
@@ -1201,6 +1264,16 @@ export function WorkspaceBrowser({
               />
             ))}
       </div>
+
+      {wide && normalizedQuery === '' && archivedSessionIds.length > 0 && (
+        <ArchivedSessions
+          useSessions={useSessions}
+          open={open}
+          sessionIds={archivedSessionIds}
+          onUnarchive={onSessionUnarchive}
+          t={t}
+        />
+      )}
 
       <Modal
         open={renameTarget !== null}

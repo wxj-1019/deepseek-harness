@@ -98,6 +98,8 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/ui-settings-plugin-inventory': { kind: 'none', reason: 'Browser-side inventory projection; registers nothing model-facing.' },
   'packages/client/ui-settings-dev-checks': { kind: 'none', reason: 'Browser-side settings page for the dev-checks namespace; the switches gate developer-side quality checks and register nothing model-facing.' },
   'packages/client/ui-user-todo': { kind: 'none', reason: 'Browser-side daily-todo surface over the user-todo storage domain; registers nothing model-facing.' },
+  'packages/client/ui-session-pins': { kind: 'none', reason: 'Browser-side pinned-session surfaces (header star, sidebar section) over the session-pins storage domain; registers nothing model-facing.' },
+  'packages/session/session-pins': { kind: 'none', reason: 'Durable pinned-session id set in its own storage domain; user-facing only, never enters a session log or model request.' },
   'packages/client/ui-desktop-notify': { kind: 'none', reason: 'Browser-side notification owner; the completion watcher runs over the sessions-list snapshot feed and fires an OS-level Web Notification — no prompt, message, schema, stream, or tool result reaches the model.' },
   'packages/client/locale': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },
   'packages/client/web': { kind: 'none', reason: 'Browser-side UI plugin layer; registers nothing model-facing.' },

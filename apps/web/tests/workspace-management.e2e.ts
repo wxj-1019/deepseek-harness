@@ -597,6 +597,26 @@ describe('web e2e: workspace management (create / rename / flat view / hover aff
     expect(tripwire.pageErrors).toEqual([])
   }, 90_000)
 
+  it('unarchives the seeded session from the archived block, restoring it in place', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-ws-unarchive'))
+    // The previous leg left the seeded session archived and the list hidden.
+    // The block rows carry their titles; re-read it rather than restating it.
+    const toggle = page.getByRole('button', { name: /^Archived \(\d+\)$/ })
+    await toggle.waitFor({ timeout: 15_000 })
+    await toggle.click()
+    const block = page.getByRole('region', { name: /^Archived/ })
+    const rowTitle = (await block.locator('[class*="archivedTitle"]').first().innerText()).trim()
+    await block.getByRole('button', { name: 'Unarchive' }).click()
+
+    // The restore echo re-accounts the session under Ungrouped; the block
+    // empties and the row is back in the flat-visible tree.
+    await expect.poll(() => page.getByText(rowTitle, { exact: true }).count(), { timeout: 15_000 })
+      .toBeGreaterThanOrEqual(1)
+    await expect.poll(() => toggle.count(), { timeout: 10_000 }).toBe(0)
+    expect([...scaffold.ctx.workspaceRegistry.archivedSessionIds]).toEqual([])
+    expect(tripwire.pageErrors).toEqual([])
+  }, 90_000)
+
   it('opens folders with identical basenames as distinct workspaces', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-ws-duplicate-basename'))
     const firstPath = join(scaffold.workspaceCwd, 'same-basename-a', 'xx')

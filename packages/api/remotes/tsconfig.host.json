@@ -47,6 +47,9 @@
       "path": "../../todo/user-todo"
     },
     {
+      "path": "../../session/session-pins"
+    },
+    {
       "path": "../../runtime-diagnostics/invariants"
     },
     {

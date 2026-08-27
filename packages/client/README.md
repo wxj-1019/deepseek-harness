@@ -43,6 +43,7 @@ The browser side of the dsh web GUI: shell boot, browser-host communication, sha
 | [`ui-plan/`](ui-plan/README.md) | Presents active plan-mode status and its exit control. |
 | [`ui-settings-plugins/`](ui-settings-plugins/README.md) | Owns the Plugins settings section, its tab extension point, and configurable host-plane plugin cards. |
 | [`ui-user-questions/`](ui-user-questions/README.md) | Presents interactive questions requested by the agent. |
+| [`ui-session-pins/`](ui-session-pins/README.md) | Header star toggle and sidebar pinned section over the session-pins storage domain. |
 | [`ui-user-todo/`](ui-user-todo/README.md) | Sidebar-foot daily-todo panel over the user-todo storage domain. |
 | [`ui-message-feedback/`](ui-message-feedback/README.md) | Adds per-message Like/Dislike and note controls to the assistant-actions strip. |
 | [`ui-agent-preset/`](ui-agent-preset/README.md) | Selects a session's agent preset and authors preset compositions. |

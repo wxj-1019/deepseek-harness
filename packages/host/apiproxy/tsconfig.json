@@ -18,6 +18,9 @@
       "path": "../../todo/user-todo"
     },
     {
+      "path": "../../session/session-pins"
+    },
+    {
       "path": "../../credentials/credentials"
     },
     {

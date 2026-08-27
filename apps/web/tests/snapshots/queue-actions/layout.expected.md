@@ -3,6 +3,7 @@
     - button "workspace" [disabled]
   - img
   - text: Standard mode
+  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -24,6 +25,8 @@
   - text: Context injection @deepseek-ai/dsh-system-prompt
 - paragraph: partial
 - status: Deep diving...
+- button "Back to bottom":
+  - img
 - region "To-dos":
   - button "To-dos 1 completed · 1 in progress"
 - img
@@ -38,6 +41,7 @@
 - textbox "Cmd/Ctrl+Enter steers all queued messages"
 - button "Commands":
   - img
+- button "Attach image"
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

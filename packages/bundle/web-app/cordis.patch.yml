@@ -73,6 +73,11 @@
       config:
         modelVisible: true
 
+    # Pinned-session set: durable pin/unpin verbs driving the sidebar's
+    # pinned section (client row `ui-session-pins`).
+    - id: session-pins
+      name: '@deepseek-ai/dsh-session-pins'
+
     # Browser Session export: `/export` command plus the shared download dialog.
     - id: session-log-download
       name: '@deepseek-ai/dsh-session-log-export'
@@ -225,6 +230,11 @@
     # domain (host row `user-todo`).
     - id: ui-user-todo
       name: '@deepseek-ai/dsh-client-ui-user-todo'
+
+    # Session pins: the header star toggle and the sidebar's pinned section
+    # over the session-pins storage domain (host row `session-pins`).
+    - id: ui-session-pins
+      name: '@deepseek-ai/dsh-client-ui-session-pins'
 
     # Dev checks: per-machine switches narrowing the heavy routine quality
     # gates (e2e, coverage, snapshot, doc-sync, pre-push typecheck); the

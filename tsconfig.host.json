@@ -166,6 +166,7 @@
     { "path": "./packages/storage/storage-domain" },
     { "path": "./packages/feedback/message-feedback" },
     { "path": "./packages/todo/user-todo" },
+    { "path": "./packages/session/session-pins" },
     { "path": "./packages/workspace/workspace" },
     { "path": "./packages/session/session-title" },
     { "path": "./packages/session/session-title-llm" },
