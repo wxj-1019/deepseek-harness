@@ -43,13 +43,13 @@ dsh web GUI 的浏览器侧：shell 启动、浏览器与宿主通信、共享 U
 | [`ui-plan/`](ui-plan/README.zh.md) | 展示生效中的 plan mode 状态及其退出控件。 |
 | [`ui-settings-plugins/`](ui-settings-plugins/README.zh.md) | 拥有“插件”设置分区、它的标签页扩展点，以及可配置的宿主平面插件卡片。 |
 | [`ui-user-questions/`](ui-user-questions/README.zh.md) | 展示 agent 请求的交互式问题。 |
+| [`ui-user-todo/`](ui-user-todo/README.zh.md) | 侧栏底部今日待办面板，数据来自 user-todo 存储域。 |
 | [`ui-message-feedback/`](ui-message-feedback/README.zh.md) | 在助手操作条中增加逐条消息的点赞/点踩与备注控件。 |
 | [`ui-agent-preset/`](ui-agent-preset/README.zh.md) | 选择会话的 agent 预设，并编写预设组合。 |
 | [`ui-settings/`](ui-settings/README.zh.md) | 承载设置界面及其扩展区域。 |
 | [`ui-settings-general/`](ui-settings-general/README.zh.md) | 提供常规设置分区。 |
 | [`ui-settings-dev-checks/`](ui-settings-dev-checks/README.zh.md) | 注册“开发检查”设置页，提供按机器的质量门禁开关。 |
 | [`ui-settings-models/`](ui-settings-models/README.zh.md) | 提供模型提供方配置与 DeepSeek 配置引导。 |
-| [`ui-settings-vision-model/`](ui-settings-vision-model/README.zh.md) | 注册“视觉模型”设置页，配置图片请求的路由模型。 |
 | [`ui-settings-mcp/`](ui-settings-mcp/README.zh.md) | 在“插件”设置标签页中渲染 MCP 服务器列表与编辑表单。 |
 | [`ui-settings-plugin-inventory/`](ui-settings-plugin-inventory/README.zh.md) | 向“插件”设置贡献只读的 Host Loader 清单标签页。 |
 

@@ -96,6 +96,7 @@
     "tests/turn-tail-actions.e2e.ts",
     "tests/vision-route.e2e.ts",
     "tests/dev-checks-settings.e2e.ts",
+    "tests/user-todo-panel.e2e.ts",
     "tests/goal-multi-turn-actions.e2e.ts",
     "tests/chat-scroll-fixture.ts",
     "tests/chat-scroll-contract.e2e.ts",

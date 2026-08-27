@@ -66,6 +66,11 @@
       config:
         maxNoteBytes: 8192
 
+    # The user's daily todo list: one flat durable storage domain, edited by
+    # the sidebar-foot button (client row `ui-user-todo`); model-invisible.
+    - id: user-todo
+      name: '@deepseek-ai/dsh-user-todo'
+
     # Browser Session export: `/export` command plus the shared download dialog.
     - id: session-log-download
       name: '@deepseek-ai/dsh-session-log-export'
@@ -214,10 +219,10 @@
     - id: ui-settings-models
       name: '@deepseek-ai/dsh-client-ui-settings-models'
 
-    # The vision-model routing page: one image-capable model pair that
-    # image-bearing requests reroute to (host row `llm-vision-route`).
-    - id: ui-settings-vision-model
-      name: '@deepseek-ai/dsh-client-ui-settings-vision-model'
+    # Daily-todo panel: the sidebar-foot button over the user-todo storage
+    # domain (host row `user-todo`).
+    - id: ui-user-todo
+      name: '@deepseek-ai/dsh-client-ui-user-todo'
 
     # Dev checks: per-machine switches narrowing the heavy routine quality
     # gates (e2e, coverage, snapshot, doc-sync, pre-push typecheck); the

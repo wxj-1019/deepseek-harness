@@ -73,7 +73,7 @@
       name: '@deepseek-ai/dsh-llm-retry'
 
     # Image-bearing requests reroute to the deployment's configured vision
-    # model (`vision-model:` settings section); the web Settings page edits it.
+    # model (`vision-model:` settings section, edited in `$DSH_HOME/settings.yaml`).
     - id: llm-vision-route
       name: '@deepseek-ai/dsh-llm-vision-route'
 

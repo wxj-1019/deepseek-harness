@@ -1,0 +1,24 @@
+- region "Daily todo list":
+  - strong: Today’s todos
+  - text: 1 open
+  - button "Collapse":
+    - img
+  - textbox "Add a todo, Enter to confirm"
+  - button "Add":
+    - img
+  - list:
+    - listitem:
+      - button "Mark as done"
+      - button "Water the plants"
+      - combobox "Linked project":
+        - option "No project" [selected]
+      - button "Delete":
+        - img
+    - listitem:
+      - button "Mark as open":
+        - img
+      - button "Buy milk"
+      - combobox "Linked project":
+        - option "No project" [selected]
+      - button "Delete":
+        - img

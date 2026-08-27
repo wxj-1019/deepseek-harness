@@ -4,6 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto'
+import type {} from '@deepseek-ai/dsh-user-todo/types'
 import { mkdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname } from 'node:path'
