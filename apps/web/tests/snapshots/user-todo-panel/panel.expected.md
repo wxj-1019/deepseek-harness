@@ -10,6 +10,8 @@
     - listitem:
       - button "Mark as done"
       - button "Water the plants"
+      - button "Note":
+        - img
       - combobox "Linked project":
         - option "No project" [selected]
       - button "Delete":
@@ -18,6 +20,8 @@
       - button "Mark as open":
         - img
       - button "Buy milk"
+      - button "Note":
+        - img
       - combobox "Linked project":
         - option "No project" [selected]
       - button "Delete":

@@ -23,6 +23,7 @@ const MODE = webSnapshotMode()
 const TRIGGER = 'Today’s todos'
 const REGION = 'Daily todo list'
 const COMPOSER = 'Add a todo, Enter to confirm'
+const ROW_TEXT = 'Water the plants'
 
 describe('web e2e: daily-todo sidebar panel', () => {
   let scaffold: WebScaffold
@@ -111,6 +112,43 @@ describe('web e2e: daily-todo sidebar panel', () => {
     await composer.fill('Push probe')
     await page.getByRole('region', { name: REGION }).getByRole('button', { name: 'Add', exact: true }).click()
     await expect.poll(async () => regionTwo.getByText('Push probe').count(), { timeout: 10_000 }).toBe(1)
+    expect(tripwire.pageErrors).toEqual([])
+  }, 60_000)
+
+  it('edits a note and both the note and its clearing persist', async () => {
+    onTestFailed(() => saveFailureShot(page, 'web-e2e-user-todo-note'))
+    // The panel is already open on this page from the previous legs.
+    if (await page.getByRole('region', { name: REGION }).count() === 0) await openPanel()
+    const region = page.getByRole('region', { name: REGION })
+
+    // Open the editor on the done row and write a note; Ctrl+Enter commits.
+    await region.getByRole('button', { name: 'Mark as open' }).click()
+    const noteRow = region.locator('li', { hasText: ROW_TEXT })
+    await noteRow.getByRole('button', { name: 'Note', exact: true }).click()
+    const editor = noteRow.getByRole('textbox', { name: 'Note', exact: true })
+    await editor.waitFor({ timeout: 10_000 })
+    await editor.fill('skimmed, 2 percent')
+    await editor.press('Control+Enter')
+
+    // Commit closes the inline editor; the note itself is asserted after reload.
+    await expect.poll(async () =>
+      region.getByRole('textbox', { name: 'Note', exact: true }).count(), { timeout: 10_000 }).toBe(0)
+
+    // The note rides the same durable put as every other verb: a full reload
+    // brings it back, and emptying the editor clears it for good.
+    await page.reload({ waitUntil: 'load' })
+    await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+    await openPanel()
+    const reopened = page.getByRole('region', { name: REGION })
+    const reopenedRow = reopened.locator('li', { hasText: ROW_TEXT })
+    await reopenedRow.getByRole('button', { name: 'Note', exact: true }).click()
+    const reopenedEditor = reopenedRow.getByRole('textbox', { name: 'Note', exact: true })
+    await reopenedEditor.waitFor({ timeout: 10_000 })
+    expect(await reopenedEditor.inputValue()).toBe('skimmed, 2 percent')
+    await reopenedEditor.fill('')
+    await reopenedRow.getByRole('button', { name: 'Save note' }).click()
+    await expect.poll(async () =>
+      reopenedEditor.count(), { timeout: 10_000 }).toBe(0)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 

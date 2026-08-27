@@ -60,6 +60,7 @@ export function apply(ctx: ClientContext): void {
     setWorkspaceLink: (id, workspaceId) => controller.setWorkspaceLink(id, workspaceId),
     setSessionLink: (id, sessionId) => controller.setSessionLink(id, sessionId),
     openSession: (sessionId) => { ctx.sessions.open(sessionId) },
+    setNote: (id, note) => controller.setNote(id, note),
     remove: id => controller.remove(id),
   }
 

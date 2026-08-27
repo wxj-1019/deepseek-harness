@@ -206,6 +206,17 @@ export class UserTodoController implements HostObservable<UserTodoState> {
       remote.put({ id, ...(sessionId === undefined ? {} : { sessionId: sessionId as SessionId }) }))
   }
 
+  /**
+   * Replace an item's note; `null` clears it. An empty submission is the
+   * caller's clear signal, matching the workspace/session link conventions.
+   * @param id - the addressed item.
+   * @param note - the new note text, or null to remove it.
+   * @returns the failure message, or undefined once committed.
+   */
+  async setNote(id: UserTodoId, note: string | null): Promise<string | undefined> {
+    return this.mutate(remote => remote.put({ id, note }))
+  }
+
   async remove(id: UserTodoId): Promise<string | undefined> {
     return this.mutate(remote => remote.delete({ id }))
   }

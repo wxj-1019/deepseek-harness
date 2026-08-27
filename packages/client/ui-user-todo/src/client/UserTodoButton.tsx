@@ -9,8 +9,8 @@
 
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
-  IconCheckOutline14, IconCloseOutline16, IconPlusOutline16, IconRightUpOutline16,
-  IconTrashOutline16, useDismissOnOutsidePointer,
+  IconCheckOutline14, IconCloseOutline16, IconEllipsisOutline16, IconPlusOutline16,
+  IconRightUpOutline16, IconTrashOutline16, useDismissOnOutsidePointer,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UserTodoId, UserTodoRecord } from '@deepseek-ai/dsh-user-todo/types'
@@ -25,7 +25,7 @@ import css from './UserTodoButton.module.css'
 export type UserTodoButtonProps =
   & PropsRuntime<'sidebar.footer.action'>
   & PropsLocale<typeof NS>
-  & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'remove'>
+  & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'setNote' | 'remove'>
   & { useTodo: SnapshotSelectorHook<UserTodoState> }
 
 /**
@@ -36,9 +36,9 @@ export type UserTodoButtonProps =
 export function UserTodoButton(props: UserTodoButtonProps) {
   const {
     wide, useSessions, useWorkspaces, useTodo, t,
-    ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, remove,
+    ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, remove,
   } = props
-  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, remove }
+  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, remove }
   /** Run one verb and surface its rejection text until the next action. */
   const run = (pending: Promise<string | undefined>): void => {
     setActionError(null)
@@ -53,6 +53,7 @@ export function UserTodoButton(props: UserTodoButtonProps) {
   const [draft, setDraft] = useState('')
   const [editing, setEditing] = useState<{ id: UserTodoId; text: string } | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [noteEditing, setNoteEditing] = useState<{ id: UserTodoId; text: string } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   const pendingCount = state.items.reduce((count, item) => count + (item.done ? 0 : 1), 0)
@@ -80,6 +81,20 @@ export function UserTodoButton(props: UserTodoButtonProps) {
     if (title.length === 0) return
     setDraft('')
     run(actions.add(title))
+  }
+
+  /** Commit one row's note editor; an empty text clears the note. */
+  const commitNote = (): void => {
+    if (noteEditing === null) return
+    const { id, text } = noteEditing
+    setNoteEditing(null)
+    const trimmed = text.trim()
+    const current = state.items.find(item => item.id === id)?.note
+    if (trimmed.length === 0) {
+      if (current !== undefined) run(actions.setNote(id, null))
+      return
+    }
+    if (trimmed !== current) run(actions.setNote(id, trimmed))
   }
 
   /** Commit the inline editor of one row. */
@@ -161,6 +176,15 @@ export function UserTodoButton(props: UserTodoButtonProps) {
             <IconRightUpOutline16 />
           </button>
         )}
+        <button
+          type="button"
+          className={noteEditing?.id === item.id ? `${css.iconAction} ${css.noteActive}` : css.iconAction}
+          aria-label={t('note.open')}
+          title={t('note.open')}
+          onClick={() => setNoteEditing(noteEditing?.id === item.id ? null : { id: item.id, text: item.note ?? '' })}
+        >
+          <IconEllipsisOutline16 />
+        </button>
         <select
           className={css.linkSelect}
           aria-label={t('link.label')}
@@ -199,6 +223,26 @@ export function UserTodoButton(props: UserTodoButtonProps) {
         >
           <IconTrashOutline16 />
         </button>
+        {noteEditing?.id === item.id && (
+          <div className={css.noteRow}>
+            <textarea
+              className={css.noteInput}
+              value={noteEditing.text}
+              rows={2}
+              autoFocus
+              placeholder={t('note.placeholder')}
+              aria-label={t('note.open')}
+              onChange={(event) => { setNoteEditing({ id: noteEditing.id, text: event.target.value }) }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) commitNote()
+                if (event.key === 'Escape') setNoteEditing(null)
+              }}
+            />
+            <button type="button" className={css.iconAction} aria-label={t('note.save')} onClick={commitNote}>
+              <IconCheckOutline14 />
+            </button>
+          </div>
+        )}
       </li>
     )
   }

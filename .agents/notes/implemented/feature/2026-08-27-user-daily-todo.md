@@ -46,7 +46,7 @@ Rows link to a workspace and one of its accounted sessions: the panel offers bot
 - A session link survives the linked session's deletion (ids only, no lifecycle fence), mirroring the workspace registry's own accounting; a future cleanup sweep would be a host-side change.
 - Multi-window convergence costs one allowlist entry and a refetch convention — no delta protocol, no polling.
 - The session picker and the earlier-completed history shipped in the same iteration as the panel because both read state the client already holds (the workspaces kit and the durable list); neither needed a wire or schema change.
-- Model visibility and reminders remain open as separately scoped work; note editing is the next small additive surface.
+- Model visibility and reminders remain open as separately scoped work; note editing shipped as the small additive surface it promised to be — the Host put semantics (explicit `null` clears) needed no change.
 
 ## Risks
 

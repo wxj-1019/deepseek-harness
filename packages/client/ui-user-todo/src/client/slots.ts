@@ -35,6 +35,8 @@ export interface UserTodoInjected {
   setSessionLink(id: UserTodoId, sessionId: string | undefined): Promise<string | undefined>
   /** Click-through: bring the linked session to the foreground. */
   openSession(sessionId: SessionId): void
+  /** Replace an item's note; null clears it. */
+  setNote(id: UserTodoId, note: string | null): Promise<string | undefined>
   /** Delete one item. */
   remove(id: UserTodoId): Promise<string | undefined>
 }

@@ -114,8 +114,32 @@
 .row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 3px 2px;
+}
+
+.noteActive {
+  opacity: 1;
+  color: var(--dsw-accent-text, #7aa2ff);
+}
+
+.noteRow {
+  display: flex;
+  flex: 1 0 100%;
+  gap: 6px;
+}
+
+.noteInput {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
+  border-radius: var(--dsw-radius-sm, 6px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  resize: vertical;
 }
 
 .rowDone .title {
