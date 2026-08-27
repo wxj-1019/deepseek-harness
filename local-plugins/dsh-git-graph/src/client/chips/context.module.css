@@ -566,12 +566,16 @@ body[data-ds-dark-theme] .searchBox {
   margin-top: 2px;
 }
 
+/* One graph row = fixed height, single line: lane SVG + truncating subject
+   + ref badges + author·time right-aligned. The fixed height keeps the lane
+   geometry even (wrapping text would stretch rows and the graph with them). */
 .graphRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  border-radius: 8px;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
   font-size: 12px;
 }
 
@@ -579,53 +583,34 @@ body[data-ds-dark-theme] .searchBox {
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
-.graphLanes {
-  display: flex;
+.graphLaneSvg {
   flex: none;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--dsw-alias-label-tertiary);
+  display: block;
+  overflow: visible;
 }
 
-.graphLaneCell {
-  display: inline-block;
-  width: 15px;
-  text-align: center;
-  flex: none;
+.graphLaneSvg path {
+  stroke: currentColor;
 }
 
-.graphLaneNode {
-  color: var(--dsw-alias-brand-primary);
-  font-weight: 700;
+.graphLaneSvg circle {
+  fill: currentColor;
 }
 
-.graphLaneMerge {
-  color: var(--dsw-alias-brand-primary);
-  font-weight: 700;
-}
-
-.graphLanePass {
-  color: var(--dsw-alias-label-tertiary);
-}
-
-.graphOid {
-  flex: none;
-  min-width: 58px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 11px;
-  color: var(--dsw-alias-label-tertiary);
-}
-
-.graphMain {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+/* Lane palette — the same eight mid-saturation hues the sidebar SCM panel
+   uses, readable on both themes. */
+.graphC0 { color: #4a91ef; }
+.graphC1 { color: #b07cf0; }
+.graphC2 { color: #2fbfb2; }
+.graphC3 { color: #57a34a; }
+.graphC4 { color: #d3a13c; }
+.graphC5 { color: #e06c75; }
+.graphC6 { color: #e291c8; }
+.graphC7 { color: #7f93a8; }
 
 .graphSubject {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -635,12 +620,14 @@ body[data-ds-dark-theme] .searchBox {
 }
 
 .graphMeta {
+  flex: none;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 6px;
+  gap: 6px;
   color: var(--dsw-alias-label-tertiary);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .graphMetaSep {
@@ -663,6 +650,17 @@ body[data-ds-dark-theme] .searchBox {
 .graphRefCurrent {
   background: var(--dsw-alias-brand-primary);
   color: var(--dsw-alias-button-contrast-fill);
+}
+
+.graphRefHead {
+  background: var(--dsw-alias-state-business-primary, #4a91ef);
+  color: var(--dsw-alias-button-contrast-fill, #fff);
+}
+
+.graphRefRemote {
+  background: transparent;
+  border: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
 }
 
 /* Stock light fallback: BranchChip marks the unskinned light page at
