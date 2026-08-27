@@ -1,5 +1,5 @@
-// Web e2e journey: vision-model routing. The Settings page configures the
-// vision route (provider + model over the image-capable catalog), the
+// Web e2e journey: vision-model routing. The journey configures the vision
+// route over the `vision-model` settings namespace (provider + model), the
 // configured route reroutes the first image-bearing request to the vision
 // model, and the session stays on that model afterwards — its history now
 // carries the image, which a text-only adapter rejects. Zero-model-call
@@ -14,14 +14,13 @@ import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
 import type { ReplayProviderConfig } from '@deepseek-ai/dsh-llm-replay'
 import {
-  assertFixtureInventory, captureStableAria, compareOrRefreshGolden, fixtureUserPrompts,
-  launchWebScaffold, recordFixture, watchConsole, webSnapshotMode, type WebScaffold,
+  assertFixtureInventory, fixtureUserPrompts, launchWebScaffold, recordFixture,
+  watchConsole, webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
 import { connectFreshWorkspace, newEnglishPage, saveFailureShot } from './support.ts'
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/vision-route', import.meta.url))
 const FIXTURE = join(SNAPSHOT_DIR, 'session.jsonl')
-const SETTINGS_EXPECTED = join(SNAPSHOT_DIR, 'settings.expected.md')
 const MODE = webSnapshotMode()
 
 /**
@@ -90,6 +89,12 @@ describe('web e2e: vision-model routing', () => {
         await new Promise(resolve => setTimeout(resolve, 200))
       }
     }
+    // The vision route is the deployment's `vision-model` namespace pair; the
+    // routing plugin converges on it without a restart.
+    await scaffold.ctx.settings.replace('vision-model', {
+      provider: 'qwen-dashscope',
+      model: 'qwen3-vl-plus',
+    })
     scaffold.ctx.on('session/event', (_session, event: SessionEvent) => { sessionEvents.push(event) })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
@@ -102,49 +107,6 @@ describe('web e2e: vision-model routing', () => {
   afterAll(async () => {
     await browser?.close()
     await scaffold?.close()
-  })
-
-  it('configures the vision model in Settings and it persists', async () => {
-    onTestFailed(() => saveFailureShot(page, 'web-e2e-vision-settings'))
-    await page.getByRole('button', { name: 'Settings', exact: true }).click()
-    const dialog = page.getByRole('dialog', { name: 'Settings' })
-    await dialog.waitFor({ timeout: 10_000 })
-    await dialog.getByRole('button', { name: 'Vision model' }).click()
-    // Only image-capable models are selectable: qwen3-vl-plus under the
-    // qwen-dashscope provider (the text-only DeepSeek route is absent).
-    const provider = dialog.getByRole('combobox', { name: 'Provider' })
-    await provider.waitFor({ timeout: 10_000 })
-    await expect.poll(async () => provider.locator('option[value="qwen-dashscope"]').count(), {
-      timeout: 10_000,
-    }).toBe(1)
-    await provider.selectOption('qwen-dashscope')
-    const model = dialog.getByRole('combobox', { name: 'Model' })
-    await expect.poll(async () => model.locator('option[value="qwen3-vl-plus"]').count(), {
-      timeout: 10_000,
-    }).toBe(1)
-    await model.selectOption('qwen3-vl-plus')
-    await dialog.getByRole('button', { name: 'Save', exact: true }).click()
-    await expect.poll(async () => {
-      const document = await readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8')
-      return document.includes('vision-model:') && document.includes('qwen3-vl-plus')
-    }, { timeout: 15_000 }).toBe(true)
-    await page.keyboard.press('Escape')
-    await expect.poll(() => page.getByRole('dialog').count(), { timeout: 10_000 }).toBe(0)
-  }, 60_000)
-
-  it.skipIf(MODE === 'record')('pins the configured Vision model page', async () => {
-    await page.getByRole('button', { name: 'Settings', exact: true }).click()
-    const dialog = page.getByRole('dialog', { name: 'Settings' })
-    await dialog.waitFor({ timeout: 10_000 })
-    await dialog.getByRole('button', { name: 'Vision model' }).click()
-    // The section loads asynchronously; the golden must pin the ready state
-    // (enabled selects over the stored route), not the loading skeleton.
-    const provider = dialog.getByRole('combobox', { name: 'Provider' })
-    await expect.poll(async () => provider.isEnabled(), { timeout: 10_000 }).toBe(true)
-    const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
-    await compareOrRefreshGolden(SETTINGS_EXPECTED, snapshot, MODE)
-    await page.keyboard.press('Escape')
-    await expect.poll(() => page.getByRole('dialog').count(), { timeout: 10_000 }).toBe(0)
   })
 
   it('routes the image-bearing turn to the vision model and the session stays there', async () => {
@@ -204,6 +166,6 @@ describe('web e2e: vision-model routing', () => {
   }, 300_000)
 
   it.skipIf(MODE === 'record')('keeps the fixture inventory closed', async () => {
-    await assertFixtureInventory(SNAPSHOT_DIR, ['session.jsonl', 'settings.expected.md'])
+    await assertFixtureInventory(SNAPSHOT_DIR, ['session.jsonl'])
   })
 })

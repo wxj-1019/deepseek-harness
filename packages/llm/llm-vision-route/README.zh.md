@@ -4,7 +4,7 @@
 
 功能插件：通过 agent 循环的 `agent/pre-step` 与 `agent/request` 瀑布，把携带图片的请求路由到部署配置的识图模型。它不包装 `ctx.llm.stream()`，也从不修改消息：循环在 `request/header` 和每条 `assistant/message` 的 source 中记录实际生效的 provider/model，因此路由始终可从会话日志重建。
 
-配置位于 `vision-model` 设置命名空间（`provider` + `model`），由 Web UI 的"识图模型"页面（`@deepseek-ai/dsh-client-ui-settings-vision-model`）编辑。未配置时插件保持惰性，携带图片的请求维持原有的拒绝行为（`MODEL_DOES_NOT_SUPPORT_IMAGES`）。
+配置位于 `vision-model` 设置命名空间（`provider` + `model`），在 `$DSH_HOME/settings.yaml` 中编辑。未配置时插件保持惰性，携带图片的请求维持原有的拒绝行为（`MODEL_DOES_NOT_SUPPORT_IMAGES`）。
 
 配置后，第一个步骤消息携带图片块的回合会把请求路由到识图模型——插件通过 `ctx.llm` 解析精确路由，拒绝路由到未声明图片输入的模型，其余情况保持会话模型不变。会话随后停留在识图模型上：会话历史已包含图片，纯文本适配器会拒绝基于该历史的后续请求（`UNSUPPORTED_CONTENT`），这与 `selectModel` 的既有护栏（"会话已包含图片"）是同一不变量。会话模型本身已声明图片输入时无需路由；不含图片的新会话仍从自身模型开始。
 
@@ -41,5 +41,5 @@ vision-model:
 ## 已知限制与待办
 
 - **首个图片之后路由为会话级持久**——后续请求的消息历史始终携带该图片，纯文本会话模型无法再次服务该会话；请将会话切换到支持图片的模型。
-- **识图路由是单个 provider/model 对**——Web UI 页面从实时目录列出支持图片的模型；没有按会话的识图覆盖。
+- **识图路由是单个 provider/model 对**——被路由的模型必须在目录条目或路由档案中声明图片输入；没有按会话的识图覆盖。
 - **能力是声明而非探测**——声明支持图片但端点拒绝图片的模型会在适配器边界失败，与 pi-ai 的通用契约一致。

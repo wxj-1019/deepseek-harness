@@ -7,9 +7,6 @@
     - button "Models":
       - img
       - text: Models
-    - button "Vision model":
-      - img
-      - text: Vision model
     - button "Dev checks":
       - img
       - text: Dev checks
@@ -19,6 +16,7 @@
     - button "Agent presets":
       - img
       - text: Agent presets
+    - button "Side card"
   - button "Open configuration file"
   - button "Close":
     - img

@@ -7,9 +7,6 @@
     - button "Models":
       - img
       - text: Models
-    - button "Vision model":
-      - img
-      - text: Vision model
     - button "Dev checks":
       - img
       - text: Dev checks
@@ -19,6 +16,7 @@
     - button "Agent presets":
       - img
       - text: Agent presets
+    - button "Side card"
   - button "Open configuration file"
   - button "Close":
     - img
@@ -82,3 +80,5 @@
   - button "Queue":
     - text: Queue
     - img
+  - text: "Desktop notification on completion Pop a system desktop notification when a task finishes while you are not watching that session; click it to jump to the session The browser denied notification permission: re-enable it in the site settings beside the address bar first"
+  - button "Desktop notification on completion": "Off"

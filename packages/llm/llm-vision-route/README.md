@@ -4,7 +4,7 @@ English | [中文](README.zh.md)
 
 Function plugin that routes image-bearing requests to a deployment-configured vision model through the agent loop's `agent/pre-step` and `agent/request` waterfalls. It does not wrap `ctx.llm.stream()` and never mutates messages: the loop logs the effective provider/model in `request/header` and each `assistant/message` source, so routing stays reconstructable from the session log.
 
-The configuration is the `vision-model` settings namespace (`provider` + `model`), edited by the Web UI's Vision model page (`@deepseek-ai/dsh-client-ui-settings-vision-model`). While unconfigured, the plugin is inert and image-bearing requests keep the existing refusal behavior (`MODEL_DOES_NOT_SUPPORT_IMAGES`).
+The configuration is the `vision-model` settings namespace (`provider` + `model`), edited in `$DSH_HOME/settings.yaml`. While unconfigured, the plugin is inert and image-bearing requests keep the existing refusal behavior (`MODEL_DOES_NOT_SUPPORT_IMAGES`).
 
 Once configured, the first turn whose step messages carry an image block routes the request to the vision model — the plugin resolves the exact route through `ctx.llm` and refuses to route to a model that does not declare image input, keeping the session model otherwise. The session then stays on the vision model: the session history now contains the image, and a text-only adapter rejects any later request over that history (`UNSUPPORTED_CONTENT`), the same invariant as the `selectModel` guard ("session already contains images"). A session model that already declares image input needs no routing; a fresh session without images starts on its own model.
 
@@ -41,5 +41,5 @@ Routed requests preserve the conversation prefix and are eligible for provider c
 ## Known Limitations and Deferred Work
 
 - **Routing is session-persistent after the first image** — a later request always carries the image in its message history, so a text-only session model cannot serve the session again; switch the session to an image-capable model instead.
-- **The vision route is one provider/model pair** — the Web UI page lists image-capable models from the live catalog; there is no per-session vision override.
+- **The vision route is one provider/model pair** — the routed model must declare image input in its catalog entry or route profile; there is no per-session vision override.
 - **Capability is a declaration, not a probe** — a model that declares image input but whose endpoint refuses images fails at the adapter boundary, matching the general pi-ai contract.

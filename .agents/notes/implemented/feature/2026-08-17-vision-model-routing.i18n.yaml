@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-17-vision-model-routing.md
-2026-08-17-vision-model-routing.md: 249cf5e4b49f3dcccd818439eda530fe76f4ccb4
-2026-08-17-vision-model-routing.zh.md: 12e0bfab8ae8b64844325a452d59b3ed48d1d3fe
+2026-08-17-vision-model-routing.md: 0ec5bbf81c7c063f92de7102b339458d35a8f6dd
+2026-08-17-vision-model-routing.zh.md: d8b9a6324b903d9b6a2d77351a5b4fef4cb10985
