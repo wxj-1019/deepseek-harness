@@ -19,7 +19,8 @@ import type { UserTodoInjected } from './slots.ts'
 import { en, zh, type UserTodoKey } from './locales.ts'
 
 export type { UserTodoController, UserTodosRemoteFace } from './controller.ts'
-export type { todayItems, UserTodoButtonProps } from './UserTodoButton.tsx'
+export type { UserTodoButtonProps } from './UserTodoButton.tsx'
+export { earlierCompleted, todayItems } from './view.ts'
 export type { localDayKey, sameLocalDay } from './day.ts'
 export type { UserTodoInjected } from './slots.ts'
 export type { UserTodoKey } from './locales.ts'
@@ -57,6 +58,8 @@ export function apply(ctx: ClientContext): void {
     toggle: (id, done) => controller.toggle(id, done),
     retitle: (id, title) => controller.retitle(id, title),
     setWorkspaceLink: (id, workspaceId) => controller.setWorkspaceLink(id, workspaceId),
+    setSessionLink: (id, sessionId) => controller.setSessionLink(id, sessionId),
+    openSession: (sessionId) => { ctx.sessions.open(sessionId) },
     remove: id => controller.remove(id),
   }
 

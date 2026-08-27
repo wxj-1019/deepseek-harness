@@ -25,7 +25,7 @@ harness 里没有任何地方安放用户自己的任务。现有所有"任务�
 
 该清单只面向用户：模型不可见。任何内容都不进会话日志，也不存在对应工具；模型可见性留作单独立项的未来决策，因为那会触发"模型可见 ⟺ 已记录"规则与双 SDK 投影。"天"的语义完全在客户端：宿主只存一个扁平集合、没有任何按天簿记；面板把"今日"派生为未完成条目加今天完成的条目；本地日期归桶是浏览器时钟上的纯函数；未完成条目从创建日起结转，已完成条目留在完成当天。
 
-web 通道经组装应用覆盖该表面：`apps/web/tests/user-todo-panel.e2e.ts` 新增条目、完成它、验证两者在一次整页 reload 后仍在、经推送的 `user-todo/changed` 事件收敛第二个窗口，并钉住开面板快照（`snapshots/user-todo-panel/panel.expected.md`）。单元套件在真实存储栈上钉住服务行为（`packages/todo/user-todo/tests/user-todo.spec.ts`，含重启持久与链接拒绝），以及参数化的日期归桶——跨午夜、时区偏移、进程跨多日存活（`packages/client/ui-user-todo/tests/day.client.spec.ts`）。
+行可链接到项目与其下某个会话：面板提供两个选择器，每次 put 都由宿主重新校验成员关系，链接会话后出现直达按钮；可折叠区按本地完成日期标注展示更早的完成项。web 通道经组装应用覆盖该表面：`apps/web/tests/user-todo-panel.e2e.ts` 新增条目、完成它、验证两者在一次整页 reload 后仍在、经推送的 `user-todo/changed` 事件收敛第二个窗口，并钉住开面板快照（`snapshots/user-todo-panel/panel.expected.md`）。单元套件在真实存储栈上钉住服务行为（`packages/todo/user-todo/tests/user-todo.spec.ts`，含重启持久与链接拒绝），以及参数化的日期归桶——跨午夜、时区偏移、进程跨多日存活（`packages/client/ui-user-todo/tests/day.client.spec.ts`）。
 
 ## 考虑过的替代方案
 
@@ -45,7 +45,8 @@ web 通道经组装应用覆盖该表面：`apps/web/tests/user-todo-panel.e2e.t
 - 宿主不存任何"天"状态，因此午夜与时区正确性集中在一个纯客户端函数里，而不是持久簿记中。
 - 会话链接在被链接会话删除后仍然保留（只存 id、无生命周期栅栏），与 workspace 注册表自己的记账方式一致；未来的清理扫描会是宿主侧改动。
 - 多窗口收敛的代价是一条白名单加一个重拉约定——没有增量协议，没有轮询。
-- 模型可见性、面板内的会话链接选择器、已完成历史视图与提醒仍作为单独立项的开放工作；数据模型已带 `sessionId`，选择器是纯增量。
+- 会话选择器与更早完成历史与面板同轮交付，因为二者读取的都是客户端已持有的状态（workspaces kit 与持久清单）；线路与 schema 均无改动。
+- 模型可见性与提醒仍作为单独立项的开放工作；备注编辑是下一个小的增量表面。
 
 ## 风险
 

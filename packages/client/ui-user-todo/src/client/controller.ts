@@ -194,6 +194,18 @@ export class UserTodoController implements HostObservable<UserTodoState> {
    * @param id - the addressed item.
    * @returns the failure message, or undefined once committed.
    */
+  /**
+   * Set or clear the session link of an item that already carries a
+   * workspace link. The Host revalidates membership on every put.
+   * @param id - the addressed item.
+   * @param sessionId - the session to link, or undefined to clear.
+   * @returns the failure message, or undefined once committed.
+   */
+  async setSessionLink(id: UserTodoId, sessionId: string | undefined): Promise<string | undefined> {
+    return this.mutate(remote =>
+      remote.put({ id, ...(sessionId === undefined ? {} : { sessionId: sessionId as SessionId }) }))
+  }
+
   async remove(id: UserTodoId): Promise<string | undefined> {
     return this.mutate(remote => remote.delete({ id }))
   }

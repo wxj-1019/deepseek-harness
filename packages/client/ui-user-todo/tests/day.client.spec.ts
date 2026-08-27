@@ -7,6 +7,19 @@
 
 import { describe, expect, it } from 'vitest'
 import { localDayKey, sameLocalDay } from '../src/client/day.ts'
+import { earlierCompleted, todayItems } from '../src/client/view.ts'
+
+const DAY = (utcIso: string): number => Date.parse(utcIso)
+
+type Row = Parameters<typeof todayItems>[0][number]
+
+const item = (id: string, over: Partial<Row> = {}): Row => ({
+  id: over.id ?? (id as Row['id']),
+  title: `t-${id}`,
+  done: false,
+  createdAt: DAY('2026-08-20T08:00:00Z'),
+  ...over,
+})
 
 const UTC = 'UTC'
 const SHANGHAI = 'Asia/Shanghai'
@@ -43,5 +56,42 @@ describe('local day key', () => {
     const instant = Date.UTC(2026, 7, 27, 12)
     expect(localDayKey(instant, UTC)).toBe(localDayKey(instant, UTC))
     expect(sameLocalDay(instant, instant + 1, UTC)).toBe(true)
+  })
+})
+
+
+describe('panel view derivations', () => {
+  const now = DAY('2026-08-27T12:00:00Z')
+
+  it("todayItems carries open items and keeps only today's completions", () => {
+    const items = [
+      item('a'),
+      item('b', { done: true, completedAt: DAY('2026-08-27T09:00:00Z') }),
+      item('c', { done: true, completedAt: DAY('2026-08-25T09:00:00Z') }),
+    ]
+    const view = todayItems(items, now, 'UTC')
+    expect(view.map(entry => entry.id)).toEqual(['a', 'b'])
+  })
+
+  it('earlierCompleted is the complement: prior-day completions, newest first', () => {
+    const items = [
+      item('old-1', { done: true, completedAt: DAY('2026-08-25T09:00:00Z') }),
+      item('old-2', { done: true, completedAt: DAY('2026-08-26T18:00:00Z') }),
+      item('today', { done: true, completedAt: DAY('2026-08-27T09:00:00Z') }),
+      item('open'),
+    ]
+    const view = earlierCompleted(items, now, 'UTC')
+    expect(view.map(entry => entry.id)).toEqual(['old-2', 'old-1'])
+    expect(todayItems(items, now, 'UTC').map(entry => entry.id)).toEqual(['open', 'today'])
+  })
+
+  it('the two derivations partition the list exactly', () => {
+    const items = [
+      item('a'),
+      item('b', { done: true, completedAt: DAY('2026-08-27T09:00:00Z') }),
+      item('c', { done: true, completedAt: DAY('2026-08-25T09:00:00Z') }),
+    ]
+    const combined = [...todayItems(items, now, 'UTC'), ...earlierCompleted(items, now, 'UTC')]
+    expect(new Set(combined.map(entry => entry.id))).toEqual(new Set(['a', 'b', 'c']))
   })
 })

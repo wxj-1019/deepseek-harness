@@ -24,4 +24,4 @@ None; the package never assembles or sends provider requests.
 
 - **No compare-and-set** — single-user edits race only with themselves across devices; a lost multi-window race converges on the next refetch rather than surfacing a conflict.
 - **Session links are not lifecycle-fenced** — deleting a linked session leaves the reference in place, mirroring how the workspace registry keeps sessions it cannot revalidate.
-- **No history view** — completed items from earlier days are durable but not yet surfaced anywhere.
+- **History is a client concern** — earlier completions are durable and surfaced by the web panel's history section; a CLI or other surface would own its own projection.

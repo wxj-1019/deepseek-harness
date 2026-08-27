@@ -8,6 +8,7 @@
 
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UserTodoId } from '@deepseek-ai/dsh-user-todo/types'
+import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { UserTodoState } from './controller.ts'
 
 /** Full injected share handed to the slot entry's component. */
@@ -30,6 +31,10 @@ export interface UserTodoInjected {
   retitle(id: UserTodoId, title: string): Promise<string | undefined>
   /** Set (`id`) or clear (`undefined`) the item's workspace link. */
   setWorkspaceLink(id: UserTodoId, workspaceId: string | undefined): Promise<string | undefined>
+  /** Set (`id`) or clear (`undefined`) the item's session link inside its workspace. */
+  setSessionLink(id: UserTodoId, sessionId: string | undefined): Promise<string | undefined>
+  /** Click-through: bring the linked session to the foreground. */
+  openSession(sessionId: SessionId): void
   /** Delete one item. */
   remove(id: UserTodoId): Promise<string | undefined>
 }

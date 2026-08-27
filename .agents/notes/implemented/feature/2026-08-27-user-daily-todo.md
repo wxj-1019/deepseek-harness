@@ -25,7 +25,7 @@ An item carries a required non-blank title, an optional note, `done` with `compl
 
 The list is user-facing only: the model never sees it. Nothing enters a session log, and no tool exists for it; model visibility stays a separately scoped future decision because it would trigger the model-visible ⟺ logged rule plus both SDK projections. Day semantics live entirely in the client: the Host stores a flat set with no per-day bookkeeping, the panel derives "today" as open items plus items completed today, local day bucketing is a pure function of the browser's clock, and open items carry over from their creation day while completed items stay on their completion day.
 
-The web lane covers the surface through the assembled app: `apps/web/tests/user-todo-panel.e2e.ts` adds an item, completes it, verifies both survive a full page reload, converges a second window through the pushed `user-todo/changed` event, and pins the open-panel snapshot (`snapshots/user-todo-panel/panel.expected.md`). Unit suites pin the service behavior over the real storage stack (`packages/todo/user-todo/tests/user-todo.spec.ts`, restart durability and link rejections included) and the parameterized day bucketing — midnight crossing, time-zone offsets, multi-day process lifetime (`packages/client/ui-user-todo/tests/day.client.spec.ts`).
+Rows link to a workspace and one of its accounted sessions: the panel offers both pickers, revalidates membership through the Host on every put, and grows an open affordance once a session is linked; a collapsible section surfaces earlier completions, dated by their local completion day. The web lane covers the surface through the assembled app:The web lane covers the surface through the assembled app: `apps/web/tests/user-todo-panel.e2e.ts` adds an item, completes it, verifies both survive a full page reload, converges a second window through the pushed `user-todo/changed` event, and pins the open-panel snapshot (`snapshots/user-todo-panel/panel.expected.md`). Unit suites pin the service behavior over the real storage stack (`packages/todo/user-todo/tests/user-todo.spec.ts`, restart durability and link rejections included) and the parameterized day bucketing — midnight crossing, time-zone offsets, multi-day process lifetime (`packages/client/ui-user-todo/tests/day.client.spec.ts`).
 
 ## Alternatives considered
 
@@ -45,7 +45,8 @@ The web lane covers the surface through the assembled app: `apps/web/tests/user-
 - The host stores no day state, so midnight and time-zone correctness concentrate in one pure client function rather than in durable bookkeeping.
 - A session link survives the linked session's deletion (ids only, no lifecycle fence), mirroring the workspace registry's own accounting; a future cleanup sweep would be a host-side change.
 - Multi-window convergence costs one allowlist entry and a refetch convention — no delta protocol, no polling.
-- Model visibility, a session-link picker in the panel, a completed-history view, and reminders remain open as separately scoped work; the data model already carries `sessionId` so the picker is additive.
+- The session picker and the earlier-completed history shipped in the same iteration as the panel because both read state the client already holds (the workspaces kit and the durable list); neither needed a wire or schema change.
+- Model visibility and reminders remain open as separately scoped work; note editing is the next small additive surface.
 
 ## Risks
 
