@@ -78,6 +78,20 @@
     - id: session-pins
       name: '@deepseek-ai/dsh-session-pins'
 
+    # In-app notification center: durable entries from completions,
+    # approvals, jobs, and schedule dispatches (client row
+    # `ui-notification-center`).
+    - id: notification-center
+      name: '@deepseek-ai/dsh-notification-center'
+
+    # Durable reminders: the official web overlay rows (time-context feeds
+    # the model the request-local zone; schedule owns the durable state).
+    - id: time-context
+      name: '@deepseek-ai/dsh-time-context'
+
+    - id: schedule
+      name: '@deepseek-ai/dsh-schedule'
+
     # Browser Session export: `/export` command plus the shared download dialog.
     - id: session-log-download
       name: '@deepseek-ai/dsh-session-log-export'
@@ -235,6 +249,11 @@
     # over the session-pins storage domain (host row `session-pins`).
     - id: ui-session-pins
       name: '@deepseek-ai/dsh-client-ui-session-pins'
+
+    # Notification center: the bell at the sidebar foot plus the overlay
+    # panel (shell.overlay's first occupant) over the notifications domain.
+    - id: ui-notification-center
+      name: '@deepseek-ai/dsh-client-ui-notification-center'
 
     # Dev checks: per-machine switches narrowing the heavy routine quality
     # gates (e2e, coverage, snapshot, doc-sync, pre-push typecheck); the

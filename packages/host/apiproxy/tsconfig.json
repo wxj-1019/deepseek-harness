@@ -21,6 +21,9 @@
       "path": "../../session/session-pins"
     },
     {
+      "path": "../../interaction/notification-center"
+    },
+    {
       "path": "../../credentials/credentials"
     },
     {

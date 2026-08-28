@@ -17,6 +17,10 @@
   - img
   - img
   - text: Context injection @deepseek-ai/dsh-system-prompt
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - button "Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package.":
   - img
   - img
@@ -25,6 +29,10 @@
   - img
   - img
   - text: "Tool call cordis_inspect_self · {}"
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - button "Think No dynamic Plugins are present, so I will define the requested Host and Client Package.":
   - img
   - img
@@ -41,6 +49,10 @@
   - code: "return { name: \"snapshot-noop\", apply(ctx) {} }"
 - text: Result Defined snap-1/pkg-1 (snapshot noop); it is not running yet. Use cordis_run to activate this Package. Run controls live in the Cordis panel above Settings
 - button "Inspect"
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - button "Think The Host returned snap-1/pkg-1, so I will request its first activation.":
   - img
   - img
@@ -49,6 +61,10 @@
 - text: Run Cordis Plugin snap-1 · pkg-1 Ready
 - button "Inspect"
 - text: snap-1/pkg-1 is awaiting user approval (run-1).
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - button "Think The activation request has been submitted, so I will return the requested readiness marker.":
   - img
   - img
@@ -67,6 +83,10 @@
   - img
   - img
   - text: Context injection cordis-host-runner
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - paragraph: The Cordis Plugin is running.
 - button "Copy":
   - img
@@ -79,10 +99,18 @@
 - text: {{clock}} Ran for {{duration}} Use only Cordis tools. Call cordis_stop with pluginId "snap-1". After it succeeds, reply exactly CORDIS_UI_DONE and stop. {{clock}}
 - button "Copy":
   - img
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - img
 - text: Stop Cordis Plugin snap-1
 - button "Inspect"
 - text: Dynamic Plugin snap-1 is stopped; its definition and versions remain.
+- button "Context injection time-context":
+  - img
+  - img
+  - text: Context injection time-context
 - paragraph: CORDIS_UI_DONE
 - button "Copy":
   - img

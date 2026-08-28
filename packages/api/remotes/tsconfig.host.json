@@ -50,6 +50,9 @@
       "path": "../../session/session-pins"
     },
     {
+      "path": "../../interaction/notification-center"
+    },
+    {
       "path": "../../runtime-diagnostics/invariants"
     },
     {

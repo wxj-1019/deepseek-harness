@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { availableParallelism } from 'node:os'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
@@ -28,7 +29,7 @@ const snapshotMaxConcurrency = positiveIntFromEnv(
 // environment or root `.env`.
 if (process.env.DSH_SNAPSHOT === 'record') {
   try {
-    process.loadEnvFile(new URL('.env', import.meta.url).pathname)
+    process.loadEnvFile(fileURLToPath(new URL('.env', import.meta.url)))
   } catch (error) {
     // ENOENT (no .env) is fine — the key may already be in the environment.
     // Surface any other failure rather than silently recording with wrong env.

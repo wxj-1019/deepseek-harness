@@ -27,5 +27,6 @@ export const API_REMOTE_FORWARDED_EVENTS = [
   'llm/adapters-updated',
   'settings/document-updated',
   'session-pins/changed',
+  'notifications/changed',
   'user-todo/changed',
 ] as const

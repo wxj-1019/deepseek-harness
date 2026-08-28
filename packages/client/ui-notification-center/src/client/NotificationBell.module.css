@@ -1,0 +1,43 @@
+.bellWide,
+.bellRail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dsw-space-2, 6px);
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.78;
+  border-radius: var(--dsw-radius-sm, 6px);
+}
+
+.bellWide {
+  padding: 6px 10px;
+}
+
+.bellRail {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.bellWide:hover,
+.bellRail:hover,
+.bellWide[aria-expanded="true"],
+.bellRail[aria-expanded="true"] {
+  opacity: 1;
+  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
+}
+
+.badge {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--dsw-accent-bg, rgba(64, 128, 255, 0.85));
+  color: #fff;
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+}

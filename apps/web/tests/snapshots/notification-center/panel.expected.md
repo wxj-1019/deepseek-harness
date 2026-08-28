@@ -1,0 +1,12 @@
+- region "Notification center":
+  - strong: Notification center
+  - button "Mark all read"
+  - button "Clear read"
+  - button "Close":
+    - img
+  - list:
+    - listitem:
+      - button "Session completed Reply with the single word {{clock}}"
+      - button "Mark read":
+        - img
+  - text: 1 unread

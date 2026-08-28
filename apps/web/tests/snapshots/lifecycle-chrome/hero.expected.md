@@ -20,6 +20,7 @@
 - button "Today’s todos":
   - img
   - text: Today’s todos
+- button "Notifications"
 - button "Settings":
   - img
   - text: Settings
