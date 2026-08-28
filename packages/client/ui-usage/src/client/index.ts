@@ -1,12 +1,13 @@
 /**
- * Usage settings plugin, browser half. Registers the "Usage / 用量" settings
- * section over the usage-ledger storage domain. Export discipline:
+ * Usage plugin, browser half. Contributes the "Usage / 用量" view tab to the
+ * conversation header strip (right of Trajectory), rendering the per-session
+ * token-usage table from the usage-ledger storage domain. Export discipline:
  * packages/client/AGENTS.md.
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
-// Type-only: pulls the shell's SlotMap merge (the 'settings.section' entry)
+// Type-only: pulls the conversation SlotMap merge (the 'conversation.view' entry)
 // and the sessions Context merge (standard kit visibility).
-import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import { UsageLedgerController } from './controller.ts'
@@ -22,20 +23,20 @@ export type { UsageKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
-    /** The usage settings page copy. */
-    'settings.usage': UsageKey
+    /** The usage view copy. */
+    'usage': UsageKey
   }
 }
 
 /** Dictionary namespace owned by this plugin. */
-const NS = 'settings.usage'
+const NS = 'usage'
 
 /** Required services (cordis fiber inject). */
 export const inject = ['slots', 'locale', 'remote', 'remote.usageLedger']
 
 /**
- * Register the Usage section once the `settings.section` declaration is on
- * the ledger; the section loads at mount and converges on pushed changes.
+ * Register the Usage view tab. The ledger loads lazily when the tab first
+ * renders and converges on pushed changes.
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
@@ -47,7 +48,7 @@ export function apply(ctx: ClientContext): void {
   const injected = (): UsageSectionInjected => ({ hooks: { usage: controller.store }, ensure: () => controller.ensure() })
 
   // Pushed invalidations converge only what was read; a cold ledger stays
-  // cold until the section first renders.
+  // cold until the view first renders.
   ctx.effect(() => {
     const disposers = [
       ctx.remote.$on('usage-ledger/changed', () => {
@@ -60,11 +61,14 @@ export function apply(ctx: ClientContext): void {
     return () => { for (const dispose of disposers) dispose() }
   }, 'ui-usage: pushed invalidations')
 
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section',
+  // order 20 sits the tab right of Trajectory (order 10) in the header strip.
+  // The usage ledger is user-level, so the injected face ignores the seat's
+  // per-session binding.
+  ctx.slots.inject('conversation.view', () => ctx.slots.register({
+    name: 'conversation.view',
     id: 'usage',
-    order: 13,
-    label: () => t('nav'),
+    order: 20,
+    label: () => t('view.usage'),
     locale: NS,
     inject: injected,
   }, UsageSection))

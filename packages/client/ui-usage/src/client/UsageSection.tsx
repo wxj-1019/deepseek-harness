@@ -1,20 +1,21 @@
 /**
- * The "Usage" settings section: a per-session token-usage table over the
+ * The "Usage" conversation view: a per-session token-usage table over the
  * usage-ledger storage domain. Session titles resolve through the sessions
  * kit; totals are a pure sum of the visible rows.
  * @module @deepseek-ai/dsh-client-ui-usage/client/UsageSection
  */
 
 import { useEffect, useMemo } from 'react'
-import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
+import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type { PropsLocale, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UsageSectionInjected } from './slots.ts'
 import type { UsageState } from './controller.ts'
 import { NS } from './locales.ts'
 import css from './UsageSection.module.css'
 
-/** Full props for the section. */
+/** Full props for the view body. */
 export type UsageSectionProps =
-  & PropsRuntime<'settings.section'>
+  & ConvViewProps
   & PropsLocale<typeof NS>
   & Pick<UsageSectionInjected, 'ensure'>
   & { useUsage: SnapshotSelectorHook<UsageState> }
@@ -35,13 +36,13 @@ function timeLabel(epochMs: number): string {
 }
 
 /**
- * The Usage settings page body.
+ * The Usage view body.
  * @param props - runtime slot currency, namespace copy, injected face.
- * @returns the section table.
+ * @returns the usage table.
  */
 export function UsageSection(props: UsageSectionProps) {
   const { useSessions, useUsage, ensure, t } = props
-  // Load at mount: a settings page exists to be seen.
+  // Load at mount: a view exists to be seen.
   useEffect(() => { void ensure() }, [ensure])
   const state = useUsage(current => current)
   const sessionsById = useSessions(current => current.byId)

@@ -12,18 +12,6 @@
       "path": "../../../vendor/cordis"
     },
     {
-      "path": "../locale"
-    },
-    {
-      "path": "../runtime"
-    },
-    {
-      "path": "../ui-settings"
-    },
-    {
-      "path": "../ui-slots"
-    },
-    {
       "path": "../../api/remotes/tsconfig.client.json"
     },
     {
@@ -31,6 +19,18 @@
     },
     {
       "path": "../../session/usage-ledger"
+    },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../runtime"
+    },
+    {
+      "path": "../ui-conversation"
+    },
+    {
+      "path": "../ui-slots"
     }
   ]
 }

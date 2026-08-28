@@ -1,6 +1,6 @@
 /**
- * Injected face of the Usage settings section: the bound state selector hook
- * (reserved hooks seat) plus plain action callbacks. The section component
+ * Injected face of the Usage conversation view: the bound state selector
+ * hook (reserved hooks seat) plus plain action callbacks. The view component
  * contains no subscription machinery and no ctx access.
  * @module @deepseek-ai/dsh-client-ui-usage/client/slots
  */
@@ -8,7 +8,7 @@
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UsageState } from './controller.ts'
 
-/** Full injected share handed to the section component. */
+/** Full injected share handed to the view component. */
 export interface UsageSectionInjected {
   /** Reserved hooks seat: the renderer binds the store into `useUsage`. */
   hooks: { usage: HostObservable<UsageState> }

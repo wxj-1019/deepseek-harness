@@ -1,11 +1,11 @@
-/** `settings.usage` namespace dictionaries. */
+/** `usage` namespace dictionaries. */
 
 /** Dictionary namespace owned by this plugin. */
-export const NS = 'settings.usage'
+export const NS = 'usage'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'nav': '用量',
+  'view.usage': '用量',
   'pageHint': '每个会话的累计 token 用量（provider 上报值）。打开过的会话即时更新。',
   'col.session': '会话',
   'col.input': '输入',
@@ -20,7 +20,7 @@ export const zh = {
 
 /** English dictionary, key-identical to the Chinese source of truth. */
 export const en: Record<UsageKey, string> = {
-  'nav': 'Usage',
+  'view.usage': 'Usage',
   'pageHint': 'Accumulated per-session token usage as reported by providers. Opened sessions update live.',
   'col.session': 'Session',
   'col.input': 'Input',
@@ -33,5 +33,5 @@ export const en: Record<UsageKey, string> = {
   'empty': 'No usage recorded yet',
 }
 
-/** Key domain of the `settings.usage` namespace (zh is the source of truth). */
+/** Key domain of the `usage` namespace (zh is the source of truth). */
 export type UsageKey = keyof typeof zh
