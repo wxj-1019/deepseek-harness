@@ -98,6 +98,7 @@
     { "path": "./packages/client/ui-user-todo" },
     { "path": "./packages/client/ui-session-pins" },
     { "path": "./packages/client/ui-notification-center" },
+    { "path": "./packages/client/ui-usage" },
     { "path": "./packages/client/ui-settings-dev-checks" },
     { "path": "./packages/client/ui-settings-plugin-inventory" },
     { "path": "./packages/client/locale" },

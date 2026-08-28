@@ -6,6 +6,7 @@
 import { randomUUID } from 'node:crypto'
 import type {} from '@deepseek-ai/dsh-user-todo/types'
 import type {} from '@deepseek-ai/dsh-session-pins/types'
+import type {} from '@deepseek-ai/dsh-usage-ledger/types'
 import type {} from '@deepseek-ai/dsh-notification-center/types'
 import { mkdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'

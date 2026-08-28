@@ -24,6 +24,9 @@
       "path": "../../interaction/notification-center"
     },
     {
+      "path": "../../session/usage-ledger"
+    },
+    {
       "path": "../../credentials/credentials"
     },
     {

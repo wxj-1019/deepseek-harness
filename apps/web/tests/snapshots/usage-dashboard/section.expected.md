@@ -1,0 +1,40 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General":
+      - img
+      - text: General
+    - button "Models":
+      - img
+      - text: Models
+    - button "Dev checks":
+      - img
+      - text: Dev checks
+    - button "Usage":
+      - img
+      - text: Usage
+    - button "Plugins":
+      - img
+      - text: Plugins
+    - button "Agent presets":
+      - img
+      - text: Agent presets
+    - button "Side card"
+  - button "Open configuration file"
+  - button "Close":
+    - img
+    - text: Close
+  - paragraph: Accumulated per-session token usage as reported by providers. Opened sessions update live.
+  - table:
+    - rowgroup:
+      - row "Session Input Output Cache read Cache write Total Last active":
+        - columnheader "Session"
+        - columnheader "Input"
+        - columnheader "Output"
+        - columnheader "Cache read"
+        - columnheader "Cache write"
+        - columnheader "Total"
+        - columnheader "Last active"
+    - rowgroup:
+      - row "No usage recorded yet":
+        - cell "No usage recorded yet"

@@ -28,5 +28,6 @@ export const API_REMOTE_FORWARDED_EVENTS = [
   'settings/document-updated',
   'session-pins/changed',
   'notifications/changed',
+  'usage-ledger/changed',
   'user-todo/changed',
 ] as const

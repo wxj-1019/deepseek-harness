@@ -78,6 +78,11 @@
     - id: session-pins
       name: '@deepseek-ai/dsh-session-pins'
 
+    # Per-session usage ledger: durable token accounting collected from the
+    # session event feed (client row `ui-usage` renders the dashboard).
+    - id: usage-ledger
+      name: '@deepseek-ai/dsh-usage-ledger'
+
     # In-app notification center: durable entries from completions,
     # approvals, jobs, and schedule dispatches (client row
     # `ui-notification-center`).
@@ -249,6 +254,11 @@
     # over the session-pins storage domain (host row `session-pins`).
     - id: ui-session-pins
       name: '@deepseek-ai/dsh-client-ui-session-pins'
+
+    # Usage dashboard: the settings "Usage" section over the usage-ledger
+    # domain (host row `usage-ledger`).
+    - id: ui-usage
+      name: '@deepseek-ai/dsh-client-ui-usage'
 
     # Notification center: the bell at the sidebar foot plus the overlay
     # panel (shell.overlay's first occupant) over the notifications domain.

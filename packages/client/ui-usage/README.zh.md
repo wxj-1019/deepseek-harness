@@ -1,0 +1,23 @@
+# @deepseek-ai/dsh-client-ui-usage
+
+[English](README.md) | 中文
+
+Web 用量面板功能的属主包：设置里的“用量 / Usage”分区，数据来自 [`usage-ledger`](../../session/usage-ledger/README.zh.md) 存储域，经生成的 `usageLedger` Remote 命名空间读写。一个 controller 支撑整个分区；其快照经注入的 hooks 座位供给表格，业务组件只持有展示状态。
+
+表格每会话一行，展示 provider 四桶（输入、输出、缓存读、缓存写）、行合计与最近活跃时间；底部合计行对可见行求和。会话标题经标准 sessions kit 解析（宿主无标题时回退为短 id）。分区挂载即加载，任何已提交的变更——经白名单 `usage-ledger/changed` 推送加 `connection/reset`——都会让已加载的表格重拉一次；冷台账在首次渲染前保持冷态。
+
+样式只用 token；文案走本包自己的 `settings.usage` locale 命名空间。
+
+## Model Experience
+
+None，本包向人类渲染用户拥有的应用数据，不触及任何 prompt、消息、schema、流或工具结果。
+
+#### KV Cache effect
+
+None；本包从不组装或发送 provider 请求。
+
+## Known Limitations and Deferred Work
+
+- **外部会话的行退化为短 id** —— 标题只对当前窗口列表中的会话可解析；其他 profile 会话的行回退为短 id。
+- **无重置** —— v0 的台账没有重置动词，分区因此不提供清除控件。
+- **无模型/按天切分** —— 每会话一行扁平求和；切分属于台账 schema 的改动。

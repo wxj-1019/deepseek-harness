@@ -1,0 +1,70 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
+  font-weight: 600;
+  text-align: right;
+  opacity: 0.75;
+}
+
+.table th.sessionCol,
+.table td.sessionCol {
+  text-align: left;
+}
+
+.table th.lastCol,
+.table td.lastCol {
+  text-align: left;
+}
+
+.table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--dsw-border-weak, rgba(127, 127, 127, 0.15));
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.sessionCol {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.totalsRow td {
+  border-top: 1px solid var(--dsw-border-strong, rgba(127, 127, 127, 0.5));
+  border-bottom: none;
+  font-weight: 600;
+}
+
+.empty {
+  opacity: 0.65;
+  text-align: center;
+  padding: 14px 8px;
+}
+
+.error {
+  margin: 0;
+  color: var(--dsw-danger-text, #ff8080);
+  font-size: 12px;
+}

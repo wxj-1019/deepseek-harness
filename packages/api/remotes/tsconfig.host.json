@@ -53,6 +53,9 @@
       "path": "../../interaction/notification-center"
     },
     {
+      "path": "../../session/usage-ledger"
+    },
+    {
       "path": "../../runtime-diagnostics/invariants"
     },
     {
