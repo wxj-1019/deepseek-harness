@@ -1115,6 +1115,7 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
    notification panel): the same recipe as the composer card — light and dark
    variants, composer blur, hairline borders, inner highlight. ---------- */
 [data-dsh-aqua] [data-dsh-glass-panel] {
+  border-radius: 16px;
   background: var(--dsh-aqua-glass-card-light);
   border: 1px solid rgba(19, 45, 83, 0.26);
   box-shadow:
@@ -1124,6 +1125,7 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
 }
 
 [data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] {
+  border-radius: 16px;
   background: var(--dsh-aqua-glass-card-dark);
   border: 1px solid rgba(148, 180, 220, 0.32);
   box-shadow:

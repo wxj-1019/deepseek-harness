@@ -14,6 +14,10 @@ None, as the service manages a browser preference; nothing here reaches a model 
 
 None; this package neither assembles nor sends a provider request.
 
+## Surfaces that opt in
+
+Feature surfaces (drawers, panels) join the glass skin through two stable seams this layer styles wherever they appear: `data-dsh-glass-panel` on a floating card and `data-dsh-glass-tab` on an edge trigger. Both get the composer-card recipe — light/dark glass, frost multiplier, composer blur, hairline borders, inner highlight — and translucent row/input tints, so the wallpaper stays visible through them. Gated on `data-dsh-aqua` only (not float mode), so compat mode glasses too; off == stock. Current occupants: the daily-todo drawer and the notification-center panel.
+
 ## Known Limitations and Deferred Work
 
 - Video admission proves container well-formedness (magic bytes), not codec decodability; a stored video may still fail to play in a client.

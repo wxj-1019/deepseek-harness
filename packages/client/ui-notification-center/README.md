@@ -21,3 +21,4 @@ None; the package never assembles or sends provider requests.
 - **Entries render id-only when the session is gone** — a session deleted after the fact leaves its title unresolved; the row falls back to the entry's own title.
 - **No notification history pruning** — the center grows until cleared; retention policy is deferred.
 - **Kind icons are text labels** — the vocabulary is small enough that labels beat glyph invention this round.
+- **Panels may overlap** — with the daily-todo drawer also open, the card and the drawer share the right edge; close one to use the other. A co-layout pass is deferred.
