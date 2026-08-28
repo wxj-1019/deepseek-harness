@@ -14,10 +14,10 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
 import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
 import { usageLedgerDomainSpec } from './spec.ts'
-import type { UsageLedgerListResult, UsageLedgerRecord } from './types.ts'
+import type { UsageLedgerBuckets, UsageLedgerListResult, UsageLedgerRecord } from './types.ts'
 
 export type * from './types.ts'
-export { usageLedgerDomainSpec, usageLedgerRecordSchema } from './spec.ts'
+export { usageLedgerDomainSpec, usageLedgerBucketsSchema, usageLedgerRecordSchema } from './spec.ts'
 
 /** The service takes no composition config. */
 export interface Config {}
@@ -66,7 +66,9 @@ export class UsageLedgerService extends TypertRemoteService {
       if (event.type !== 'assistant/message') return
       const usage = event.data.usage
       if (usage === undefined) return
-      this.accumulate(session.id, usage)
+      // The slice key rides the message's provenance: every assistant
+      // message's source is a ModelMessageSource carrying the model id.
+      this.accumulate(session.id, usage, event.data.message.source.model)
     })
   }
 
@@ -94,9 +96,9 @@ export class UsageLedgerService extends TypertRemoteService {
     outputTokens: number
     cacheReadTokens?: number
     cacheWriteTokens?: number
-  }): void {
+  }, model: string): void {
     const previous = this.chains.get(sessionId) ?? Promise.resolve()
-    const next = previous.then(() => this.applyAccumulation(sessionId, usage))
+    const next = previous.then(() => this.applyAccumulation(sessionId, usage, model))
     const tail = next.then(() => undefined, () => undefined)
     this.chains.set(sessionId, tail)
   }
@@ -107,16 +109,30 @@ export class UsageLedgerService extends TypertRemoteService {
     outputTokens: number
     cacheReadTokens?: number
     cacheWriteTokens?: number
-  }): Promise<void> {
+  }, model: string): Promise<void> {
     const table = this.requireTable()
     const current = table.get(sessionId)
+    const models: Record<string, UsageLedgerBuckets> = { ...current?.models }
+    const slice = models[model] ?? {
+      inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 0,
+    }
+    models[model] = {
+      inputTokens: slice.inputTokens + usage.inputTokens,
+      outputTokens: slice.outputTokens + usage.outputTokens,
+      cacheReadTokens: slice.cacheReadTokens + (usage.cacheReadTokens ?? 0),
+      cacheWriteTokens: slice.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
+      requests: slice.requests + 1,
+    }
+    const now = Date.now()
     const next = snapshotRecord({
       inputTokens: (current?.inputTokens ?? 0) + usage.inputTokens,
       outputTokens: (current?.outputTokens ?? 0) + usage.outputTokens,
       cacheReadTokens: (current?.cacheReadTokens ?? 0) + (usage.cacheReadTokens ?? 0),
       cacheWriteTokens: (current?.cacheWriteTokens ?? 0) + (usage.cacheWriteTokens ?? 0),
       requests: (current?.requests ?? 0) + 1,
-      lastAt: Date.now(),
+      lastAt: now,
+      firstAt: current?.firstAt ?? now,
+      models,
     })
     await table.put(sessionId, next)
     this.ctx.emit('usage-ledger/changed')

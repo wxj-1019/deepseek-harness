@@ -100,6 +100,7 @@
     "tests/session-pins.e2e.ts",
     "tests/notification-center.e2e.ts",
     "tests/usage-dashboard.e2e.ts",
+    "tests/usage-panel.e2e.ts",
     "tests/goal-multi-turn-actions.e2e.ts",
     "tests/chat-scroll-fixture.ts",
     "tests/chat-scroll-contract.e2e.ts",

@@ -15,6 +15,7 @@ import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
 import Storage from '@deepseek-ai/dsh-storage'
 import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
 import * as StorageJson from '@deepseek-ai/dsh-storage-json'
+import type { UsageLedgerRecord } from '../src/index.ts'
 import UsageLedgerService from '../src/index.ts'
 
 /** Append one usage-bearing assistant message to a live session. */
@@ -23,10 +24,10 @@ function appendUsage(session: Session, turn: number, step: number, usage: {
   outputTokens: number
   cacheReadTokens?: number
   cacheWriteTokens?: number
-}): void {
+}, model = 'test'): void {
   const message = createAssistantMessage({
     content: [{ type: 'text', text: `step ${step}` }],
-    source: { provider: 'test', model: 'test' },
+    source: { provider: 'test', model },
   })
   session.append('assistant/message', { turn, step, message, usage }, { surfaceOp: 'append' })
 }
@@ -56,12 +57,12 @@ async function setupFixture(): Promise<{ ctx: Context; dispose(): Promise<void> 
 }
 
 /** The current rows keyed by session id. */
-async function rows(ctx: Context): Promise<Record<string, Record<string, number>>> {
+async function rows(ctx: Context): Promise<Record<string, UsageLedgerRecord>> {
   const listed = await ctx.usageLedger.list()
   expect(listed.ok).toBe(true)
-  const out: Record<string, Record<string, number>> = {}
+  const out: Record<string, UsageLedgerRecord> = {}
   if (listed.ok) {
-    for (const row of listed.value.items) out[String(row.sessionId)] = { ...row.record }
+    for (const row of listed.value.items) out[String(row.sessionId)] = row.record
   }
   return out
 }
@@ -100,6 +101,29 @@ describe('usage ledger service', () => {
     }
   })
 
+  test('slices samples per model and stamps the first-sample wall clock', async () => {
+    const { ctx, dispose } = await setupFixture()
+    try {
+      const s1 = ctx.sessions.create(SessionId('m-1'), { meta: {} }).id
+      appendUsage(ctx.sessions.get(s1)!, 1, 1, { inputTokens: 10, outputTokens: 5, cacheReadTokens: 2 }, 'alpha')
+      appendUsage(ctx.sessions.get(s1)!, 1, 2, { inputTokens: 20, outputTokens: 8, cacheWriteTokens: 3 }, 'alpha')
+      appendUsage(ctx.sessions.get(s1)!, 1, 3, { inputTokens: 100, outputTokens: 50 }, 'beta')
+
+      const listed = await ctx.usageLedger.list()
+      expect(listed.ok).toBe(true)
+      if (listed.ok) {
+        const record = listed.value.items[0]?.record
+        expect(record).toMatchObject({ inputTokens: 130, outputTokens: 63, cacheReadTokens: 2, cacheWriteTokens: 3, requests: 3 })
+        expect(record?.firstAt).toBeGreaterThan(0)
+        // Slice rollup reproduces the top-level totals: both count the same samples.
+        expect(record?.models?.alpha).toMatchObject({ inputTokens: 30, outputTokens: 13, cacheReadTokens: 2, cacheWriteTokens: 3 })
+        expect(record?.models?.beta).toMatchObject({ inputTokens: 100, outputTokens: 50, requests: 1 })
+      }
+    } finally {
+      await dispose()
+    }
+  })
+
   test('entries survive a full service restart over the same storage root', async () => {
     const root = await mkdtemp(join(tmpdir(), 'dsh-usage-ledger-restart-'))
     const first = new Context()
@@ -110,7 +134,7 @@ describe('usage ledger service', () => {
       await first.plugin(StorageDomain, { backend: 'json' })
       await first.plugin(UsageLedgerService)
       const session = first.sessions.create(SessionId('u-keep'), { meta: {} })
-      appendUsage(session, 1, 1, { inputTokens: 7, outputTokens: 3, cacheWriteTokens: 4 })
+      appendUsage(session, 1, 1, { inputTokens: 7, outputTokens: 3, cacheWriteTokens: 4 }, 'keep')
       await expect.poll(async () => Object.keys(await rows(first)).length, { timeout: 5_000 }).toBe(1)
       await first.fiber.dispose()
 
@@ -123,6 +147,12 @@ describe('usage ledger service', () => {
         await second.plugin(UsageLedgerService)
         const table = await rows(second)
         expect(table[String(SessionId('u-keep'))]).toMatchObject({ inputTokens: 7, outputTokens: 3, cacheWriteTokens: 4, requests: 1 })
+        // The restart path keeps the per-model slices: durable state, not
+        // process-local bookkeeping.
+        const listed = await second.usageLedger.list()
+        if (listed.ok) {
+          expect(listed.value.items[0]?.record.models?.keep).toMatchObject({ inputTokens: 7, outputTokens: 3, requests: 1 })
+        }
       } finally {
         await second.fiber.dispose()
       }

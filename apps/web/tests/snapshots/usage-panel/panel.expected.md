@@ -1,0 +1,62 @@
+- paragraph: Accumulated per-session token usage as reported by providers. Opened sessions update live.
+- group "Usage summary": Input 219 · Output 111 · Cache read 15.5K · Cache write 0 · Total 15.8K · Requests 2 · Cache hit 99% · Last active 2026-08-29 {{clock}}
+- table:
+  - rowgroup:
+    - row "Model Requests Input Output Cache read Cache write Total Share":
+      - columnheader "Model"
+      - columnheader "Requests"
+      - columnheader "Input"
+      - columnheader "Output"
+      - columnheader "Cache read"
+      - columnheader "Cache write"
+      - columnheader "Total"
+      - columnheader "Share"
+  - rowgroup:
+    - row "deepseek-v4-flash 2 219 111 15.5K 0 15.8K 100%":
+      - cell "deepseek-v4-flash"
+      - cell "2"
+      - cell "219"
+      - cell "111"
+      - cell "15.5K"
+      - cell "0"
+      - cell "15.8K"
+      - cell "100%"
+    - row "Total 2 219 111 15.5K 0 15.8K":
+      - cell "Total"
+      - cell "2"
+      - cell "219"
+      - cell "111"
+      - cell "15.5K"
+      - cell "0"
+      - cell "15.8K"
+      - cell
+- table:
+  - rowgroup:
+    - row "Session Requests Input Output Cache read Cache write Total Last active":
+      - columnheader "Session"
+      - columnheader "Requests"
+      - columnheader "Input"
+      - columnheader "Output"
+      - columnheader "Cache read"
+      - columnheader "Cache write"
+      - columnheader "Total"
+      - columnheader "Last active"
+  - rowgroup:
+    - row "Use the bash tool to 2 219 111 15.5K 0 15.8K 2026-08-29 {{clock}}":
+      - cell "Use the bash tool to"
+      - cell "2"
+      - cell "219"
+      - cell "111"
+      - cell "15.5K"
+      - cell "0"
+      - cell "15.8K"
+      - cell "2026-08-29 {{clock}}"
+    - row "Total 2 219 111 15.5K 0 15.8K":
+      - cell "Total"
+      - cell "2"
+      - cell "219"
+      - cell "111"
+      - cell "15.5K"
+      - cell "0"
+      - cell "15.8K"
+      - cell
