@@ -6,7 +6,7 @@
  * @module @deepseek-ai/dsh-client-ui-usage/client/UsageSection
  */
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { PropsLocale, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UsageSectionInjected } from './slots.ts'
@@ -36,8 +36,15 @@ function timeLabel(epochMs: number): string {
  */
 export function UsageSection(props: UsageSectionProps) {
   const { useSessions, useUsage, ensure, t } = props
+  const rootRef = useRef<HTMLDivElement>(null)
   // Load at mount: a view exists to be seen.
   useEffect(() => { void ensure() }, [ensure])
+  // The scrollport's scrollTop is chat's bottom-anchored position; the
+  // statistics start at the summary strip, so activation resets it.
+  useEffect(() => {
+    const scroller = rootRef.current?.closest('[data-conversation-scroll]')
+    if (scroller) scroller.scrollTop = 0
+  }, [])
   const state = useUsage(current => current)
   const sessionsById = useSessions(current => current.byId)
 
@@ -48,7 +55,7 @@ export function UsageSection(props: UsageSectionProps) {
   const lastActive = rows.length === 0 ? undefined : Math.max(...rows.map(row => row.record.lastAt))
 
   return (
-    <div className={css.section} data-usage-panel="">
+    <div ref={rootRef} className={css.section} data-usage-panel="">
       <p className={css.hint}>{t('pageHint')}</p>
 
       <div className={css.summary} role="group" aria-label={t('summary.aria')}>
