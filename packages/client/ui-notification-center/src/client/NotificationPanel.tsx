@@ -81,7 +81,7 @@ export function NotificationPanel(props: NotificationPanelProps) {
 
   return (
     // The overlay layer is click-through; the card opts back into pointer events.
-    <section className={css.card} aria-label={t('panel.aria')} onKeyDown={onKeyDown}>
+    <section data-dsh-glass-panel="" className={css.card} aria-label={t('panel.aria')} onKeyDown={onKeyDown}>
       <header className={css.head}>
         <strong>{t('panel.aria')}</strong>
         <button type="button" className={css.action} onClick={() => { run(markAllRead()) }}>

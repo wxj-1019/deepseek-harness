@@ -1109,3 +1109,62 @@ html[data-dsh-float][data-dsh-aqua-wallpaper][data-dsh-aqua-media='video'] body[
     opacity: 0;
   }
 }
+
+/* ---------- Feature drawers/panels that opt in via the stable
+   `data-dsh-glass-panel` / `data-dsh-glass-tab` seams (daily-todo drawer,
+   notification panel): the same recipe as the composer card — light and dark
+   variants, composer blur, hairline borders, inner highlight. ---------- */
+[data-dsh-aqua] [data-dsh-glass-panel] {
+  background: var(--dsh-aqua-glass-card-light);
+  border: 1px solid rgba(19, 45, 83, 0.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 36px rgba(19, 45, 83, 0.16);
+  backdrop-filter: blur(var(--dsh-aqua-blur, 14px));
+}
+
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] {
+  background: var(--dsh-aqua-glass-card-dark);
+  border: 1px solid rgba(148, 180, 220, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 10px 36px rgba(2, 6, 14, 0.5);
+}
+
+[data-dsh-aqua] [data-dsh-glass-tab] {
+  background: var(--dsh-aqua-glass-card-light);
+  border: 1px solid rgba(19, 45, 83, 0.26);
+  border-right: none;
+  backdrop-filter: blur(var(--dsh-aqua-blur, 14px));
+}
+
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-tab] {
+  background: var(--dsh-aqua-glass-card-dark);
+  border-color: rgba(148, 180, 220, 0.32);
+}
+
+/* Rows and inputs inside a glass surface tint with white/dark overlays
+   instead of opaque fills, so the fluid stays visible through the panel. */
+[data-dsh-aqua] [data-dsh-glass-panel] li:hover,
+[data-dsh-aqua] [data-dsh-glass-panel] button:hover {
+  background: color-mix(in srgb, rgb(255 255 255) 14%, transparent);
+}
+
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] li:hover,
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] button:hover {
+  background: color-mix(in srgb, rgb(148 180 220) 16%, transparent);
+}
+
+[data-dsh-aqua] [data-dsh-glass-panel] input,
+[data-dsh-aqua] [data-dsh-glass-panel] textarea,
+[data-dsh-aqua] [data-dsh-glass-panel] select {
+  background: color-mix(in srgb, rgb(255 255 255) 10%, transparent);
+  border-color: rgba(19, 45, 83, 0.26);
+}
+
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] input,
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] textarea,
+[data-dsh-aqua] body[data-ds-dark-theme] [data-dsh-glass-panel] select {
+  background: color-mix(in srgb, rgb(148 180 220) 10%, transparent);
+  border-color: rgba(148, 180, 220, 0.32);
+}

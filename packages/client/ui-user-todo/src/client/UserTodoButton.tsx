@@ -315,6 +315,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
     <div ref={rootRef} className={css.edgeRoot} onKeyDown={onRootKeyDown}>
       <button
         type="button"
+        data-dsh-glass-tab=""
         className={css.edgeTab}
         aria-label={t('button.aria')}
         aria-expanded={open}
@@ -325,7 +326,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
       </button>
 
       {open && (
-        <section className={css.drawer} aria-label={t('panel.aria')}>
+        <section data-dsh-glass-panel="" className={css.drawer} aria-label={t('panel.aria')}>
           <header className={css.panelHead}>
             <strong>{t('button.label')}</strong>
             {pendingCount > 0 && <span className={css.count}>{t('count.pending', { count: pendingCount })}</span>}
