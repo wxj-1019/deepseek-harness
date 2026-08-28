@@ -118,9 +118,37 @@ describe('usage ledger service', () => {
         // Slice rollup reproduces the top-level totals: both count the same samples.
         expect(record?.models?.alpha).toMatchObject({ inputTokens: 30, outputTokens: 13, cacheReadTokens: 2, cacheWriteTokens: 3 })
         expect(record?.models?.beta).toMatchObject({ inputTokens: 100, outputTokens: 50, requests: 1 })
+        // Day slices mirror the model slices: same samples, host-local day keys.
+        const dayEntries = Object.entries(record?.days ?? {})
+        expect(dayEntries).toHaveLength(1)
+        const [dayKey, daySlice] = dayEntries[0] ?? []
+        expect(dayKey).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+        expect(daySlice).toMatchObject({ inputTokens: 130, outputTokens: 63, requests: 3 })
       }
     } finally {
       await dispose()
+    }
+  })
+
+  test('publishes the configured price table on list', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'dsh-usage-ledger-pricing-'))
+    const ctx = new Context()
+    try {
+      await ctx.plugin(SessionStore)
+      await ctx.plugin(Storage)
+      await ctx.plugin(StorageJson, { root })
+      await ctx.plugin(StorageDomain, { backend: 'json' })
+      await ctx.plugin(UsageLedgerService, {
+        pricing: { '*': { input: 0.27, output: 1.1, cacheRead: 0.07, cacheWrite: 0 } },
+      })
+      const listed = await ctx.usageLedger.list()
+      expect(listed.ok).toBe(true)
+      if (listed.ok) {
+        expect(listed.value.pricing?.['*']).toMatchObject({ input: 0.27, output: 1.1 })
+      }
+    } finally {
+      await ctx.fiber.dispose()
+      await rm(root, { recursive: true, force: true })
     }
   })
 

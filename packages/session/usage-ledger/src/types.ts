@@ -24,8 +24,9 @@ export interface UsageLedgerBuckets {
 /**
  * One session's accumulated provider usage. Top-level buckets sum every
  * usage-bearing `assistant/message` sample; `models` slices the same samples
- * by the producing model's id; `requests` counts the samples, `firstAt` and
- * `lastAt` bound them on the wall clock.
+ * by the producing model's id; `days` slices them by the host-local calendar
+ * day; `requests` counts the samples, `firstAt` and `lastAt` bound them on
+ * the wall clock.
  */
 export interface UsageLedgerRecord {
   readonly inputTokens: number
@@ -44,12 +45,32 @@ export interface UsageLedgerRecord {
    * so a slice rollup reproduces the top-level buckets.
    */
   readonly models?: Record<string, UsageLedgerBuckets>
+  /**
+   * Per-day slices keyed by the host-local calendar day (`YYYY-MM-DD`);
+   * absent until the first sample. The same rollup property as `models`.
+   */
+  readonly days?: Record<string, UsageLedgerBuckets>
+}
+
+/** Per-model price in USD per 1M tokens, over the four bucket vocabulary. */
+export interface UsageLedgerPrice {
+  readonly input: number
+  readonly output: number
+  readonly cacheRead: number
+  readonly cacheWrite: number
 }
 
 /** Every session's ledger rows, most recently active first. */
 export interface UsageLedgerListValue {
   /** Rows keyed by session id, ordered by `lastAt` descending. */
   readonly items: readonly { readonly sessionId: SessionId; readonly record: UsageLedgerRecord }[]
+  /**
+   * The deployment's effective price table (USD per 1M tokens), keyed by
+   * model id with `*` as the fallback key; absent when no pricing is
+   * configured. Cost derivation is a client concern — the host publishes
+   * prices, never computes money.
+   */
+  readonly pricing?: Record<string, UsageLedgerPrice>
 }
 
 /** Result returned by the `list` operation. */

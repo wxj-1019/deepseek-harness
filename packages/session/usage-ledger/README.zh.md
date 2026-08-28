@@ -8,7 +8,7 @@
 
 ## Configuration
 
-服务没有组合配置：桶词汇就是 provider 用量样本自身的词汇。
+`pricing` —— 可选价格表（USD / 1M token），按 provider 模型 id 键控，`*` 为回退键。配置后 `list()` 会发布该表，具备成本能力的表面据此推导并显示成本；未配置（或空表）时任何地方都不显示成本。价格是部署事实，绝不臆测。
 
 ## Model Experience
 

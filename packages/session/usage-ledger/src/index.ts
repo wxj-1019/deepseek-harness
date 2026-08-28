@@ -14,13 +14,20 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
 import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
 import { usageLedgerDomainSpec } from './spec.ts'
-import type { UsageLedgerBuckets, UsageLedgerListResult, UsageLedgerRecord } from './types.ts'
+import type { UsageLedgerBuckets, UsageLedgerListResult, UsageLedgerPrice, UsageLedgerRecord } from './types.ts'
 
 export type * from './types.ts'
 export { usageLedgerDomainSpec, usageLedgerBucketsSchema, usageLedgerRecordSchema } from './spec.ts'
 
-/** The service takes no composition config. */
-export interface Config {}
+/** Per-model price in USD per 1M tokens; `*` keys as the fallback price. */
+export interface Config {
+  /**
+   * Optional price table (USD per 1M tokens) keyed by provider model id with
+   * `*` as the fallback key. When configured, `list()` publishes the table so
+   * clients can derive costs; without it no cost is ever shown.
+   */
+  readonly pricing?: Record<string, UsageLedgerPrice>
+}
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -38,20 +45,31 @@ declare module '@deepseek-ai/cordis' {
 export class UsageLedgerService extends TypertRemoteService {
   static inject = ['storageDomain']
 
-  /** No composition config; declared empty for loader symmetry with siblings. */
-  static Config: z<Config> = z.object({})
+  static Config: z<Config> = z.object({
+    pricing: z.dict(z.object({
+      input: z.number(),
+      output: z.number(),
+      cacheRead: z.number(),
+      cacheWrite: z.number(),
+    })),
+  })
 
+  private readonly pricing: Record<string, UsageLedgerPrice> | undefined
   private table?: KvTable<SessionId, UsageLedgerRecord>
   /** Per-session write chains: same-session samples never interleave. */
   private readonly chains = new Map<SessionId, Promise<void>>()
 
   /**
    * @param ctx - Host context carrying the storage-domain form.
-   * @param config - unused; the service has no deployment-varying choices.
+   * @param config - optional per-model price table published to clients.
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'usageLedger')
-    void config
+    // The schemastery dict defaults to an empty object; an empty table is
+    // no pricing at all.
+    this.pricing = config.pricing !== undefined && Object.keys(config.pricing).length > 0
+      ? config.pricing
+      : undefined
   }
 
   /** Open the domain and register the collector. */
@@ -87,7 +105,13 @@ export class UsageLedgerService extends TypertRemoteService {
       .sort((left, right) => right.record.lastAt - left.record.lastAt)
       .map(row => ({ sessionId: row.sessionId, record: snapshotRecord(row.record) }))
     Object.freeze(items)
-    return { ok: true, value: Object.freeze({ items }) }
+    return {
+      ok: true,
+      value: Object.freeze({
+        items,
+        ...(this.pricing === undefined ? {} : { pricing: { ...this.pricing } }),
+      }),
+    }
   }
 
   /** Accumulate one usage sample behind the session's write chain. */
@@ -112,6 +136,8 @@ export class UsageLedgerService extends TypertRemoteService {
   }, model: string): Promise<void> {
     const table = this.requireTable()
     const current = table.get(sessionId)
+    const now = Date.now()
+    const dayKey = localDayKey(now)
     const models: Record<string, UsageLedgerBuckets> = { ...current?.models }
     const slice = models[model] ?? {
       inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 0,
@@ -123,7 +149,17 @@ export class UsageLedgerService extends TypertRemoteService {
       cacheWriteTokens: slice.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
       requests: slice.requests + 1,
     }
-    const now = Date.now()
+    const days: Record<string, UsageLedgerBuckets> = { ...current?.days }
+    const day = days[dayKey] ?? {
+      inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 0,
+    }
+    days[dayKey] = {
+      inputTokens: day.inputTokens + usage.inputTokens,
+      outputTokens: day.outputTokens + usage.outputTokens,
+      cacheReadTokens: day.cacheReadTokens + (usage.cacheReadTokens ?? 0),
+      cacheWriteTokens: day.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
+      requests: day.requests + 1,
+    }
     const next = snapshotRecord({
       inputTokens: (current?.inputTokens ?? 0) + usage.inputTokens,
       outputTokens: (current?.outputTokens ?? 0) + usage.outputTokens,
@@ -133,6 +169,7 @@ export class UsageLedgerService extends TypertRemoteService {
       lastAt: now,
       firstAt: current?.firstAt ?? now,
       models,
+      days,
     })
     await table.put(sessionId, next)
     this.ctx.emit('usage-ledger/changed')
@@ -150,6 +187,13 @@ export class UsageLedgerService extends TypertRemoteService {
 /** Copy and freeze one row. */
 function snapshotRecord(record: UsageLedgerRecord): UsageLedgerRecord {
   return Object.freeze({ ...record })
+}
+
+/** The host-local calendar day of an instant, `YYYY-MM-DD`. */
+function localDayKey(epochMs: number): string {
+  const date = new Date(epochMs)
+  const pad = (value: number): string => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 export default UsageLedgerService

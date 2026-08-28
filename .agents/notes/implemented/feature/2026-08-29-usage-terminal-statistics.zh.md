@@ -1,6 +1,6 @@
 # Agent Note：终端风用量统计
 
-Status: proposed
+Status: implemented
 
 [English](2026-08-29-usage-terminal-statistics.md) | 中文
 
@@ -30,8 +30,8 @@ GLM-5.3-flash        32   96     12    5.6K    210  28% ▏
 - **D3 —— 模型身份取自事件。** 采集器读 `event.data.message.source.model`（assistant 消息的 `source.kind` 按类型即 `'model'`）。不加事件字段，不动请求管道。
 - **D4 —— 聚合是客户端纯函数。** 宿主只做哑累积；总量、按模型汇总、缓存命中率与占比全部在 `view.ts` 对拉取的行派生，按快照 memoize。
 - **D5 —— 展示约定。** `fmtTokens`：`< 1000` 原样，`≥ 1000` → `12.3K`，`≥ 1e6` → `1.2M`。缓存命中率 = cacheRead / (input + cacheRead + cacheWrite)（缓存写计为未命中）。占比条 = 纯 CSS 宽度，2px 高。数字对齐处一律 `font-variant-numeric: tabular-nums`。
-- **D6 —— 不显示成本。** 仓库不携带 provider 定价，只显示 token 才是台账的诚实表达；配置化价格映射列为后延。
-- **D7 —— 不做按天切分。** 按天分桶是进一步的 schema 变更，暂无消费方；后延。
+- **D6 —— 成本仅在配置价格表后显示。** 服务接受可选 `pricing` 配置（每桶 USD/1M token，按模型 id 键控，`*` 为回退键），经 `list()` 发布，客户端用纯函数推导成本；未配置或空表时任何地方都不显示成本。错误的价格表比没有更糟，因此由部署显式选择加入。
+- **D7 —— 按天切分。** 记录同时携带按宿主本地日历日（`YYYY-MM-DD`）键控的 `days` 切片；视图渲染按天表格与汇总条中的今日指标。两个字段在 schema 中可选，v1 行干净加载、天统计自升级起累积——无需再升域版本。
 
 ## 工作计划
 

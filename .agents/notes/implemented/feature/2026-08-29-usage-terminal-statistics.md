@@ -1,6 +1,6 @@
 # Agent Note: Terminal-style usage statistics
 
-Status: proposed
+Status: implemented
 
 English | [中文](2026-08-29-usage-terminal-statistics.zh.md)
 
@@ -30,8 +30,8 @@ GLM-5.3-flash        32   96     12    5.6K    210  28% ▏
 - **D3 — model identity from the event.** The collector reads `event.data.message.source.model` (assistant messages' `source.kind` is `'model'` by type). No new event fields, no request plumbing.
 - **D4 — aggregation is a client pure function.** The host stays a dumb accumulator; totals, per-model rollup, cache-hit rate, and shares derive in `view.ts` over the fetched rows, memoized per snapshot.
 - **D5 — display conventions.** `fmtTokens`: `< 1000` verbatim, `≥ 1000` → `12.3K`, `≥ 1e6` → `1.2M`. Cache-hit rate = cacheRead / (input + cacheRead + cacheWrite) (cache writes count as misses). Share bar = pure CSS width, 2px tall. `font-variant-numeric: tabular-nums` everywhere numbers align.
-- **D6 — no cost column.** The repo carries no provider pricing; showing tokens only keeps the ledger honest. A configured price map is deferred.
-- **D7 — no day slicing.** Per-day buckets are a further schema change with no consumer yet; deferred.
+- **D6 — cost only under a configured price table.** The service takes an optional `pricing` config (USD per 1M tokens per bucket, keyed by model id with `*` as fallback), publishes it through `list()`, and clients derive costs with pure functions; an unconfigured or empty table shows no cost anywhere. A wrong price table is worse than none, so the deployment opts in explicitly.
+- **D7 — day slicing.** The record also carries `days` slices keyed by the host-local calendar day (`YYYY-MM-DD`); the view renders a per-day table and a Today metric in the summary strip. Both fields are optional in the schema, so v1 rows load cleanly and day statistics accumulate from the upgrade onward — no further domain bump.
 
 ## Work plan
 

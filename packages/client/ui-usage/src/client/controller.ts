@@ -10,7 +10,7 @@ import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { UsageLedgerListResult, UsageLedgerRecord } from '@deepseek-ai/dsh-usage-ledger/types'
+import type { UsageLedgerListResult, UsageLedgerPrice, UsageLedgerRecord } from '@deepseek-ai/dsh-usage-ledger/types'
 
 /** The one Remote call this controller needs, matching the generated face. */
 export interface UsageLedgerRemoteFace {
@@ -25,6 +25,8 @@ export interface UsageState {
   status: UsageStatus
   /** Rows keyed by session id, most recently active first. */
   rows: readonly { readonly sessionId: SessionId; readonly record: UsageLedgerRecord }[]
+  /** The deployment's price table when configured; null keeps cost hidden. */
+  pricing: Record<string, UsageLedgerPrice> | null
   /** Reason the last load failed, cleared by the next successful load. */
   error: string | null
 }
@@ -46,7 +48,7 @@ export class UsageLedgerController implements HostObservable<UsageState> {
 
   constructor(private readonly remote: UsageLedgerRemoteFace) {
     this.store = createSnapshotStore<UsageState>({
-      status: 'cold', rows: [], error: null,
+      status: 'cold', rows: [], pricing: null, error: null,
     })
   }
 
@@ -91,6 +93,9 @@ export class UsageLedgerController implements HostObservable<UsageState> {
         state.rows = Object.freeze(
           response.value.value.items.map(row => ({ sessionId: row.sessionId, record: { ...row.record } })),
         )
+        // An empty table prices nothing: normalize it to unconfigured.
+        const pricing = response.value.value.pricing
+        state.pricing = pricing !== undefined && Object.keys(pricing).length > 0 ? pricing : null
         state.error = null
       })
     } catch (error) {

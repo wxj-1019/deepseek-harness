@@ -8,7 +8,7 @@ Every accumulation emits the allowlisted `usage-ledger/changed` event; loaded su
 
 ## Configuration
 
-The service takes no composition config: the bucket vocabulary is the provider usage sample's own.
+`pricing` — an optional price table in USD per 1M tokens, keyed by provider model id with `*` as the fallback key. When configured, `list()` publishes the table and cost-aware surfaces derive and show costs; without it (or with an empty table) no cost is ever displayed. Prices are deployment facts and are never guessed.
 
 ## Model Experience
 

@@ -5,6 +5,7 @@
  * @module @deepseek-ai/dsh-client-ui-usage/client/view
  */
 
+import type { UsageLedgerPrice } from '@deepseek-ai/dsh-usage-ledger/types'
 import type { UsageState } from './controller.ts'
 
 /** The four provider buckets plus the sample count and their sum. */
@@ -100,4 +101,77 @@ export function fmtTokens(count: number): string {
 function trim(value: number): string {
   const fixed = value.toFixed(1)
   return fixed.endsWith('.0') ? fixed.slice(0, -2) : fixed
+}
+
+/** One calendar day's rolled-up usage. */
+export interface DayUsageRow {
+  /** The host-local day key, `YYYY-MM-DD`. */
+  readonly day: string
+  readonly totals: UsageTotals
+}
+
+/** The client-local day key, matching the host's day-slice keys. */
+export function todayKey(): string {
+  const date = new Date()
+  const pad = (value: number): string => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
+/**
+ * Roll the per-day slices up across sessions, most recent day first. Rows
+ * without a days map contribute nothing.
+ * @param rows - the visible ledger rows.
+ * @returns one row per day, descending by day key.
+ */
+export function byDay(rows: UsageState['rows']): readonly DayUsageRow[] {
+  const slices = new Map<string, MutableTotals>()
+  for (const row of rows) {
+    for (const [day, buckets] of Object.entries(row.record.days ?? {})) {
+      const current = slices.get(day) ?? emptyTotals()
+      current.inputTokens += buckets.inputTokens
+      current.outputTokens += buckets.outputTokens
+      current.cacheReadTokens += buckets.cacheReadTokens
+      current.cacheWriteTokens += buckets.cacheWriteTokens
+      current.requests += buckets.requests
+      current.total = current.inputTokens + current.outputTokens + current.cacheReadTokens + current.cacheWriteTokens
+      slices.set(day, current)
+    }
+  }
+  return [...slices.entries()]
+    .map(([day, totals]) => ({ day, totals }))
+    .sort((left, right) => right.day.localeCompare(left.day))
+}
+
+/**
+ * Cost of one bucket set under a price (USD per 1M tokens per bucket).
+ * @param totals - the buckets to price.
+ * @param price - the effective price for the slice's model.
+ * @returns the cost in USD.
+ */
+export function costOf(totals: Pick<UsageTotals, 'inputTokens' | 'outputTokens' | 'cacheReadTokens' | 'cacheWriteTokens'>, price: UsageLedgerPrice): number {
+  return (totals.inputTokens * price.input
+    + totals.outputTokens * price.output
+    + totals.cacheReadTokens * price.cacheRead
+    + totals.cacheWriteTokens * price.cacheWrite) / 1_000_000
+}
+
+/**
+ * The effective price for a model: the exact id, else the `*` fallback.
+ * @param model - the provider model id.
+ * @param pricing - the deployment's price table.
+ * @returns the price, or undefined when the model and fallback are unpriced.
+ */
+export function priceFor(model: string, pricing: Record<string, UsageLedgerPrice>): UsageLedgerPrice | undefined {
+  return pricing[model] ?? pricing['*']
+}
+
+/**
+ * Terminal-style cost: dollars with as many decimals as the magnitude needs.
+ * @param value - a cost in USD.
+ * @returns the display form, e.g. `$0.0031`, `$2.40`, `$18`.
+ */
+export function fmtCost(value: number): string {
+  if (value >= 100) return `$${value.toFixed(0)}`
+  if (value >= 1) return `$${value.toFixed(2)}`
+  return `$${value.toFixed(4)}`
 }
