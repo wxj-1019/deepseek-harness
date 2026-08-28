@@ -1,17 +1,16 @@
 /**
  * Right-edge daily-todo drawer: a slim always-visible tab on the right edge
  * of the frame; clicking it slides the today panel out over the details
- * column. The panel derives its today view client-side (open items carried
- * over, plus items completed today), keeps a collapsible earlier-completed
- * history, and links rows to a workspace and one of its sessions — the
- * session opens on demand through the standard sessions kit.
+ * column. The list is a compact row per item; clicking a row expands a
+ * detail card carrying the full content — title, note, due editor, and
+ * project/session links.
  * @module @deepseek-ai/dsh-client-ui-user-todo/client/UserTodoButton
  */
 
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
-  IconCheckOutline14, IconCloseOutline16, IconEllipsisOutline16, IconPlusOutline16,
-  IconRightUpOutline16, IconTrashOutline16, useDismissOnOutsidePointer,
+  IconCheckOutline14, IconChevronDownOutline14, IconCloseOutline16, IconPlusOutline16,
+  IconTrashOutline16, useDismissOnOutsidePointer,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UserTodoId, UserTodoRecord } from '@deepseek-ai/dsh-user-todo/types'
@@ -39,7 +38,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
     useSessions, useWorkspaces, useTodo, t,
     ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove,
   } = props
-  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove }
+  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, setNote, setDue, remove }
   /** Business-rejection codes the Host can return, mapped to locale keys. */
   const ERROR_CODES = {
     'title-blank': 'error.code.title-blank',
@@ -72,21 +71,19 @@ export function TodoDrawer(props: TodoDrawerProps) {
   const [open, setOpen] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [draft, setDraft] = useState('')
-  const [editing, setEditing] = useState<{ id: UserTodoId; text: string } | null>(null)
+  const [expandedId, setExpandedId] = useState<UserTodoId | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
-  const [noteEditing, setNoteEditing] = useState<{ id: UserTodoId; text: string } | null>(null)
-  const [dueEditing, setDueEditing] = useState<{ id: UserTodoId } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
   const pendingCount = state.items.reduce((count, item) => count + (item.done ? 0 : 1), 0)
-  // Recomputed per render of the open panel: the wall clock decides "today",
+  // Recomputed per render of the open drawer: the wall clock decides "today",
   // and midnight crossings must not wait for a data change.
   const rows = open ? todayItems(state.items, Date.now()) : []
   const earlier = open ? earlierCompleted(state.items, Date.now()) : []
 
   useDismissOnOutsidePointer(rootRef, open, setOpen)
 
-  /** Escape closes the open panel, matching the other footer popovers. */
+  /** Escape closes the open drawer (the tab keeps its place). */
   const onRootKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     if (event.key === 'Escape' && open) setOpen(false)
   }
@@ -105,206 +102,175 @@ export function TodoDrawer(props: TodoDrawerProps) {
     run(actions.add(title))
   }
 
-  /** Commit one row's note editor; an empty text clears the note. */
-  const commitNote = (): void => {
-    if (noteEditing === null) return
-    const { id, text } = noteEditing
-    setNoteEditing(null)
-    const trimmed = text.trim()
-    const current = state.items.find(item => item.id === id)?.note
-    if (trimmed.length === 0) {
-      if (current !== undefined) run(actions.setNote(id, null))
-      return
-    }
-    if (trimmed !== current) run(actions.setNote(id, trimmed))
-  }
-
-  /** Commit the inline editor of one row. */
-  const commitEdit = (): void => {
-    if (editing === null) return
-    const { id, text } = editing
-    setEditing(null)
-    if (text.trim().length > 0 && text !== state.items.find(item => item.id === id)?.title) {
-      run(actions.retitle(id, text))
-    }
-  }
-
-  /**
-   * Human label for a session option: the list row's display title, falling
-   * back to the short id before the host projects a title.
-   */
-  const sessionLabel = (sessionId: string): string => {
-    const summary = sessionsById[sessionId as keyof typeof sessionsById]
-    return summary === undefined ? sessionId.slice(0, 8) : summary.displayTitle
-  }
-
   /** The linked workspace's accounted, non-archived session ids. */
   const sessionOptionsOf = (item: UserTodoRecord): readonly string[] => {
     if (item.workspaceId === undefined) return []
     const workspace = workspaces.find(candidate => candidate.workspaceId === item.workspaceId)
-    const archived = new Set(archivedSessionIds as readonly string[])
+    const archived = new Set<string>(archivedSessionIds as readonly string[])
     return (workspace?.sessionIds ?? []).filter(id => !archived.has(id as string))
   }
 
-  /** One todo row: check, title (or editor), session affordances, delete. */
-  const renderRow = (item: UserTodoRecord, opts: { readonly showDate?: boolean } = {}): ReactNode => {
-    const options = sessionOptionsOf(item)
+  /** One compact row; clicking the title toggles its expanded detail card. */
+  const renderRow = (item: UserTodoRecord): ReactNode => {
+    const expanded = expandedId === item.id
+    const overdue = item.dueAt !== undefined && item.dueAt < Date.now()
     const linkedSession = item.sessionId
     return (
       <li key={item.id} className={item.done ? `${css.row} ${css.rowDone}` : css.row}>
-        <button
-          type="button"
-          className={css.check}
-          aria-label={item.done ? t('row.check.undo') : t('row.check.done')}
-          onClick={() => run(actions.toggle(item.id, !item.done))}
-        >
-          {item.done && <IconCheckOutline14 />}
-        </button>
-        {opts.showDate === true && item.completedAt !== undefined && (
-          <span className={css.date}>{localDayKey(item.completedAt)}</span>
-        )}
-        {editing?.id === item.id
-          ? (
-            <input
-              className={css.editInput}
-              value={editing.text}
-              autoFocus
-              aria-label={t('row.edit')}
-              onChange={(event) => { setEditing({ id: editing.id, text: event.target.value }) }}
-              onBlur={commitEdit}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') commitEdit()
-                if (event.key === 'Escape') setEditing(null)
-              }}
-            />
-          )
-          : (
-            <button
-              type="button"
-              className={css.title}
-              onClick={() => setEditing({ id: item.id, text: item.title })}
-            >
-              {item.title}
-            </button>
-          )}
-        <button
-          type="button"
-          className={[
-            css.dueChip,
-            item.dueAt !== undefined && item.dueAt < Date.now() ? css.dueOverdue : '',
-          ].filter(Boolean).join(' ')}
-          aria-label={t('due.open')}
-          title={t('due.open')}
-          onClick={() => setDueEditing(dueEditing?.id === item.id ? null : { id: item.id })}
-        >
-          {item.dueAt !== undefined ? formatDueLabel(item.dueAt) : t('due.none')}
-        </button>
-        {linkedSession !== undefined && (
+        <div className={css.rowLine}>
+          <button
+            type="button"
+            className={css.check}
+            aria-label={item.done ? t('row.check.undo') : t('row.check.done')}
+            onClick={() => run(actions.toggle(item.id, !item.done))}
+          >
+            {item.done && <IconCheckOutline14 />}
+          </button>
+          <button
+            type="button"
+            className={expanded ? `${css.title} ${css.titleOpen}` : css.title}
+            aria-expanded={expanded}
+            onClick={() => setExpandedId(current => (current === item.id ? null : item.id))}
+          >
+            {item.title}
+            {item.note !== undefined && <span className={css.noteDot} aria-hidden="true" />}
+            {item.dueAt !== undefined && (
+              <span className={overdue ? `${css.dueChip} ${css.dueOverdue}` : css.dueChip}>
+                {formatDueLabel(item.dueAt)}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            className={css.chevron}
+            aria-label={t('row.detail')}
+            aria-expanded={expanded}
+            onClick={() => setExpandedId(current => (current === item.id ? null : item.id))}
+          >
+            <IconChevronDownOutline14 />
+          </button>
           <button
             type="button"
             className={css.iconAction}
-            aria-label={t('row.open')}
-            title={t('row.open')}
-            onClick={() => openSession(linkedSession)}
+            aria-label={t('row.delete')}
+            onClick={() => run(actions.remove(item.id))}
           >
-            <IconRightUpOutline16 />
+            <IconTrashOutline16 />
           </button>
-        )}
-        <button
-          type="button"
-          className={noteEditing?.id === item.id ? `${css.iconAction} ${css.noteActive}` : css.iconAction}
-          aria-label={t('note.open')}
-          title={t('note.open')}
-          onClick={() => setNoteEditing(noteEditing?.id === item.id ? null : { id: item.id, text: item.note ?? '' })}
-        >
-          <IconEllipsisOutline16 />
-        </button>
-        <select
-          className={css.linkSelect}
-          aria-label={t('link.label')}
-          value={item.workspaceId ?? ''}
-          onChange={(event) => {
-            const value = event.target.value
-            run(actions.setWorkspaceLink(item.id, value === '' ? undefined : value))
-          }}
-        >
-          <option value="">{t('link.none')}</option>
-          {workspaces.map(workspace => (
-            <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.title}</option>
-          ))}
-        </select>
-        {item.workspaceId !== undefined && (
-          <select
-            className={css.linkSelect}
-            aria-label={t('session.label')}
-            value={item.sessionId ?? ''}
-            onChange={(event) => {
-              const value = event.target.value
-              run(actions.setSessionLink(item.id, value === '' ? undefined : value))
-            }}
-          >
-            <option value="">{t('session.none')}</option>
-            {options.map(sessionId => (
-              <option key={sessionId} value={sessionId}>{sessionLabel(sessionId)}</option>
-            ))}
-          </select>
-        )}
-        <button
-          type="button"
-          className={css.iconAction}
-          aria-label={t('row.delete')}
-          onClick={() => run(actions.remove(item.id))}
-        >
-          <IconTrashOutline16 />
-        </button>
-        {dueEditing?.id === item.id && (
-          <div className={css.noteRow}>
+        </div>
+        {expanded && (
+          <div className={css.detailCard}>
             <input
-              type="datetime-local"
-              className={css.noteInput}
-              value={item.dueAt === undefined ? '' : toLocalInputValue(item.dueAt)}
-              aria-label={t('due.open')}
-              onChange={(event) => {
-                console.log('DUE_ONCHANGE', JSON.stringify(event.target.value))
-                const value = event.target.value
-                setDueEditing({ id: item.id })
-                run(actions.setDue(item.id, value === '' ? null : Date.parse(value)))
+              className={css.cardInput}
+              defaultValue={item.title}
+              aria-label={t('row.edit')}
+              placeholder={t('row.edit')}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  const value = event.currentTarget.value.trim()
+                  if (value.length > 0 && value !== item.title) run(actions.retitle(item.id, value))
+                }
+                if (event.key === 'Escape') event.currentTarget.blur()
+              }}
+              onBlur={(event) => {
+                const value = event.currentTarget.value.trim()
+                if (value.length > 0 && value !== item.title) run(actions.retitle(item.id, value))
               }}
             />
-            <button
-              type="button"
-              className={css.iconAction}
-              aria-label={t('due.clear')}
-              onClick={() => {
-                run(actions.setDue(item.id, null))
-                setDueEditing(null)
-              }}
-            >
-              <IconTrashOutline16 />
-            </button>
-          </div>
-        )}
-        {noteEditing?.id === item.id && (
-          <div className={css.noteRow}>
             <textarea
-              className={css.noteInput}
-              value={noteEditing.text}
+              className={css.cardNote}
+              defaultValue={item.note ?? ''}
               rows={2}
-              autoFocus
               placeholder={t('note.placeholder')}
               aria-label={t('note.open')}
-              onChange={(event) => { setNoteEditing({ id: noteEditing.id, text: event.target.value }) }}
               onKeyDown={(event) => {
-                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) commitNote()
-                if (event.key === 'Escape') {
-                  event.stopPropagation()
-                  setNoteEditing(null)
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                  run(actions.setNote(item.id, event.currentTarget.value.trim().length === 0 ? null : event.currentTarget.value))
                 }
               }}
+              onBlur={(event) => {
+                const value = event.currentTarget.value
+                run(actions.setNote(item.id, value.trim().length === 0 ? null : value))
+              }}
             />
-            <button type="button" className={css.iconAction} aria-label={t('note.save')} onClick={commitNote}>
-              <IconCheckOutline14 />
-            </button>
+            <div className={css.cardRow}>
+              <span className={css.cardLabel}>{t('due.open')}</span>
+              <input
+                type="datetime-local"
+                className={css.cardInput}
+                value={item.dueAt === undefined ? '' : toLocalInputValue(item.dueAt)}
+                aria-label={t('due.open')}
+                onChange={(event) => {
+                  const value = event.target.value
+                  run(actions.setDue(item.id, value === '' ? null : Date.parse(value)))
+                }}
+              />
+              {item.dueAt !== undefined && (
+                <button
+                  type="button"
+                  className={css.cardClear}
+                  aria-label={t('due.clear')}
+                  onClick={() => run(actions.setDue(item.id, null))}
+                >
+                  {t('due.clear')}
+                </button>
+              )}
+            </div>
+            <div className={css.cardRow}>
+              <span className={css.cardLabel}>{t('link.label')}</span>
+              <select
+                className={css.cardInput}
+                value={item.workspaceId ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value
+                  run(actions.setWorkspaceLink(item.id, value === '' ? undefined : value))
+                }}
+              >
+                <option value="">{t('link.none')}</option>
+                {workspaces.map(workspace => (
+                  <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.title}</option>
+                ))}
+              </select>
+            </div>
+            {item.workspaceId !== undefined && (
+              <div className={css.cardRow}>
+                <span className={css.cardLabel}>{t('session.label')}</span>
+                <select
+                  className={css.cardInput}
+                  value={item.sessionId ?? ''}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    run(actions.setSessionLink(item.id, value === '' ? undefined : value))
+                  }}
+                >
+                  <option value="">{t('session.none')}</option>
+                  {sessionOptionsOf(item).map(sessionId => (
+                    <option key={sessionId} value={sessionId}>
+                      {sessionsById[sessionId as never]?.displayTitle ?? String(sessionId).slice(0, 8)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {linkedSession !== undefined && (
+              <button
+                type="button"
+                className={css.cardOpen}
+                onClick={() => openSession(linkedSession)}
+              >
+                {t('row.open')}
+              </button>
+            )}
+            <div className={css.cardMeta}>
+              <span>{t('meta.created')} {localDayKey(item.createdAt)}</span>
+              <button
+                type="button"
+                className={css.cardDelete}
+                onClick={() => run(actions.remove(item.id))}
+              >
+                {t('row.delete')}
+              </button>
+            </div>
           </div>
         )}
       </li>
@@ -315,7 +281,6 @@ export function TodoDrawer(props: TodoDrawerProps) {
     <div ref={rootRef} className={css.edgeRoot} onKeyDown={onRootKeyDown}>
       <button
         type="button"
-        data-dsh-glass-tab=""
         className={css.edgeTab}
         aria-label={t('button.aria')}
         aria-expanded={open}
@@ -354,7 +319,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             </button>
           </form>
 
-          {state.error !== null && <p className={css.error}>{t('error.load', { message: state.error })}</p>}
+          {state.error !== null && <p className={css.error}>{state.error}</p>}
           {actionError !== null && <p className={css.error}>{t('error.action', { message: actionError })}</p>}
 
           <ul className={css.list}>
@@ -371,7 +336,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
               >
                 {t('history.toggle', { count: earlier.length })}
               </button>
-              {showHistory && <ul className={css.list}>{earlier.map(item => renderRow(item, { showDate: true }))}</ul>}
+              {showHistory && <ul className={css.list}>{earlier.map(item => renderRow(item))}</ul>}
             </>
           )}
         </section>

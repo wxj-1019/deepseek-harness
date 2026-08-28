@@ -9,22 +9,8 @@
   - list:
     - listitem:
       - button "Mark as done"
-      - button "Water the plants"
-      - button "Due date": No due
-      - button "Note":
+      - button "Buy milk 2030-01-01 {{clock}}"
+      - button "Details":
         - img
-      - combobox "Linked project":
-        - option "No project" [selected]
-      - button "Delete":
-        - img
-    - listitem:
-      - button "Mark as open":
-        - img
-      - button "Buy milk"
-      - button "Due date": No due
-      - button "Note":
-        - img
-      - combobox "Linked project":
-        - option "No project" [selected]
       - button "Delete":
         - img

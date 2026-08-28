@@ -29,32 +29,20 @@
   background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.2));
 }
 
-.badge {
-  min-width: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
-  background: var(--dsw-accent-bg, rgba(64, 128, 255, 0.85));
-  color: #fff;
-  font-size: 11px;
-  line-height: 16px;
-  text-align: center;
-}
-
 .drawer {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  border-radius: 16px 0 0 16px;
   z-index: 50;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: min(380px, 92vw);
-  overflow: auto;
+  width: min(400px, 94vw);
+  overflow-y: auto;
   padding: 12px;
   border-left: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
-  border-radius: 0;
+  border-radius: 16px 0 0 16px;
   background: var(--dsw-surface, #1f2023);
   color: inherit;
   box-shadow: -12px 0 32px rgba(0, 0, 0, 0.25);
@@ -74,7 +62,7 @@
 
 .count {
   font-size: 12px;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .composer {
@@ -83,9 +71,8 @@
 }
 
 .input,
-.editInput {
-  flex: 1;
-  min-width: 0;
+.cardInput,
+.cardNote {
   padding: 5px 8px;
   border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
   border-radius: var(--dsw-radius-sm, 6px);
@@ -94,9 +81,90 @@
   font: inherit;
 }
 
+.input {
+  flex: 1;
+  min-width: 0;
+}
+
 .input:focus-visible,
-.editInput:focus-visible {
+.cardInput:focus-visible,
+.cardNote:focus-visible {
   outline: 1px solid var(--dsw-focus-ring, rgba(64, 128, 255, 0.7));
+}
+
+.cardNote {
+  resize: vertical;
+  min-height: 40px;
+}
+
+.cardRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardLabel {
+  flex: none;
+  width: 34px;
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.cardInput {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardOpen,
+.cardClear,
+.cardDelete {
+  padding: 2px 8px;
+  border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.cardOpen:hover,
+.cardClear:hover,
+.cardDelete:hover {
+  opacity: 1;
+}
+
+.cardDelete:hover {
+  color: var(--dsw-danger-text, #ff8080);
+  border-color: var(--dsw-danger-border, rgba(255, 96, 96, 0.5));
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.iconAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.iconAction:hover {
+  opacity: 1;
+  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
 }
 
 .list {
@@ -108,34 +176,12 @@
 }
 
 .row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 3px 2px;
+  border-radius: 8px;
+  padding: 2px;
 }
 
-.noteActive {
-  opacity: 1;
-  color: var(--dsw-accent-text, #7aa2ff);
-}
-
-.noteRow {
-  display: flex;
-  flex: 1 0 100%;
-  gap: 6px;
-}
-
-.noteInput {
-  flex: 1;
-  min-width: 0;
-  padding: 5px 8px;
-  border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
-  border-radius: var(--dsw-radius-sm, 6px);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  resize: vertical;
+.row:hover {
+  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.12));
 }
 
 .rowDone .title {
@@ -160,47 +206,58 @@
 .title {
   flex: 1;
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   overflow: hidden;
-  padding: 3px 4px;
+  padding: 4px 6px;
   border: none;
-  border-radius: 4px;
   background: transparent;
   color: inherit;
   font: inherit;
   cursor: pointer;
   text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .title:hover {
   background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
 }
 
-.linkSelect {
-  max-width: 96px;
-  padding: 2px 4px;
-  border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
-  border-radius: 4px;
-  background: transparent;
-  color: inherit;
-  font-size: 11px;
-  opacity: 0.75;
+.titleOpen {
+  font-weight: 600;
 }
 
-.iconAction {
+.noteDot {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dsw-accent-text, #7aa2ff);
+}
+
+.chevron {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border: none;
   border-radius: 4px;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  opacity: 0.65;
+  opacity: 0.6;
+  transition: transform 120ms ease;
+}
+
+.chevron:hover {
+  opacity: 1;
+  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
+}
+
+.chevron[aria-expanded="true"] {
+  transform: rotate(180deg);
 }
 
 .dueChip {
@@ -208,15 +265,10 @@
   padding: 1px 6px;
   border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
   border-radius: 8px;
-  background: transparent;
-  color: inherit;
   font-size: 11px;
-  cursor: pointer;
   opacity: 0.75;
-}
-
-.dueChip:hover {
-  opacity: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .dueOverdue {
@@ -225,33 +277,21 @@
   opacity: 1;
 }
 
-.date {
-  flex: none;
-  font-size: 11px;
-  opacity: 0.6;
-  font-variant-numeric: tabular-nums;
+.detailCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 2px 0 4px 26px;
+  padding: 8px;
+  border: 1px solid var(--dsw-border-weak, rgba(127, 127, 127, 0.2));
+  border-radius: var(--dsw-radius-sm, 8px);
+  background: var(--dsw-inset-bg, rgba(127, 127, 127, 0.08));
 }
 
-.historyToggle {
-  align-self: flex-start;
-  padding: 2px 4px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-.historyToggle:hover {
-  opacity: 1;
-  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
-}
-
-.iconAction:hover {
-  opacity: 1;
-  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
+.empty {
+  padding: 12px 6px;
+  opacity: 0.65;
+  font-size: 13px;
 }
 
 .error {
@@ -261,8 +301,20 @@
   text-align: left;
 }
 
-.empty {
-  padding: 10px 4px;
-  opacity: 0.65;
-  font-size: 13px;
+.historyToggle {
+  align-self: flex-start;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.7;
+  text-align: left;
+}
+
+.historyToggle:hover {
+  opacity: 1;
+  background: var(--dsw-hover-bg, rgba(127, 127, 127, 0.14));
 }
