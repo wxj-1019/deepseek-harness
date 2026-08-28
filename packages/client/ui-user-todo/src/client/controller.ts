@@ -43,7 +43,6 @@ export interface UserTodosRemoteFace {
   put: (request: {
     id?: UserTodoId
     title?: string
-    note?: string | null
     workspaceId?: LinkedWorkspaceId | null
     sessionId?: SessionId | null
     dueAt?: number | null
@@ -193,11 +192,6 @@ export class UserTodoController implements HostObservable<UserTodoState> {
   }
 
   /**
-   * Delete an item.
-   * @param id - the addressed item.
-   * @returns the failure message, or undefined once committed.
-   */
-  /**
    * Set or clear the session link of an item that already carries a
    * workspace link. The Host revalidates membership on every put.
    * @param id - the addressed item.
@@ -210,17 +204,6 @@ export class UserTodoController implements HostObservable<UserTodoState> {
   }
 
   /**
-   * Replace an item's note; `null` clears it. An empty submission is the
-   * caller's clear signal, matching the workspace/session link conventions.
-   * @param id - the addressed item.
-   * @param note - the new note text, or null to remove it.
-   * @returns the failure message, or undefined once committed.
-   */
-  async setNote(id: UserTodoId, note: string | null): Promise<string | undefined> {
-    return this.mutate(remote => remote.put({ id, note }))
-  }
-
-  /**
    * Set or clear an item's due time (epoch milliseconds).
    * @param id - the addressed item.
    * @param dueMs - the due instant, or null to clear.
@@ -230,6 +213,11 @@ export class UserTodoController implements HostObservable<UserTodoState> {
     return this.mutate(remote => remote.put({ id, dueAt: dueMs }))
   }
 
+  /**
+   * Delete an item.
+   * @param id - the addressed item.
+   * @returns the failure message, or undefined once committed.
+   */
   async remove(id: UserTodoId): Promise<string | undefined> {
     return this.mutate(remote => remote.delete({ id }))
   }

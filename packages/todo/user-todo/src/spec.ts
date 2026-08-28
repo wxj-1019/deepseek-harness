@@ -20,7 +20,6 @@ export const userTodoItemSchema = z.object({
   title: z.string().refine(title => title.trim().length > 0, {
     message: 'user todo title must contain a non-whitespace character',
   }),
-  note: z.string().optional(),
   done: z.boolean(),
   createdAt: z.number().int().nonnegative(),
   completedAt: z.number().int().nonnegative().optional(),

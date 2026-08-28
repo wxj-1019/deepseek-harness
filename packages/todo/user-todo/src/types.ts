@@ -36,8 +36,6 @@ export interface UserTodoRecord {
   readonly id: UserTodoId
   /** Required non-blank task text. */
   readonly title: string
-  /** Optional explanation, stored verbatim after validation. */
-  readonly note?: string
   /** Whether the task is done; `completedAt` is present exactly when true. */
   readonly done: boolean
   /** Host-assigned creation time in Unix epoch milliseconds. */
@@ -60,14 +58,12 @@ export interface UserTodoRecord {
   readonly sessionId?: SessionId
 }
 
-/** Create one item, or retitle / annotate / relink an existing one. */
+/** Create one item, or retitle / relink an existing one. */
 export interface UserTodoPutRequest {
   /** Absent to create a new item with a fresh id; present to update in place. */
   readonly id?: UserTodoId
   /** Desired title. Required on create; omitted keeps the current title. */
   readonly title?: string
-  /** Desired note; `null` clears, omitted keeps the current note. */
-  readonly note?: string | null
   /** Desired project link; `null` clears, omitted keeps the current link. */
   readonly workspaceId?: LinkedWorkspaceId | null
   /** Desired session link; `null` clears, omitted keeps the current link. */

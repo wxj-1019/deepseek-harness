@@ -2,7 +2,7 @@
  * Right-edge daily-todo drawer: a slim always-visible tab on the right edge
  * of the frame; clicking it slides the today panel out over the details
  * column. The list is a compact row per item; clicking a row expands a
- * detail card carrying the full content — title, note, due editor, and
+ * detail card carrying the full content — title, due editor, and
  * project/session links.
  * @module @deepseek-ai/dsh-client-ui-user-todo/client/UserTodoButton
  */
@@ -25,7 +25,7 @@ import css from './UserTodoButton.module.css'
 export type TodoDrawerProps =
   & PropsRuntime<'shell.overlay'>
   & PropsLocale<typeof NS>
-  & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'setNote' | 'setDue' | 'remove'>
+  & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'setDue' | 'remove'>
   & { useTodo: SnapshotSelectorHook<UserTodoState> }
 
 /**
@@ -36,9 +36,9 @@ export type TodoDrawerProps =
 export function TodoDrawer(props: TodoDrawerProps) {
   const {
     useSessions, useWorkspaces, useTodo, t,
-    ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove,
+    ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setDue, remove,
   } = props
-  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, setNote, setDue, remove }
+  const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, setDue, remove }
   /** Business-rejection codes the Host can return, mapped to locale keys. */
   const ERROR_CODES = {
     'title-blank': 'error.code.title-blank',
@@ -133,7 +133,6 @@ export function TodoDrawer(props: TodoDrawerProps) {
             onClick={() => setExpandedId(current => (current === item.id ? null : item.id))}
           >
             {item.title}
-            {item.note !== undefined && <span className={css.noteDot} aria-hidden="true" />}
             {item.dueAt !== undefined && (
               <span className={overdue ? `${css.dueChip} ${css.dueOverdue}` : css.dueChip}>
                 {formatDueLabel(item.dueAt)}
@@ -175,22 +174,6 @@ export function TodoDrawer(props: TodoDrawerProps) {
               onBlur={(event) => {
                 const value = event.currentTarget.value.trim()
                 if (value.length > 0 && value !== item.title) run(actions.retitle(item.id, value))
-              }}
-            />
-            <textarea
-              className={css.cardNote}
-              defaultValue={item.note ?? ''}
-              rows={2}
-              placeholder={t('note.placeholder')}
-              aria-label={t('note.open')}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-                  run(actions.setNote(item.id, event.currentTarget.value.trim().length === 0 ? null : event.currentTarget.value))
-                }
-              }}
-              onBlur={(event) => {
-                const value = event.currentTarget.value
-                run(actions.setNote(item.id, value.trim().length === 0 ? null : value))
               }}
             />
             <div className={css.cardRow}>

@@ -71,8 +71,7 @@
 }
 
 .input,
-.cardInput,
-.cardNote {
+.cardInput {
   padding: 5px 8px;
   border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
   border-radius: var(--dsw-radius-sm, 6px);
@@ -87,14 +86,8 @@
 }
 
 .input:focus-visible,
-.cardInput:focus-visible,
-.cardNote:focus-visible {
+.cardInput:focus-visible {
   outline: 1px solid var(--dsw-focus-ring, rgba(64, 128, 255, 0.7));
-}
-
-.cardNote {
-  resize: vertical;
-  min-height: 40px;
 }
 
 .cardRow {
@@ -225,14 +218,6 @@
 
 .titleOpen {
   font-weight: 600;
-}
-
-.noteDot {
-  flex: none;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--dsw-accent-text, #7aa2ff);
 }
 
 .chevron {

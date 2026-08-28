@@ -30,7 +30,7 @@ describe('user-todo model-visible catalog', () => {
     expect(snapshot.initialForm).toBe('catalog')
     expect(snapshot.initialLines).toEqual([
       'Open items:',
-      '- [ ] Buy milk (note: 2 percent) (due: 2026-08-30 09:00) (project: Demo WS)',
+      '- [ ] Buy milk (due: 2026-08-30 09:00) (project: Demo WS)',
       '- [ ] Water the plants',
     ])
     expect(snapshot.secondNew).toBe(0)

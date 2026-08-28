@@ -1,6 +1,6 @@
 // Web e2e journey: the daily-todo right-edge drawer. A seeded session pins
 // the drawer's flows to real state: a row's expanded detail card carries the
-// note editor, the due editor, and the project link picker; the due chip
+// title editor, the due editor, and the project link picker; the due chip
 // survives a full reload. Zero model calls in replay; the one session row
 // comes from the seeded-history fixture, reused read-only.
 import { readFile } from 'node:fs/promises'
@@ -60,18 +60,15 @@ describe('web e2e: daily-todo right-edge drawer', () => {
     const row = drawer.locator('li', { hasText: 'Buy milk' })
     await expect.poll(async () => row.count(), { timeout: 10_000 }).toBe(1)
 
-    // Expand the row's detail card and set a note.
+    // Expand the row's detail card before setting a due.
     await row.getByRole('button', { name: 'Details' }).click()
-    const noteEditor = row.getByLabel('Note', { exact: true })
-    await noteEditor.waitFor({ timeout: 10_000 })
-    await noteEditor.fill('skimmed, 2 percent')
 
     // Set a due through the datetime editor.
     await row.locator('input[type="datetime-local"]').fill('2030-01-01T09:00')
     await expect.poll(async () =>
       row.locator('span[class*="dueChip"]').textContent(), { timeout: 10_000 }).toContain('2030-01-01')
 
-    // Reload: title, note, and due are durable on the Host.
+    // Reload: title and due are durable on the Host.
     await page.reload({ waitUntil: 'load' })
     await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
     await page.getByRole('button', { name: TRIGGER, exact: true }).click()
@@ -80,7 +77,7 @@ describe('web e2e: daily-todo right-edge drawer', () => {
     await expect.poll(async () => reopened.getByText('Buy milk').count(), { timeout: 10_000 }).toBe(1)
 
     // The golden pins the open drawer: composer, the expanded row card with
-    // its note editor and due input, and the due chip.
+    // its title and due inputs, and the due chip.
     const snapshot = await captureStableAria(page, '[aria-label="Daily todo list"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(DRAWER_EXPECTED, snapshot, MODE)
     expect(tripwire.pageErrors).toEqual([])

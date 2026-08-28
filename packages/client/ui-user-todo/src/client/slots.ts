@@ -1,5 +1,5 @@
 /**
- * Injected face of the sidebar-foot daily-todo entry: the bound state
+ * Injected face of the right-edge daily-todo drawer entry: the bound state
  * selector hook (reserved hooks seat) plus plain action callbacks. The
  * business component contains no subscription machinery and no ctx access —
  * this face is the only channel to the shared controller.
@@ -35,8 +35,6 @@ export interface UserTodoInjected {
   setSessionLink(id: UserTodoId, sessionId: string | undefined): Promise<string | undefined>
   /** Click-through: bring the linked session to the foreground. */
   openSession(sessionId: SessionId): void
-  /** Replace an item's note; null clears it. */
-  setNote(id: UserTodoId, note: string | null): Promise<string | undefined>
   /** Set or clear an item's due time (epoch milliseconds); null clears. */
   setDue(id: UserTodoId, dueMs: number | null): Promise<string | undefined>
   /** Delete one item. */

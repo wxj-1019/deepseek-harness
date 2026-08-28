@@ -127,7 +127,7 @@ describe('user todo service', () => {
   test('put patches fields, null clears them, and blank titles are rejected', async () => {
     const fix = await setupFixture()
     try {
-      const created = await fix.service.put({ title: 'Draft', note: 'context' })
+      const created = await fix.service.put({ title: 'Draft', dueAt: 123 })
       expect(created.ok).toBe(true)
       if (!created.ok) return
       const id = created.value.id
@@ -136,7 +136,7 @@ describe('user todo service', () => {
       expect(retitleOnly.ok).toBe(true)
       if (retitleOnly.ok) {
         expect(retitleOnly.value.title).toBe('Renamed')
-        expect(retitleOnly.value.note).toBe('context')
+        expect(retitleOnly.value.dueAt).toBe(123)
       }
 
       // A patch landing on stored values is a no-op: no write, no event.
@@ -145,9 +145,9 @@ describe('user todo service', () => {
       expect(noop.ok).toBe(true)
       expect(fix.changes()).toBe(changesBeforeNoop)
 
-      const cleared = await fix.service.put({ id, note: null })
+      const cleared = await fix.service.put({ id, dueAt: null })
       expect(cleared.ok).toBe(true)
-      if (cleared.ok) expect(cleared.value.note).toBeUndefined()
+      if (cleared.ok) expect(cleared.value.dueAt).toBeUndefined()
 
       const blank = await fix.service.put({ title: '   ' })
       expect(blank.ok).toBe(false)
@@ -337,7 +337,7 @@ describe('user todo model projection', () => {
     const fix = await setupFixture({ modelVisible: true })
     try {
       fix.registry.seed('ws-1', [], 'Demo WS')
-      await fix.service.put({ title: 'Buy milk', note: '2 percent', dueAt: Date.UTC(2026, 7, 30, 9), workspaceId: 'ws-1' as never })
+      await fix.service.put({ title: 'Buy milk', dueAt: Date.UTC(2026, 7, 30, 9), workspaceId: 'ws-1' as never })
       await fix.service.put({ title: 'Water the plants' })
       const agent = fakeAgent(Session.create(SessionId('proj-agent'), []))
 
@@ -346,7 +346,7 @@ describe('user todo model projection', () => {
       expect(initial).toHaveLength(1)
       const text = (initial[0]?.content[0] as { text: string }).text
       expect(text).toContain('<user_todos>')
-      expect(text).toContain('- [ ] Buy milk (note: 2 percent) (due:')
+      expect(text).toContain('- [ ] Buy milk (due:')
       expect(text).toContain('(project: Demo WS)')
       expect(text).toContain('- [ ] Water the plants')
 

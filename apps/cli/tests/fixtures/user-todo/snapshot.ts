@@ -73,7 +73,6 @@ try {
 
   await ctx.userTodos.put({
     title: 'Buy milk',
-    note: '2 percent',
     dueAt: Date.UTC(2026, 7, 30, 9),
     workspaceId,
   })

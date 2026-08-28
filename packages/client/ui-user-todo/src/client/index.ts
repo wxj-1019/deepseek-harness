@@ -1,8 +1,8 @@
 /**
- * Daily-todo plugin, browser half. Registers the sidebar-foot entry: one
- * trigger button that opens the today panel over the user-todo storage
- * domain. One controller backs every instance; pushed `user-todo/changed`
- * events and reconnects converge an already-loaded list.
+ * Daily-todo plugin, browser half. Registers the right-edge drawer entry:
+ * one always-visible edge tab that slides the today panel out over the
+ * user-todo storage domain. One controller backs every instance; pushed
+ * `user-todo/changed` events and reconnects converge an already-loaded list.
  * Export discipline: packages/client/AGENTS.md.
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
@@ -61,7 +61,6 @@ export function apply(ctx: ClientContext): void {
     setWorkspaceLink: (id, workspaceId) => controller.setWorkspaceLink(id, workspaceId),
     setSessionLink: (id, sessionId) => controller.setSessionLink(id, sessionId),
     openSession: (sessionId) => { ctx.sessions.open(sessionId) },
-    setNote: (id, note) => controller.setNote(id, note),
     setDue: (id, dueMs) => controller.setDue(id, dueMs),
     remove: id => controller.remove(id),
   }

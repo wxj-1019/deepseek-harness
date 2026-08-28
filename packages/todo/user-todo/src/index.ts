@@ -70,7 +70,6 @@ function snapshotItem(item: UserTodoRecord): UserTodoRecord {
   return Object.freeze({
     id: item.id,
     title: item.title,
-    ...(item.note === undefined ? {} : { note: item.note }),
     done: item.done,
     createdAt: item.createdAt,
     ...(item.completedAt === undefined ? {} : { completedAt: item.completedAt }),
@@ -182,7 +181,6 @@ export class UserTodoService extends TypertRemoteService {
           : this.ctx.workspaceRegistry.get(record.workspaceId)?.title
         return {
           title: record.title,
-          ...(record.note === undefined ? {} : { note: record.note }),
           ...(record.dueAt === undefined ? {} : { dueAt: record.dueAt }),
           ...(project === undefined ? {} : { project }),
         }
@@ -207,7 +205,7 @@ export class UserTodoService extends TypertRemoteService {
   /**
    * Create one item, or apply a partial update to an existing one. Unspecified
    * optional fields keep their current value; an explicit `null` clears a
-   * link or note. Every material change emits {@link 'user-todo/changed'}.
+   * link. Every material change emits {@link 'user-todo/changed'}.
    * @param request - target id (absent creates), desired fields, and link patches.
    * @returns the committed item or an explicit business failure.
    */
@@ -237,11 +235,6 @@ export class UserTodoService extends TypertRemoteService {
     const links = this.resolveLinks({ workspaceId: requestedWorkspace, sessionId: requestedSession })
     if (!links.ok) return links
 
-    const note = request.note === undefined
-      ? current.note
-      : request.note === null
-        ? undefined
-        : request.note
     const dueAt = request.dueAt === undefined
       ? current.dueAt
       : request.dueAt === null
@@ -251,7 +244,6 @@ export class UserTodoService extends TypertRemoteService {
     const next = snapshotItem({
       id: current.id,
       title,
-      ...(note === undefined ? {} : { note }),
       done: current.done,
       createdAt: current.createdAt,
       ...(current.completedAt === undefined ? {} : { completedAt: current.completedAt }),
@@ -262,7 +254,6 @@ export class UserTodoService extends TypertRemoteService {
     // Only the editable fields can move on this path; a patch that lands on
     // the stored values is a no-op that neither writes nor emits.
     const material = next.title !== current.title
-      || next.note !== current.note
       || next.dueAt !== current.dueAt
       || next.workspaceId !== current.workspaceId
       || next.sessionId !== current.sessionId
@@ -290,7 +281,6 @@ export class UserTodoService extends TypertRemoteService {
     const next = snapshotItem({
       id: current.id,
       title: current.title,
-      ...(current.note === undefined ? {} : { note: current.note }),
       done: request.done,
       createdAt: current.createdAt,
       ...(request.done ? { completedAt: Date.now() } : {}),
@@ -330,7 +320,6 @@ export class UserTodoService extends TypertRemoteService {
     const item = snapshotItem({
       id: UserTodoId(randomUUID()),
       title: title.value,
-      ...(request.note === undefined || request.note === null ? {} : { note: request.note }),
       ...(request.dueAt === undefined || request.dueAt === null ? {} : { dueAt: request.dueAt }),
       done: false,
       createdAt: Date.now(),
@@ -396,7 +385,6 @@ export class UserTodoService extends TypertRemoteService {
 /** One open item as the model-facing catalog publishes it. */
 export interface UserTodoSourceEntry {
   readonly title: string
-  readonly note?: string
   readonly dueAt?: number
   readonly project?: string
 }
@@ -453,7 +441,6 @@ function dueLabel(dueAt: number): string {
 /** The catalog text for one open item, annotations included. */
 function renderTodoLine(todo: UserTodoSourceEntry, overdue: boolean): string {
   const parts = [`- [ ] ${todo.title}`]
-  if (todo.note !== undefined) parts.push(`(note: ${todo.note})`)
   if (todo.dueAt !== undefined) parts.push(`(due: ${dueLabel(todo.dueAt)}${overdue ? ', OVERDUE' : ''})`)
   if (todo.project !== undefined) parts.push(`(project: ${todo.project})`)
   return parts.join(' ')
