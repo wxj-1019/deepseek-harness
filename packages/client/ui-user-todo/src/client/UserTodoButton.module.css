@@ -71,7 +71,8 @@
 }
 
 .input,
-.cardInput {
+.cardInput,
+.cardTitle {
   padding: 5px 8px;
   border: 1px solid var(--dsw-border, rgba(127, 127, 127, 0.35));
   border-radius: var(--dsw-radius-sm, 6px);
@@ -86,8 +87,20 @@
 }
 
 .input:focus-visible,
-.cardInput:focus-visible {
+.cardInput:focus-visible,
+.cardTitle:focus-visible {
   outline: 1px solid var(--dsw-focus-ring, rgba(64, 128, 255, 0.7));
+}
+
+/* The content editor wraps: long titles grow the box (field-sizing) instead
+   of scrolling sideways; rows=1 is the floor where field-sizing is missing. */
+.cardTitle {
+  width: 100%;
+  min-height: 30px;
+  resize: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  field-sizing: content;
 }
 
 .cardRow {
@@ -211,6 +224,8 @@
   font: inherit;
   cursor: pointer;
   text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .title:hover {

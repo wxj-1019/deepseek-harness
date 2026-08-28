@@ -164,15 +164,20 @@ export function TodoDrawer(props: TodoDrawerProps) {
         </div>
         {expanded && (
           <div className={css.detailCard}>
-            <input
-              className={css.cardInput}
+            {/* A textarea, not an input: inputs never wrap, so a long todo
+               could only scroll sideways instead of showing its content. */}
+            <textarea
+              className={css.cardTitle}
               defaultValue={item.title}
+              rows={1}
               aria-label={t('row.edit')}
               placeholder={t('row.edit')}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
+                  event.preventDefault()
                   const value = event.currentTarget.value.trim()
                   if (value.length > 0 && value !== item.title) run(actions.retitle(item.id, value))
+                  event.currentTarget.blur()
                 }
                 if (event.key === 'Escape') event.currentTarget.blur()
               }}
