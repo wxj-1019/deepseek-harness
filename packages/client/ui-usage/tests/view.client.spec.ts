@@ -1,13 +1,13 @@
 /**
  * Behavior of the usage view's pure aggregations: rollups, cache-hit rate,
  * model shares, the token and cost display formats, and day slices.
- * @module @deepseek-ai/dsh-client-ui-usage/tests/view.spec
+ * @module @deepseek-ai/dsh-client-ui-usage/tests/view.client.spec
  */
 
 import { describe, expect, test } from 'vitest'
 import type { UsageLedgerBuckets, UsageLedgerRecord } from '@deepseek-ai/dsh-usage-ledger/types'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import { byDay, byModel, cacheHitRate, costOf, fmtCost, fmtTokens, priceFor, todayKey, totalsOf } from '../src/client/view.ts'
+import { byDay, byModel, cacheHitRate, costOf, fmtCost, fmtTokens, priceFor, todayKey, totalsOf, trendSeries, usageStreaks } from '../src/client/view.ts'
 
 /** Per-model slice fixture shape (the four buckets plus requests). */
 type Slice = Omit<UsageLedgerBuckets, never>
@@ -104,6 +104,43 @@ describe('usage view aggregations', () => {
   test('todayKey returns the client-local YYYY-MM-DD form', () => {
     expect(todayKey()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
+
+  test('trendSeries zero-fills the day window per model, largest total first', () => {
+    const rows = [
+      dayRow({
+        '2026-08-28': { alpha: { inputTokens: 100, outputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 1 } },
+        '2026-08-29': { alpha: { inputTokens: 30, outputTokens: 3, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 1 }, beta: { inputTokens: 500, outputTokens: 50, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 2 } },
+      }),
+    ]
+    const window = ['2026-08-27', '2026-08-28', '2026-08-29']
+    const series = trendSeries(rows, window)
+    expect(series.map(entry => entry.model)).toEqual(['beta', 'alpha'])
+    expect(series[0]).toMatchObject({ values: [0, 0, 550] })
+    expect(series[1]).toMatchObject({ values: [0, 110, 33] })
+  })
+
+  test('usageStreaks counts the current run back from today and the longest run', () => {
+    const today = todayKey()
+    const yest = shiftDay(today, -1)
+    const before = shiftDay(today, -2)
+    const stale = shiftDay(today, -5)
+    // A silent today breaks the current streak at yesterday's run.
+    expect(usageStreaks([yest, before, stale])).toMatchObject({ current: 2, longest: 2 })
+    // Today continues the run through yesterday and the day before.
+    expect(usageStreaks([today, yest, before, stale])).toMatchObject({ current: 3, longest: 3 })
+    // Duplicate and unordered keys collapse into one run.
+    expect(usageStreaks([today, today, yest])).toMatchObject({ current: 2, longest: 2 })
+    // No activity at all.
+    expect(usageStreaks([])).toMatchObject({ current: 0, longest: 0 })
+  })
+
+  /** A day key shifted by the given number of days. */
+  function shiftDay(key: string, days: number): string {
+    const [y, m, d] = key.split('-').map(Number)
+    const date = new Date(y ?? 0, (m ?? 1) - 1, (d ?? 1) + days)
+    const pad = (value: number): string => String(value).padStart(2, '0')
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  }
 
   test('costOf prices the four buckets per million tokens', () => {
     const price = { input: 0.27, output: 1.1, cacheRead: 0.07, cacheWrite: 0 }

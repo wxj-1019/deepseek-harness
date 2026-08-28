@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-每会话用量台账：在自己的 [`storage-domain`](../../storage/storage-domain/README.zh.md) 域 `usage_ledger` 中，每个会话一行持久记录，由会话事件流上的采集器累积。每条带用量的 `assistant/message` 事件把 provider 上报的各桶（输入、输出、缓存读、缓存写）累加进该会话的行，递增样本数、盖下墙钟时间，并把样本折入按事件模型溯源键分的每模型切片。由 web 的“用量”标签页（[`dsh-client-ui-usage`](../../client/ui-usage/README.zh.md)）经生成的 `usageLedger` Remote 命名空间渲染。台账只面向用户——这里的任何内容都不会进入会话日志、模型请求或工具 schema。
+每会话用量台账：在自己的 [`storage-domain`](../../storage/storage-domain/README.zh.md) 域 `usage_ledger` 中，每个会话一行持久记录，由会话事件流上的采集器累积。每条带用量的 `assistant/message` 事件把 provider 上报的各桶（输入、输出、缓存读、缓存写）累加进该会话的行，递增样本数、盖下墙钟时间，并把样本折入按事件模型溯源键分的每模型切片，以及按宿主本地日历日 × 模型的交叉切片。由 web 的“用量”标签页（[`dsh-client-ui-usage`](../../client/ui-usage/README.zh.md)）经生成的 `usageLedger` Remote 命名空间渲染。台账只面向用户——这里的任何内容都不会进入会话日志、模型请求或工具 schema。
 
 每次累加都会发出白名单事件 `usage-ledger/changed`；已加载表面收到它以及 `connection/reset` 时重拉。同会话样本经每会话写链串行化，`list()` 会等待在途链，因此样本之后立即发出的读取绝不会漏掉它。
 
