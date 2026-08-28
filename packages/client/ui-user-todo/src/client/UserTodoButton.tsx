@@ -18,6 +18,7 @@ import type { UserTodoState } from './controller.ts'
 import type { UserTodoInjected } from './slots.ts'
 import { formatDueLabel, localDayKey, toLocalInputValue } from './day.ts'
 import { earlierCompleted, todayItems } from './view.ts'
+import { CardSelect } from './CardSelect.tsx'
 import { NS } from './locales.ts'
 import css from './UserTodoButton.module.css'
 
@@ -73,6 +74,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
   const [draft, setDraft] = useState('')
   const [expandedId, setExpandedId] = useState<UserTodoId | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [openPickers, setOpenPickers] = useState(0)
   const rootRef = useRef<HTMLDivElement>(null)
 
   const pendingCount = state.items.reduce((count, item) => count + (item.done ? 0 : 1), 0)
@@ -81,7 +83,10 @@ export function TodoDrawer(props: TodoDrawerProps) {
   const rows = open ? todayItems(state.items, Date.now()) : []
   const earlier = open ? earlierCompleted(state.items, Date.now()) : []
 
-  useDismissOnOutsidePointer(rootRef, open, setOpen)
+  // An open dropdown's menu is portaled outside this root; suspending the
+  // outside-pointer dismissal while it is up keeps the pick from reading as
+  // an outside click that would close the whole drawer.
+  useDismissOnOutsidePointer(rootRef, open && openPickers === 0, setOpen)
 
   /** Escape closes the open drawer (the tab keeps its place). */
   const onRootKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
@@ -201,42 +206,37 @@ export function TodoDrawer(props: TodoDrawerProps) {
             </div>
             <div className={css.cardRow}>
               <span className={css.cardLabel}>{t('link.label')}</span>
-              <span className={css.selectWrap}>
-                <select
-                  className={`${css.cardInput} ${css.cardSelect}`}
-                  value={item.workspaceId ?? ''}
-                  onChange={(event) => {
-                    const value = event.target.value
-                    run(actions.setWorkspaceLink(item.id, value === '' ? undefined : value))
-                  }}
-                >
-                  <option value="">{t('link.none')}</option>
-                  {workspaces.map(workspace => (
-                    <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.title}</option>
-                  ))}
-                </select>
-              </span>
+              <CardSelect
+                ariaLabel={t('link.label')}
+                value={item.workspaceId ?? ''}
+                options={[
+                  { value: '', label: t('link.none') },
+                  ...workspaces.map(workspace => ({ value: workspace.workspaceId, label: workspace.title })),
+                ]}
+                onSelect={(picked) => {
+                  run(actions.setWorkspaceLink(item.id, picked === '' ? undefined : picked))
+                }}
+                onOpenChange={(pickerOpen) => { setOpenPickers(count => Math.max(0, count + (pickerOpen ? 1 : -1))) }}
+              />
             </div>
             {item.workspaceId !== undefined && (
               <div className={css.cardRow}>
                 <span className={css.cardLabel}>{t('session.label')}</span>
-                <span className={css.selectWrap}>
-                  <select
-                    className={`${css.cardInput} ${css.cardSelect}`}
-                    value={item.sessionId ?? ''}
-                    onChange={(event) => {
-                      const value = event.target.value
-                      run(actions.setSessionLink(item.id, value === '' ? undefined : value))
-                    }}
-                  >
-                    <option value="">{t('session.none')}</option>
-                    {sessionOptionsOf(item).map(sessionId => (
-                      <option key={sessionId} value={sessionId}>
-                        {sessionsById[sessionId as never]?.displayTitle ?? String(sessionId).slice(0, 8)}
-                      </option>
-                    ))}
-                  </select>
-                </span>
+                <CardSelect
+                  ariaLabel={t('session.label')}
+                  value={item.sessionId ?? ''}
+                  options={[
+                    { value: '', label: t('session.none') },
+                    ...sessionOptionsOf(item).map(sessionId => ({
+                      value: sessionId,
+                      label: sessionsById[sessionId as never]?.displayTitle ?? String(sessionId).slice(0, 8),
+                    })),
+                  ]}
+                  onSelect={(picked) => {
+                    run(actions.setSessionLink(item.id, picked === '' ? undefined : picked))
+                  }}
+                  onOpenChange={(pickerOpen) => { setOpenPickers(count => Math.max(0, count + (pickerOpen ? 1 : -1))) }}
+                />
               </div>
             )}
             {linkedSession !== undefined && (

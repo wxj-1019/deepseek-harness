@@ -109,39 +109,6 @@
   min-width: 0;
 }
 
-/* Select variant of .cardInput: `appearance: none` drops the OS-drawn face
-   and arrow; the right pad reserves the wrapper's chevron cell. */
-.cardSelect {
-  appearance: none;
-  padding-right: 26px;
-  cursor: pointer;
-}
-
-/* The chevron lives on the wrapper, not on the select: the aqua theme's
-   glass-panel select rule paints the fill with a `background` shorthand that
-   would wipe a background-image on the select, at a specificity this module
-   cannot match across both theme variants. */
-.selectWrap {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-}
-
-.selectWrap::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  width: 12px;
-  height: 12px;
-  transform: translateY(-50%);
-  pointer-events: none;
-  /* Data-URI SVGs cannot resolve CSS variables; #81858C is the caption gray
-     shared by both themes. */
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2381858C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px 12px no-repeat;
-}
-
 .cardOpen,
 .cardClear,
 .cardDelete {
