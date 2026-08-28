@@ -118,12 +118,14 @@ describe('usage ledger service', () => {
         // Slice rollup reproduces the top-level totals: both count the same samples.
         expect(record?.models?.alpha).toMatchObject({ inputTokens: 30, outputTokens: 13, cacheReadTokens: 2, cacheWriteTokens: 3 })
         expect(record?.models?.beta).toMatchObject({ inputTokens: 100, outputTokens: 50, requests: 1 })
-        // Day slices mirror the model slices: same samples, host-local day keys.
-        const dayEntries = Object.entries(record?.days ?? {})
+        // Day-and-model cross slices: same samples, host-local day keys; the
+        // beta sample lands on its own day-model cell.
+        const dayEntries = Object.entries(record?.dayModels ?? {})
         expect(dayEntries).toHaveLength(1)
         const [dayKey, daySlice] = dayEntries[0] ?? []
         expect(dayKey).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-        expect(daySlice).toMatchObject({ inputTokens: 130, outputTokens: 63, requests: 3 })
+        expect(daySlice?.alpha).toMatchObject({ inputTokens: 30, outputTokens: 13, cacheWriteTokens: 3, requests: 2 })
+        expect(daySlice?.beta).toMatchObject({ inputTokens: 100, outputTokens: 50, requests: 1 })
       }
     } finally {
       await dispose()

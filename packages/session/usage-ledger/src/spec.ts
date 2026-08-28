@@ -27,7 +27,7 @@ export const usageLedgerRecordSchema = z.object({
   lastAt: z.number().int().nonnegative(),
   firstAt: z.number().int().nonnegative().optional(),
   models: z.record(z.string(), usageLedgerBucketsSchema).optional(),
-  days: z.record(z.string(), usageLedgerBucketsSchema).optional(),
+  dayModels: z.record(z.string(), z.record(z.string(), usageLedgerBucketsSchema)).optional(),
 }) as unknown as z.ZodType<UsageLedgerRecord>
 // The cast is the user-todo precedent: zod's `.optional()` output allows an
 // explicit undefined, which exactOptionalPropertyTypes rejects for the `?`

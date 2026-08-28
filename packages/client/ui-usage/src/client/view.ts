@@ -112,34 +112,129 @@ export interface DayUsageRow {
 
 /** The client-local day key, matching the host's day-slice keys. */
 export function todayKey(): string {
-  const date = new Date()
+  return dayKeyOf(new Date())
+}
+
+/** The `YYYY-MM-DD` form of a date, in local time. */
+export function dayKeyOf(date: Date): string {
   const pad = (value: number): string => String(value).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 /**
- * Roll the per-day slices up across sessions, most recent day first. Rows
- * without a days map contribute nothing.
+ * Roll the per-day slices up across sessions, most recent day first. Day
+ * totals derive from the day-and-model cross slices (rolling the model axis
+ * away per day); rows without them contribute nothing.
  * @param rows - the visible ledger rows.
  * @returns one row per day, descending by day key.
  */
 export function byDay(rows: UsageState['rows']): readonly DayUsageRow[] {
   const slices = new Map<string, MutableTotals>()
   for (const row of rows) {
-    for (const [day, buckets] of Object.entries(row.record.days ?? {})) {
-      const current = slices.get(day) ?? emptyTotals()
-      current.inputTokens += buckets.inputTokens
-      current.outputTokens += buckets.outputTokens
-      current.cacheReadTokens += buckets.cacheReadTokens
-      current.cacheWriteTokens += buckets.cacheWriteTokens
-      current.requests += buckets.requests
-      current.total = current.inputTokens + current.outputTokens + current.cacheReadTokens + current.cacheWriteTokens
-      slices.set(day, current)
+    for (const [day, models] of Object.entries(row.record.dayModels ?? {})) {
+      for (const buckets of Object.values(models)) {
+        const current = slices.get(day) ?? emptyTotals()
+        current.inputTokens += buckets.inputTokens
+        current.outputTokens += buckets.outputTokens
+        current.cacheReadTokens += buckets.cacheReadTokens
+        current.cacheWriteTokens += buckets.cacheWriteTokens
+        current.requests += buckets.requests
+        current.total = current.inputTokens + current.outputTokens + current.cacheReadTokens + current.cacheWriteTokens
+        slices.set(day, current)
+      }
     }
   }
   return [...slices.entries()]
     .map(([day, totals]) => ({ day, totals }))
     .sort((left, right) => right.day.localeCompare(left.day))
+}
+
+/** One model's token series over the trend's day window (zero-filled). */
+export interface ModelTrendSeries {
+  readonly model: string
+  /** One total per day of the window, aligned with the window's day keys. */
+  readonly values: readonly number[]
+}
+
+/**
+ * Per-model daily totals for the trend chart, over the given day keys
+ * (ascending, zero-filled where a model was silent).
+ * @param rows - the visible ledger rows.
+ * @param dayWindow - the window's day keys, ascending, `YYYY-MM-DD`.
+ * @returns one series per model seen in the window.
+ */
+export function trendSeries(rows: UsageState['rows'], dayWindow: readonly string[]): readonly ModelTrendSeries[] {
+  const perModel = new Map<string, MutableTotals[]>()
+  for (const row of rows) {
+    for (const [index, day] of dayWindow.entries()) {
+      const slices = row.record.dayModels?.[day]
+      if (slices === undefined) continue
+      for (const [model, buckets] of Object.entries(slices)) {
+        const series = perModel.get(model) ?? Array.from({ length: dayWindow.length }, emptyTotals)
+        const slot = series[index]
+        if (slot === undefined) continue
+        slot.inputTokens += buckets.inputTokens
+        slot.outputTokens += buckets.outputTokens
+        slot.cacheReadTokens += buckets.cacheReadTokens
+        slot.cacheWriteTokens += buckets.cacheWriteTokens
+        slot.requests += buckets.requests
+        slot.total = slot.inputTokens + slot.outputTokens + slot.cacheReadTokens + slot.cacheWriteTokens
+        perModel.set(model, series)
+      }
+    }
+  }
+  return [...perModel.entries()]
+    .map(([model, series]) => ({ model, values: series.map(slot => slot.total) }))
+    .sort((left, right) => right.values.reduce((a, b) => a + b, 0) - left.values.reduce((a, b) => a + b, 0))
+}
+
+/** Consecutive-activity day counts over the client-local calendar. */
+export interface UsageStreaks {
+  /** Days ending today (or yesterday when today is silent) with usage. */
+  readonly current: number
+  /** The longest run of consecutive active days. */
+  readonly longest: number
+}
+
+/**
+ * Count streaks over day keys (any order; duplicates collapse).
+ * @param dayKeys - active day keys, `YYYY-MM-DD`.
+ * @returns the current and longest consecutive-day counts.
+ */
+export function usageStreaks(dayKeys: readonly string[]): UsageStreaks {
+  const unique = [...new Set(dayKeys)].sort()
+  const asTime = (key: string): number => {
+    const [y, m, d] = key.split('-').map(Number)
+    return new Date(y ?? 0, (m ?? 1) - 1, d ?? 1).getTime()
+  }
+  const DAY_MS = 86_400_000
+  let longest = 0
+  let run = 0
+  let previous = Number.NaN
+  for (const key of unique) {
+    const time = asTime(key)
+    run = time - previous === DAY_MS ? run + 1 : 1
+    longest = Math.max(longest, run)
+    previous = time
+  }
+  // The current streak counts back from today, tolerating a silent today
+  // (yesterday still continues it); anything older breaks it.
+  const today = todayKey()
+  let current = 0
+  let cursor = unique.includes(today) ? today : previousDay(today)
+  while (cursor !== undefined && unique.includes(cursor)) {
+    current += 1
+    cursor = previousDay(cursor)
+  }
+  return { current, longest }
+}
+
+/** The day key one calendar day before the given key. */
+function previousDay(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  const date = new Date(y ?? 0, (m ?? 1) - 1, (d ?? 1) - 1)
+  const pad = (value: number): string => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
 /**

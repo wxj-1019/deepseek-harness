@@ -24,9 +24,9 @@ function row(inputTokens: number, outputTokens: number, models?: Record<string, 
   }
 }
 
-/** One ledger row carrying explicit per-day slices. */
-function dayRow(days: Record<string, Slice>): { sessionId: SessionId; record: UsageLedgerRecord } {
-  const flat = Object.values(days)
+/** One ledger row carrying explicit day-and-model cross slices. */
+function dayRow(dayModels: Record<string, Record<string, Slice>>): { sessionId: SessionId; record: UsageLedgerRecord } {
+  const flat = Object.values(dayModels).flatMap(daySlices => Object.values(daySlices))
   return {
     sessionId: 'd' as SessionId,
     record: {
@@ -36,7 +36,7 @@ function dayRow(days: Record<string, Slice>): { sessionId: SessionId; record: Us
       cacheWriteTokens: 0,
       requests: flat.reduce((sum, s) => sum + s.requests, 0),
       lastAt: 0,
-      days,
+      dayModels,
     },
   }
 }
@@ -89,10 +89,10 @@ describe('usage view aggregations', () => {
 
   test('byDay rolls day slices across sessions, most recent day first', () => {
     const rows = [
-      dayRow({ '2026-08-28': { inputTokens: 100, outputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 1 } }),
+      dayRow({ '2026-08-28': { alpha: { inputTokens: 100, outputTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 1 } } }),
       dayRow({
-        '2026-08-28': { inputTokens: 50, outputTokens: 5, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 1 },
-        '2026-08-29': { inputTokens: 200, outputTokens: 20, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 2 },
+        '2026-08-28': { alpha: { inputTokens: 50, outputTokens: 5, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 1 } },
+        '2026-08-29': { beta: { inputTokens: 200, outputTokens: 20, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 2 } },
       }),
     ]
     const days = byDay(rows)

@@ -24,9 +24,9 @@ export interface UsageLedgerBuckets {
 /**
  * One session's accumulated provider usage. Top-level buckets sum every
  * usage-bearing `assistant/message` sample; `models` slices the same samples
- * by the producing model's id; `days` slices them by the host-local calendar
- * day; `requests` counts the samples, `firstAt` and `lastAt` bound them on
- * the wall clock.
+ * by the producing model's id; `dayModels` slices them by host-local calendar
+ * day AND model (roll either axis up to reproduce the totals); `requests`
+ * counts the samples, `firstAt` and `lastAt` bound them on the wall clock.
  */
 export interface UsageLedgerRecord {
   readonly inputTokens: number
@@ -46,10 +46,12 @@ export interface UsageLedgerRecord {
    */
   readonly models?: Record<string, UsageLedgerBuckets>
   /**
-   * Per-day slices keyed by the host-local calendar day (`YYYY-MM-DD`);
-   * absent until the first sample. The same rollup property as `models`.
+   * Day-and-model cross slices keyed by the host-local calendar day
+   * (`YYYY-MM-DD`) then model id; absent until the first sample. Rolling the
+   * model axis away reproduces the per-day totals; rolling the day axis away
+   * reproduces `models`.
    */
-  readonly days?: Record<string, UsageLedgerBuckets>
+  readonly dayModels?: Record<string, Record<string, UsageLedgerBuckets>>
 }
 
 /** Per-model price in USD per 1M tokens, over the four bucket vocabulary. */

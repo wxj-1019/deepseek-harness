@@ -66,6 +66,9 @@ describe('web e2e: usage tab statistics', () => {
     // Open the usage tab; the strip must show the accumulated turn (the
     // fixture records exactly two usage samples; textContent carries no
     // inter-node whitespace, so the match hugs the markup).
+    page.on('console', (message) => {
+      if (message.text().includes('USAGE_DEBUG_ROWS') || message.text().includes('USAGE_RAW_RESPONSE')) console.log('BROWSER_ROWS', message.text())
+    })
     await page.getByRole('tab', { name: 'Usage', exact: true }).click()
     await expect.poll(async () =>
       page.getByRole('group', { name: 'Usage summary' }).textContent(), { timeout: 15_000 })

@@ -1,5 +1,14 @@
-- paragraph: Accumulated per-session token usage as reported by providers. Opened sessions update live.
-- group "Usage summary": Input 219 · Output 111 · Cache read 15.5K · Cache write 0 · Total 15.8K · Today 15.8K · Requests 2 · Cache hit 99% · Last active 2026-08-29 {{clock}}
+- text: 15.8K Total 15.8K Today 15.8K Peak day 1 Current streak 1 Longest streak
+- group "Usage summary": Requests 2 · Cache hit 99% · Last active 2026-08-29 {{clock}}
+- text: Token activity 4月 5月 6月 7月 8月 Daily token trend
+- group "Daily token trend":
+  - button "Last 7 days"
+  - button "Last 30 days"
+- text: deepseek-v4-flash
+- img
+- text: 2026-07-31 2026-08-29 Model usage
+- img "15.8K"
+- text: deepseek-v4-flash 15.8K 100%
 - table:
   - rowgroup:
     - row "Model Requests Input Output Cache read Cache write Total Share":
@@ -30,25 +39,6 @@
       - cell "0"
       - cell "15.8K"
       - cell
-- table:
-  - rowgroup:
-    - row "Day Requests Input Output Cache read Cache write Total":
-      - columnheader "Day"
-      - columnheader "Requests"
-      - columnheader "Input"
-      - columnheader "Output"
-      - columnheader "Cache read"
-      - columnheader "Cache write"
-      - columnheader "Total"
-  - rowgroup:
-    - row "2026-08-29 2 219 111 15.5K 0 15.8K":
-      - cell "2026-08-29"
-      - cell "2"
-      - cell "219"
-      - cell "111"
-      - cell "15.5K"
-      - cell "0"
-      - cell "15.8K"
 - table:
   - rowgroup:
     - row "Session Requests Input Output Cache read Cache write Total Last active":

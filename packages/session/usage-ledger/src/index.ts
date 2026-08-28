@@ -149,17 +149,19 @@ export class UsageLedgerService extends TypertRemoteService {
       cacheWriteTokens: slice.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
       requests: slice.requests + 1,
     }
-    const days: Record<string, UsageLedgerBuckets> = { ...current?.days }
-    const day = days[dayKey] ?? {
+    const dayModels: Record<string, Record<string, UsageLedgerBuckets>> = { ...current?.dayModels }
+    const daySlices: Record<string, UsageLedgerBuckets> = { ...current?.dayModels?.[dayKey] }
+    const daySlice = daySlices[model] ?? {
       inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, requests: 0,
     }
-    days[dayKey] = {
-      inputTokens: day.inputTokens + usage.inputTokens,
-      outputTokens: day.outputTokens + usage.outputTokens,
-      cacheReadTokens: day.cacheReadTokens + (usage.cacheReadTokens ?? 0),
-      cacheWriteTokens: day.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
-      requests: day.requests + 1,
+    daySlices[model] = {
+      inputTokens: daySlice.inputTokens + usage.inputTokens,
+      outputTokens: daySlice.outputTokens + usage.outputTokens,
+      cacheReadTokens: daySlice.cacheReadTokens + (usage.cacheReadTokens ?? 0),
+      cacheWriteTokens: daySlice.cacheWriteTokens + (usage.cacheWriteTokens ?? 0),
+      requests: daySlice.requests + 1,
     }
+    dayModels[dayKey] = daySlices
     const next = snapshotRecord({
       inputTokens: (current?.inputTokens ?? 0) + usage.inputTokens,
       outputTokens: (current?.outputTokens ?? 0) + usage.outputTokens,
@@ -169,7 +171,7 @@ export class UsageLedgerService extends TypertRemoteService {
       lastAt: now,
       firstAt: current?.firstAt ?? now,
       models,
-      days,
+      dayModels,
     })
     await table.put(sessionId, next)
     this.ctx.emit('usage-ledger/changed')

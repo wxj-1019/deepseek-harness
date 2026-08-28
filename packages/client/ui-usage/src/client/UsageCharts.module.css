@@ -1,0 +1,99 @@
+/* UsageCharts: the heatmap, trend, and donut visuals share this sheet. */
+
+.heatmapWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heatmapScroll {
+  overflow-x: auto;
+}
+
+.heatmapGrid {
+  display: grid;
+  gap: 3px;
+  min-width: 560px;
+}
+
+.heatmapColumn {
+  display: grid;
+  gap: 3px;
+}
+
+.heatmapCell,
+.heatmapCellEmpty {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 2px;
+}
+
+.heatmapCellEmpty {
+  visibility: hidden;
+}
+
+.heatmapLevel0 {
+  background: var(--dsw-inset-bg, rgba(127, 127, 127, 0.15));
+}
+
+.heatmapLevel1 {
+  background: color-mix(in srgb, var(--dsw-accent-text, #7aa2ff) 25%, transparent);
+}
+
+.heatmapLevel2 {
+  background: color-mix(in srgb, var(--dsw-accent-text, #7aa2ff) 45%, transparent);
+}
+
+.heatmapLevel3 {
+  background: color-mix(in srgb, var(--dsw-accent-text, #7aa2ff) 70%, transparent);
+}
+
+.heatmapLevel4 {
+  background: var(--dsw-accent-text, #7aa2ff);
+}
+
+.heatmapMonths {
+  position: relative;
+  height: 16px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.heatmapMonth {
+  position: absolute;
+}
+
+.trend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trendSvg {
+  width: 100%;
+  height: 120px;
+}
+
+.trendAxis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.donut {
+  width: 150px;
+  flex: none;
+}
+
+.donutTrack {
+  stroke: var(--dsw-inset-bg, rgba(127, 127, 127, 0.15));
+}
+
+.donutLabel {
+  font-size: 7px;
+  font-weight: 600;
+  fill: currentColor;
+  font-variant-numeric: tabular-nums;
+}
