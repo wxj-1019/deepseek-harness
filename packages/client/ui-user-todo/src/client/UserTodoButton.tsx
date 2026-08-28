@@ -201,38 +201,42 @@ export function TodoDrawer(props: TodoDrawerProps) {
             </div>
             <div className={css.cardRow}>
               <span className={css.cardLabel}>{t('link.label')}</span>
-              <select
-                className={css.cardInput}
-                value={item.workspaceId ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value
-                  run(actions.setWorkspaceLink(item.id, value === '' ? undefined : value))
-                }}
-              >
-                <option value="">{t('link.none')}</option>
-                {workspaces.map(workspace => (
-                  <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.title}</option>
-                ))}
-              </select>
+              <span className={css.selectWrap}>
+                <select
+                  className={`${css.cardInput} ${css.cardSelect}`}
+                  value={item.workspaceId ?? ''}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    run(actions.setWorkspaceLink(item.id, value === '' ? undefined : value))
+                  }}
+                >
+                  <option value="">{t('link.none')}</option>
+                  {workspaces.map(workspace => (
+                    <option key={workspace.workspaceId} value={workspace.workspaceId}>{workspace.title}</option>
+                  ))}
+                </select>
+              </span>
             </div>
             {item.workspaceId !== undefined && (
               <div className={css.cardRow}>
                 <span className={css.cardLabel}>{t('session.label')}</span>
-                <select
-                  className={css.cardInput}
-                  value={item.sessionId ?? ''}
-                  onChange={(event) => {
-                    const value = event.target.value
-                    run(actions.setSessionLink(item.id, value === '' ? undefined : value))
-                  }}
-                >
-                  <option value="">{t('session.none')}</option>
-                  {sessionOptionsOf(item).map(sessionId => (
-                    <option key={sessionId} value={sessionId}>
-                      {sessionsById[sessionId as never]?.displayTitle ?? String(sessionId).slice(0, 8)}
-                    </option>
-                  ))}
-                </select>
+                <span className={css.selectWrap}>
+                  <select
+                    className={`${css.cardInput} ${css.cardSelect}`}
+                    value={item.sessionId ?? ''}
+                    onChange={(event) => {
+                      const value = event.target.value
+                      run(actions.setSessionLink(item.id, value === '' ? undefined : value))
+                    }}
+                  >
+                    <option value="">{t('session.none')}</option>
+                    {sessionOptionsOf(item).map(sessionId => (
+                      <option key={sessionId} value={sessionId}>
+                        {sessionsById[sessionId as never]?.displayTitle ?? String(sessionId).slice(0, 8)}
+                      </option>
+                    ))}
+                  </select>
+                </span>
               </div>
             )}
             {linkedSession !== undefined && (
