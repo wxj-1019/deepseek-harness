@@ -1,9 +1,10 @@
 /**
- * Sidebar-foot daily-todo entry: trigger button plus popover panel. The panel
- * derives its today view client-side (open items carried over, plus items
- * completed today), keeps a collapsible earlier-completed history, and links
- * rows to a workspace and one of its sessions — the session opens on demand
- * through the standard sessions kit.
+ * Right-edge daily-todo drawer: a slim always-visible tab on the right edge
+ * of the frame; clicking it slides the today panel out over the details
+ * column. The panel derives its today view client-side (open items carried
+ * over, plus items completed today), keeps a collapsible earlier-completed
+ * history, and links rows to a workspace and one of its sessions — the
+ * session opens on demand through the standard sessions kit.
  * @module @deepseek-ai/dsh-client-ui-user-todo/client/UserTodoButton
  */
 
@@ -21,21 +22,21 @@ import { earlierCompleted, todayItems } from './view.ts'
 import { NS } from './locales.ts'
 import css from './UserTodoButton.module.css'
 
-/** Full props for the sidebar-foot entry. */
-export type UserTodoButtonProps =
-  & PropsRuntime<'sidebar.footer.action'>
+/** Full props for the right-edge drawer entry. */
+export type TodoDrawerProps =
+  & PropsRuntime<'shell.overlay'>
   & PropsLocale<typeof NS>
   & Pick<UserTodoInjected, 'ensure' | 'resync' | 'add' | 'toggle' | 'retitle' | 'setWorkspaceLink' | 'setSessionLink' | 'openSession' | 'setNote' | 'setDue' | 'remove'>
   & { useTodo: SnapshotSelectorHook<UserTodoState> }
 
 /**
- * Sidebar-foot action rendering the Today's-todos trigger and its panel.
+ * Right-edge entry rendering the Today's-todos tab and its drawer panel.
  * @param props - runtime slot currency, namespace copy, injected controller face.
- * @returns the trigger and its popover list.
+ * @returns the tab and the drawer.
  */
-export function UserTodoButton(props: UserTodoButtonProps) {
+export function TodoDrawer(props: TodoDrawerProps) {
   const {
-    wide, useSessions, useWorkspaces, useTodo, t,
+    useSessions, useWorkspaces, useTodo, t,
     ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove,
   } = props
   const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, openSession, setNote, setDue, remove }
@@ -90,8 +91,8 @@ export function UserTodoButton(props: UserTodoButtonProps) {
     if (event.key === 'Escape' && open) setOpen(false)
   }
 
-  /** Open the panel and pull the list once. */
-  const openPanel = (): void => {
+  /** Open the drawer and pull the list once. */
+  const openDrawer = (): void => {
     setOpen(true)
     void actions.ensure()
   }
@@ -311,25 +312,20 @@ export function UserTodoButton(props: UserTodoButtonProps) {
   }
 
   return (
-    <div ref={rootRef} className={css.root} onKeyDown={onRootKeyDown}>
+    <div ref={rootRef} className={css.edgeRoot} onKeyDown={onRootKeyDown}>
       <button
         type="button"
-        className={wide ? css.triggerWide : css.triggerRail}
+        className={css.edgeTab}
         aria-label={t('button.aria')}
-        onClick={() => (open ? setOpen(false) : openPanel())}
+        aria-expanded={open}
+        onClick={() => (open ? setOpen(false) : openDrawer())}
       >
         <IconCheckOutline14 />
-        {wide && (
-          <>
-            <span>{t('button.label')}</span>
-            {pendingCount > 0 && <span className={css.count}>{t('count.pending', { count: pendingCount })}</span>}
-          </>
-        )}
-        {!wide && pendingCount > 0 && <span className={css.badge} aria-hidden="true">{pendingCount}</span>}
+        {pendingCount > 0 && <span className={css.badge} aria-hidden="true">{pendingCount}</span>}
       </button>
 
       {open && (
-        <section className={css.panel} aria-label={t('panel.aria')}>
+        <section className={css.drawer} aria-label={t('panel.aria')}>
           <header className={css.panelHead}>
             <strong>{t('button.label')}</strong>
             {pendingCount > 0 && <span className={css.count}>{t('count.pending', { count: pendingCount })}</span>}

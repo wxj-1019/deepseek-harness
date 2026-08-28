@@ -19,7 +19,7 @@ One host package and one client package own the feature end to end, following th
 | Storage domain | `user_todo` (`version: 0`) | zod-validated records via `ctx.storageDomain` |
 | Wire namespace | `userTodos` | Typert Remote: `list` / `put` / `toggle` / `delete` |
 | Push event | `user-todo/changed` | one entry in `API_REMOTE_FORWARDED_EVENTS`; loaded lists refetch on it and on `connection/reset` |
-| UI seats | `sidebar.footer.action` (button) + popover panel | no changes to ui-sidebar or ui-layout |
+| UI seats | `shell.overlay` occupant: a right-edge always-visible tab plus a right-side drawer | no changes to ui-sidebar or ui-layout |
 
 An item carries a required non-blank title, an optional note, `done` with `completedAt` present exactly when true, an optional workspace link, and an optional session link inside that workspace. A put with no `id` creates; a put with an `id` patches, where unspecified fields keep their value and an explicit `null` clears. Clearing the workspace link cascades the session link off. Session links validate at write time against the workspace registry — the named session must sit in the linked workspace's accounted sessions — and every rejection is an explicit business failure, never a throw. Every material change emits `user-todo/changed` with no arguments.
 

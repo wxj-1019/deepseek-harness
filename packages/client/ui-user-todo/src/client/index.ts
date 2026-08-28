@@ -10,16 +10,16 @@ import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
-// Type-only: pulls ui-sidebar's SlotMap merge (the footer-action seat).
-import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+// Type-only: pulls ui-layout's SlotMap merge (the shell.overlay seat).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import { UserTodoController } from './controller.ts'
 import type { UserTodosRemoteFace } from './controller.ts'
-import { UserTodoButton } from './UserTodoButton.tsx'
+import { TodoDrawer } from './UserTodoButton.tsx'
 import type { UserTodoInjected } from './slots.ts'
 import { en, zh, type UserTodoKey } from './locales.ts'
 
 export type { UserTodoController, UserTodosRemoteFace } from './controller.ts'
-export type { UserTodoButtonProps } from './UserTodoButton.tsx'
+export type { TodoDrawerProps } from './UserTodoButton.tsx'
 export { earlierCompleted, todayItems } from './view.ts'
 export type { localDayKey, sameLocalDay } from './day.ts'
 export type { UserTodoInjected } from './slots.ts'
@@ -104,14 +104,13 @@ export function apply(ctx: ClientContext): void {
     return () => clearInterval(timer)
   }, 'ui-user-todo: due reminders')
 
-  ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
-    name: 'sidebar.footer.action',
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay',
     id: 'user-todo',
-    order: 30,
     locale: NS,
     inject: (): UserTodoInjected & typeof actions => ({
       hooks: { todo: controller.store },
       ...actions,
     }),
-  }, UserTodoButton))
+  }, TodoDrawer))
 }

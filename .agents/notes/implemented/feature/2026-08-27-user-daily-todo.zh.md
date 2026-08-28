@@ -19,7 +19,7 @@ harness 里没有任何地方安放用户自己的任务。现有所有"任务�
 | 存储域 | `user_todo`（`version: 0`） | 经 `ctx.storageDomain` 的 zod 校验记录 |
 | 线路命名空间 | `userTodos` | Typert Remote：`list` / `put` / `toggle` / `delete` |
 | 推送事件 | `user-todo/changed` | `API_REMOTE_FORWARDED_EVENTS` 加一个条目；已加载的清单收到它以及 `connection/reset` 时重拉 |
-| UI 座位 | `sidebar.footer.action`（按钮）+ 浮层面板 | 不动 ui-sidebar 与 ui-layout |
+| UI 座位 | `shell.overlay` 占用者：帧右缘常驻入口 + 右侧抽屉 | 不动 ui-sidebar 与 ui-layout |
 
 一条待办包含必填非空标题、可选备注、`done` 及其恰在为真时存在的 `completedAt`、可选项目链接、以及该项目下的可选会话链接。不带 `id` 的 put 是创建；带 `id` 的 put 是补丁——未指定字段保持原值，显式 `null` 清除。清除项目链接会级联摘掉会话链接。会话链接在写侧对照 workspace 注册表校验——所指会话必须位于所链接项目的已登记会话中——所有拒绝都是显式业务失败而非抛错。每次实质变更都会发出无参的 `user-todo/changed`。
 
