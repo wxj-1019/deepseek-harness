@@ -11,4 +11,4 @@ None——本工具向人类渲染仓库状态，除自身工具结果外不进�
 ## Known Limitations and Deferred Work
 
 - **无结构化 porcelain 对象** —— status 解析为索引/工作树/路径行，diff 与 log 仍为 git 文本。
-- **仅会话工作区单仓库** —— 无 pathspec 通配、无 worktree/子模块切换。
+- **仅会话工作区单仓库** —— 无 pathspec 通配、无 worktree/子模块切换；含空白字符的 ref 与路径会被校验拒绝。

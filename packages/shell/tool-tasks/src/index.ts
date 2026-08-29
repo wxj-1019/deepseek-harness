@@ -94,7 +94,7 @@ export function apply(ctx: Context, config: Config): void {
       const target = await ctx.fs.resolve('package.json', { ...(cwd !== undefined ? { cwd } : {}), signal: exec.signal })
       return { ok: true, text: await ctx.fs.readText(target, exec.signal) }
     } catch {
-      return { ok: false, reason: 'no package.json in the session workspace' }
+      return { ok: false, reason: 'no package.json in the session workspace (or it could not be read)' }
     }
   }
 

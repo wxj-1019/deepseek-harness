@@ -202,9 +202,9 @@ export function apply(ctx: Context, config: Config): void {
       // failure reports the landed files and rethrows the failure.
       const written: string[] = []
       try {
-        for (const entry of plan.values()) {
+        for (const [path, entry] of plan) {
           await ctx.fs.writeText(entry.target, entry.content, { kind: 'replaceIfVersion', version: entry.version }, exec.signal)
-          written.push(entry.target.targetKey)
+          written.push(path)
         }
       } catch (error) {
         const failed = [...plan.keys()].find(path => !written.includes(path))

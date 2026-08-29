@@ -4,7 +4,7 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { ManualCompactionError } from '@deepseek-ai/dsh-compaction'
+import { ManualCompactionError, manualCompactionFailureText } from '@deepseek-ai/dsh-compaction'
 import type { CommandInvocation, CommandResult } from '@deepseek-ai/dsh-commands'
 
 export const name = 'command-compact'
@@ -12,46 +12,9 @@ export const inject = ['commands', 'compaction']
 
 const USAGE = 'Usage: /compact (no arguments)'
 
-/** Fail loudly if a locally closed union gains an unhandled member. */
-/* v8 ignore start -- closed-union backstop is unreachable without violating the TypeScript contract */
-function assertNever(value: never): never {
-  throw new TypeError(`unknown manual compaction error code: ${String(value)}`)
-}
-/* v8 ignore stop */
-
 /** Convert expected capability failures into concise human-only outcomes. */
 function expectedFailure(error: ManualCompactionError): CommandResult {
-  switch (error.code) {
-    case 'busy':
-      return {
-        kind: 'error',
-        text: 'Compaction is unavailable because this process has an active compaction, or the agent is not idle.',
-      }
-    case 'cancelled':
-      return { kind: 'error', text: 'Compaction cancelled.' }
-    case 'changed':
-      return {
-        kind: 'error',
-        text: 'The history selected for compaction changed before it could be replaced. The conversation is unchanged; the attempt is recorded in the session log.',
-      }
-    case 'summary':
-      return {
-        kind: 'error',
-        text: 'Compaction could not produce a useful summary. The conversation is unchanged; the attempt is recorded in the session log.',
-      }
-    case 'commit':
-      return {
-        kind: 'error',
-        text: 'Compaction did not finish cleanly; some session history may have changed. Inspect the current session state before retrying.',
-      }
-    case 'persistence':
-      return {
-        kind: 'error',
-        text: 'Compaction finished, but the session could not be saved.',
-      }
-    /* v8 ignore next 2 -- ManualCompactionErrorCode is closed and every member is handled above */
-    default: return assertNever(error.code)
-  }
+  return { kind: 'error', text: manualCompactionFailureText(error) }
 }
 
 /** Execute one argument-free manual compaction request. */

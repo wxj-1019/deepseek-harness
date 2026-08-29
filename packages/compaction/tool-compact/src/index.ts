@@ -11,7 +11,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ToolExecution } from '@deepseek-ai/dsh-tools'
-import { ManualCompactionError } from '@deepseek-ai/dsh-compaction'
+import { ManualCompactionError, manualCompactionFailureText } from '@deepseek-ai/dsh-compaction'
 
 /** Cordis plugin name used by loader diagnostics. */
 export const name = 'tool-compact'
@@ -25,22 +25,10 @@ export const inject = ['tools', 'systemPrompt']
 export interface Config {}
 
 /**
- * The model-facing text for one expected compaction failure.
- * @param error - the structured manual-compaction rejection.
- * @returns the failure text.
+ * The model-facing text for one expected compaction failure: the seam-owned
+ * shared mapping (kept in one home with the human command).
  */
-export function expectedFailureText(error: ManualCompactionError): string {
-  switch (error.code) {
-    case 'busy': return 'Compaction is unavailable because this process has an active compaction, or the agent is not idle.'
-    case 'cancelled': return 'Compaction cancelled.'
-    case 'changed': return 'The history selected for compaction changed before it could be replaced. The conversation is unchanged; the attempt is recorded in the session log.'
-    case 'summary': return 'Compaction could not produce a useful summary. The conversation is unchanged; the attempt is recorded in the session log.'
-    case 'commit': return 'Compaction did not finish cleanly; some session history may have changed. Inspect the current session state before retrying.'
-    case 'persistence': return 'Compaction finished, but the session could not be saved.'
-    /* v8 ignore next 2 -- ManualCompactionErrorCode is closed and every member is handled above */
-    default: return `Compaction failed: ${String((error as { code?: unknown }).code)}`
-  }
-}
+export const expectedFailureText = manualCompactionFailureText
 
 /** Register the `compact` tool. */
 export function apply(ctx: Context): void {
@@ -70,7 +58,9 @@ export function apply(ctx: Context): void {
       },
       render: (_args, value) => [{
         type: 'text',
-        text: `Compacted ${value.items} history items (~${value.tokens} tokens).`,
+        text: value.items === 0
+          ? 'No compactable history yet.'
+          : `Compacted ${value.items} history items (~${value.tokens} tokens).`,
       }],
     },
     async execute(args, exec: ToolExecution) {

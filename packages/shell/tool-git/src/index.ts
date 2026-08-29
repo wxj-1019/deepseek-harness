@@ -201,7 +201,7 @@ export function apply(ctx: Context, config: Config): void {
         description: 'The git operation. One of: status, diff, log, show, branch, add, commit, checkout, restore, stash'
           + (caps.network ? ', push, pull, fetch.' : '.'),
       },
-      paths: { type: 'array', items: { type: 'string' }, description: 'Paths for add / restore / checkout-with-paths / diff.' },
+      paths: { type: 'array', items: { type: 'string' }, description: 'Paths for add / restore / checkout-with-paths / diff. No whitespace or shell metacharacters (quoting is unnecessary: values pass as plain arguments).' },
       message: { type: 'string', description: 'Commit message (commit only); rides stdin, never a shell quote.' },
       ref: { type: 'string', description: 'A ref for show / checkout / push / pull / fetch, or "pop" for stash.' },
       staged: { type: 'boolean', description: 'diff the staged index instead of the working tree. Defaults to false.' },

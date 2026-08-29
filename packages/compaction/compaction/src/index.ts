@@ -38,6 +38,25 @@ export type ManualCompactionErrorCode =
  * Shared durable-lock entry assertions may also throw the `busy` subtype from
  * automatic compaction paths.
  */
+/**
+ * The human text for one structured manual-compaction failure, shared by the
+ * `/compact` command and the `compact` tool (one home for the six texts).
+ * @param error - the classified compaction rejection.
+ * @returns the failure text.
+ */
+export function manualCompactionFailureText(error: ManualCompactionError): string {
+  switch (error.code) {
+    case 'busy': return 'Compaction is unavailable because this process has an active compaction, or the agent is not idle.'
+    case 'cancelled': return 'Compaction cancelled.'
+    case 'changed': return 'The history selected for compaction changed before it could be replaced. The conversation is unchanged; the attempt is recorded in the session log.'
+    case 'summary': return 'Compaction could not produce a useful summary. The conversation is unchanged; the attempt is recorded in the session log.'
+    case 'commit': return 'Compaction did not finish cleanly; some session history may have changed. Inspect the current session state before retrying.'
+    case 'persistence': return 'Compaction finished, but the session could not be saved.'
+    /* v8 ignore next 2 -- ManualCompactionErrorCode is closed and every member is handled above */
+    default: return `Compaction failed: ${String(error.code)}`
+  }
+}
+
 export class ManualCompactionError extends Error {
   override readonly name = 'ManualCompactionError'
 

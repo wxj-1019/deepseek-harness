@@ -70,19 +70,30 @@ export function byModel(rows: UsageState['rows']): readonly ModelUsageRow[] {
   const slices = new Map<string, MutableTotals>()
   for (const row of rows) {
     for (const [model, buckets] of Object.entries(row.record.models ?? {})) {
-      const current = slices.get(model) ?? emptyTotals()
-      current.inputTokens += buckets.inputTokens
-      current.outputTokens += buckets.outputTokens
-      current.cacheReadTokens += buckets.cacheReadTokens
-      current.cacheWriteTokens += buckets.cacheWriteTokens
-      current.requests += buckets.requests
-      current.total = current.inputTokens + current.outputTokens + current.cacheReadTokens + current.cacheWriteTokens
-      slices.set(model, current)
+      rollBuckets(slices, model, buckets)
     }
   }
   return [...slices.entries()]
     .map(([model, totals]) => ({ model, totals, share: grand === 0 ? 0 : totals.total / grand }))
     .sort((left, right) => right.totals.total - left.totals.total)
+}
+
+/** Fold one slice into its rollup cell, creating the cell when absent. */
+function rollBuckets(slices: Map<string, MutableTotals>, key: string, buckets: {
+  readonly inputTokens: number
+  readonly outputTokens: number
+  readonly cacheReadTokens: number
+  readonly cacheWriteTokens: number
+  readonly requests: number
+}): void {
+  const current = slices.get(key) ?? emptyTotals()
+  current.inputTokens += buckets.inputTokens
+  current.outputTokens += buckets.outputTokens
+  current.cacheReadTokens += buckets.cacheReadTokens
+  current.cacheWriteTokens += buckets.cacheWriteTokens
+  current.requests += buckets.requests
+  current.total = current.inputTokens + current.outputTokens + current.cacheReadTokens + current.cacheWriteTokens
+  slices.set(key, current)
 }
 
 /**
@@ -133,14 +144,7 @@ export function byDay(rows: UsageState['rows']): readonly DayUsageRow[] {
   for (const row of rows) {
     for (const [day, models] of Object.entries(row.record.dayModels ?? {})) {
       for (const buckets of Object.values(models)) {
-        const current = slices.get(day) ?? emptyTotals()
-        current.inputTokens += buckets.inputTokens
-        current.outputTokens += buckets.outputTokens
-        current.cacheReadTokens += buckets.cacheReadTokens
-        current.cacheWriteTokens += buckets.cacheWriteTokens
-        current.requests += buckets.requests
-        current.total = current.inputTokens + current.outputTokens + current.cacheReadTokens + current.cacheWriteTokens
-        slices.set(day, current)
+        rollBuckets(slices, day, buckets)
       }
     }
   }

@@ -11,4 +11,4 @@ None — the tool renders repository state for a human and never enters a model 
 ## Known Limitations and Deferred Work
 
 - **No structured porcelain objects** — status parses to index/worktree/path rows, but diff and log render as git text.
-- **Single-repo, session-workspace only** — no pathspec wildcards, no worktree/submodule switching.
+- **Single-repo, session-workspace only** — no pathspec wildcards, no worktree/submodule switching; refs and paths containing whitespace are rejected by validation.
