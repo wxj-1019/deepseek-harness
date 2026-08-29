@@ -47,6 +47,11 @@ import * as ToolPwshPersistent from '@deepseek-ai/dsh-tool-pwsh-persistent'
 import CordisHostRunner from '@deepseek-ai/dsh-cordis-host-runner'
 import * as ToolCordis from '@deepseek-ai/dsh-tool-cordis'
 import * as ToolFs from '@deepseek-ai/dsh-tool-fs'
+import * as ToolLs from '@deepseek-ai/dsh-tool-ls'
+import * as ToolMultiEdit from '@deepseek-ai/dsh-tool-multi-edit'
+import * as ToolRunTasks from '@deepseek-ai/dsh-tool-tasks'
+import * as ToolGit from '@deepseek-ai/dsh-tool-git'
+import * as ToolCompact from '@deepseek-ai/dsh-tool-compact'
 import * as ToolFsSearch from '@deepseek-ai/dsh-tool-fs-search'
 import * as ToolStrReplaceEditor from '@deepseek-ai/dsh-tool-str-replace-editor'
 import TerminalSessionService from '@deepseek-ai/dsh-terminal'
@@ -339,6 +344,78 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'The read-before-write/edit policy is added by `@deepseek-ai/dsh-fs-observation-policy` (an `fs/*` event-gate plugin, no schema change); a deployment that loads these tools is expected to also load it. The image tool is not registered without `ctx.attachments`; its schema is route-independent, and execution refuses unless the exact routed model declares image input.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-ls',
+    dir: 'tool-ls',
+    source: 'packages/fs/tool-ls/src/index.ts',
+    requires: ['ctx.tools', 'ctx.fs', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      // The tool needs `fs`; the bare provider is sufficient because listing
+      // is a read-only seam call and no policy changes the schema shape.
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(ToolLs)
+    },
+    note:
+      'Directories render with a trailing separator and files show their byte size when the backend reports it; dot-prefixed entries are hidden unless `all` is set, and listings cap at maxEntries (500) with a dropped-entries note. Session-relative paths resolve against the calling agent workspace, mirroring the read/write/edit tools.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-multi-edit',
+    dir: 'tool-multi-edit',
+    source: 'packages/fs/tool-multi-edit/src/index.ts',
+    requires: ['ctx.tools', 'ctx.fs', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(ToolMultiEdit)
+    },
+    note:
+      'Every oldString is verified against current contents before anything writes; same-file edits apply in order on the evolving content, writes are version-guarded (a concurrent change fails that file loudly), and a mid-batch failure reports which files landed. Edits existing files only — creation uses write.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-tasks',
+    dir: 'tool-tasks',
+    source: 'packages/shell/tool-tasks/src/index.ts',
+    requires: ['ctx.tools', 'ctx.shell', 'ctx.fs', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      try {
+        await ctx.plugin(LocalBashExecutor, { cwd: process.cwd() })
+      } catch (error) {
+        console.log('BASH_ERR', (error as Error).message)
+      }
+      await ctx.plugin(LocalFileSystem)
+      await ctx.plugin(ToolRunTasks)
+    },
+    note:
+      'task_list discovers npm scripts from the session workspace package.json; task_run executes one through the configured package manager (default npm) and reports the exit code with a bounded combined-output tail. A nonzero exit is a normal report, not a transport failure.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-git',
+    dir: 'tool-git',
+    source: 'packages/shell/tool-git/src/index.ts',
+    requires: ['ctx.tools', 'ctx.shell', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      await ctx.plugin(LocalSubprocessRuntime)
+      await ctx.plugin(BashEnvPlugin)
+      await ctx.plugin(ToolGit)
+    },
+    note:
+      'One git tool with an action enum: porcelain status, diff/log/show/branch reads, add/commit/checkout/stash local writes, and push/pull/fetch only when the deployment sets network. Refs and paths are validated against shell metacharacters; commit messages ride stdin through -F -; restore/checkout-with-paths discard requires allowDiscard.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-compact',
+    dir: 'tool-compact',
+    source: 'packages/compaction/tool-compact/src/index.ts',
+    requires: ['ctx.tools', 'ctx.compaction', 'ctx.systemPrompt'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      await ctx.plugin(ToolCompact)
+    },
+    note:
+      'The model-facing manual compaction path, mirroring the human /compact command: reports the compacted history scope, or the structured failure (busy, changed, summary, commit, persistence, cancelled) as an error result. Never silently degrades the conversation.',
   },
   {
     pkg: '@deepseek-ai/dsh-tool-fs-search',

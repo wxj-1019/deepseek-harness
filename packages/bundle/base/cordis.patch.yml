@@ -244,6 +244,21 @@
       config:
         sampleOverCapGlobResults: false
 
+    - id: tool-ls
+      name: '@deepseek-ai/dsh-tool-ls'
+
+    - id: tool-multi-edit
+      name: '@deepseek-ai/dsh-tool-multi-edit'
+
+    - id: tool-tasks
+      name: '@deepseek-ai/dsh-tool-tasks'
+
+    - id: tool-git
+      name: '@deepseek-ai/dsh-tool-git'
+
+    - id: tool-compact
+      name: '@deepseek-ai/dsh-tool-compact'
+
     - id: agent-instructions
       name: '@deepseek-ai/dsh-agent-instructions'
       config:

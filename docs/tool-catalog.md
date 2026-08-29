@@ -25,6 +25,11 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-pwsh-persistent` | `pwsh` | `ctx.tools`, `ctx.terminals`, `an owning Agent at execution time` | `tool/call`, `PTY shell state`, `tool/result` | - | One owner-isolated persistent pwsh tool, the Windows counterpart of the persistent bash tool; deployment composition supplies a pwsh-dialect PTY backend and may override the model-facing environment description. |
 | `@deepseek-ai/dsh-tool-str-replace-editor` | `str_replace_editor` | `ctx.tools`, `ctx.fs` | `tool/call`, `fs/observed after view presence/absence, edit absence, or successful mutation`, `tool/result` | - | Standalone view/create/unique literal replace/line insert tool over the filesystem seam; it composes with any shell or terminal API. |
 | `@deepseek-ai/dsh-tool-fs` | `edit`, `read`, `read_image`, `write` | `ctx.tools`, `ctx.fs`, `ctx.systemPrompt`, `ctx.attachments (image-tool registration)`, `ctx.llm + an image-capable route (image-tool execution)` | `tool/call`, `fs/write-intent or fs/edit-intent for mutations`, `fs/observed after read presence/absence or successful file operation`, `durable attachment (read_image)`, `tool/result` | - | The read-before-write/edit policy is added by `@deepseek-ai/dsh-fs-observation-policy` (an `fs/*` event-gate plugin, no schema change); a deployment that loads these tools is expected to also load it. The image tool is not registered without `ctx.attachments`; its schema is route-independent, and execution refuses unless the exact routed model declares image input. |
+| `@deepseek-ai/dsh-tool-ls` | `ls` | `ctx.tools`, `ctx.fs`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | Directories render with a trailing separator and files show their byte size when the backend reports it; dot-prefixed entries are hidden unless `all` is set, and listings cap at maxEntries (500) with a dropped-entries note. Session-relative paths resolve against the calling agent workspace, mirroring the read/write/edit tools. |
+| `@deepseek-ai/dsh-tool-multi-edit` | `multi_edit` | `ctx.tools`, `ctx.fs`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | Every oldString is verified against current contents before anything writes; same-file edits apply in order on the evolving content, writes are version-guarded (a concurrent change fails that file loudly), and a mid-batch failure reports which files landed. Edits existing files only — creation uses write. |
+| `@deepseek-ai/dsh-tool-tasks` | `task_list`, `task_run` | `ctx.tools`, `ctx.shell`, `ctx.fs`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | task_list discovers npm scripts from the session workspace package.json; task_run executes one through the configured package manager (default npm) and reports the exit code with a bounded combined-output tail. A nonzero exit is a normal report, not a transport failure. |
+| `@deepseek-ai/dsh-tool-git` | `git` | `ctx.tools`, `ctx.shell`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | One git tool with an action enum: porcelain status, diff/log/show/branch reads, add/commit/checkout/stash local writes, and push/pull/fetch only when the deployment sets network. Refs and paths are validated against shell metacharacters; commit messages ride stdin through -F -; restore/checkout-with-paths discard requires allowDiscard. |
+| `@deepseek-ai/dsh-tool-compact` | `compact` | `ctx.tools`, `ctx.compaction`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | The model-facing manual compaction path, mirroring the human /compact command: reports the compacted history scope, or the structured failure (busy, changed, summary, commit, persistence, cancelled) as an error result. Never silently degrades the conversation. |
 | `@deepseek-ai/dsh-tool-fs-search` | `glob`, `grep` | `ctx.tools`, `ctx.subprocess`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | glob and grep are unconditional discovery tools that spawn the packaged ripgrep binary (`@vscode/ripgrep`) through ctx.subprocess as ordinary foreground calls (never background jobs) — no host `rg` install and no shell layer. The catalog uses `sampleOverCapGlobResults: true`; deployments must choose that behavior explicitly. Capped results save the complete formatted list through the optional ctx.spillStore backend; returned locators are follow-up-readable/searchable when the backend exposes local paths in co-located deployments. |
 | `@deepseek-ai/dsh-tool-terminal` | `terminal_close`, `terminal_list`, `terminal_open`, `terminal_read`, `terminal_send`, `terminal_signal` | `ctx.tools`, `ctx.terminals`, `ctx.systemPrompt`, `ctx.jobs at call time for run_in_background` | `tool/call`, `tool/result` | - | The six terminal tools are opt-in and complement one-shot shell/filesystem tools. `terminal_send(run_in_background: true)` registers with `ctx.jobs`; TUI, named key sequences, BEL, resize, auto-start, and cross-agent sharing are absent from the schema. |
 | `@deepseek-ai/dsh-tool-goal` | `create_goal`, `get_goal`, `update_goal` | `ctx.tools`, `ctx.agents`, `ctx.goals`, `ctx.systemPrompt`, `a calling Agent in an authorized open turn` | `tool/call`, `goal/change for mutations`, `tool/result` | - | create, edit, pause, and resume require direct-human root authority; complete and blocked also accept the exact current goal round. The default blocked lower bound is three admitted rounds. |
@@ -741,6 +746,192 @@ Create or fully replace a UTF-8 text file.
 Source: [`packages/fs/tool-fs/src/index.ts`](../packages/fs/tool-fs/src/index.ts)
 
 The read-before-write/edit policy is added by `@deepseek-ai/dsh-fs-observation-policy` (an `fs/*` event-gate plugin, no schema change); a deployment that loads these tools is expected to also load it. The image tool is not registered without `ctx.attachments`; its schema is route-independent, and execution refuses unless the exact routed model declares image input.
+
+<a id="deepseek-aidsh-tool-ls"></a>
+
+## `@deepseek-ai/dsh-tool-ls`
+
+### `ls`
+
+List a directory's direct entries — subdirectories (trailing "/") and files (with byte size when available) — sorted directories-first then by name. At most 500 entries are returned; a larger directory reports how many entries were not shown. Dotfiles are hidden unless `all` is set. Use this to see WHAT is in a directory; use glob to find files by pattern anywhere in the tree.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Directory to list. Defaults to the session workspace; a relative path resolves against it."
+    },
+    "all": {
+      "type": "boolean",
+      "description": "Include dot-prefixed entries (e.g. \".git\", \".env\"). Defaults to false."
+    }
+  }
+}
+```
+
+Source: [`packages/fs/tool-ls/src/index.ts`](../packages/fs/tool-ls/src/index.ts)
+
+Directories render with a trailing separator and files show their byte size when the backend reports it; dot-prefixed entries are hidden unless `all` is set, and listings cap at maxEntries (500) with a dropped-entries note. Session-relative paths resolve against the calling agent workspace, mirroring the read/write/edit tools.
+
+<a id="deepseek-aidsh-tool-multi-edit"></a>
+
+## `@deepseek-ai/dsh-tool-multi-edit`
+
+### `multi_edit`
+
+Apply a batch of literal string edits across one or more files in a single call. Every edit is validated against the current file contents before anything is written: each oldString must occur exactly once in its file unless replaceAll is true, and same-file edits apply in order on the evolving content. Writes are version-guarded — a concurrent change to a file fails that file loudly instead of overwriting. At most 25 edits per call.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File to edit; a relative path resolves against the session workspace."
+          },
+          "oldString": {
+            "type": "string",
+            "description": "The exact existing text to replace."
+          },
+          "newString": {
+            "type": "string",
+            "description": "The replacement text."
+          },
+          "replaceAll": {
+            "type": "boolean",
+            "description": "Replace every occurrence. Defaults to false (exactly one)."
+          }
+        },
+        "required": [
+          "path",
+          "oldString",
+          "newString"
+        ]
+      }
+    }
+  },
+  "required": [
+    "edits"
+  ]
+}
+```
+
+Source: [`packages/fs/tool-multi-edit/src/index.ts`](../packages/fs/tool-multi-edit/src/index.ts)
+
+Every oldString is verified against current contents before anything writes; same-file edits apply in order on the evolving content, writes are version-guarded (a concurrent change fails that file loudly), and a mid-batch failure reports which files landed. Edits existing files only — creation uses write.
+
+<a id="deepseek-aidsh-tool-tasks"></a>
+
+## `@deepseek-ai/dsh-tool-tasks`
+
+### `task_list`
+
+List the npm scripts defined in the session workspace's package.json — the runnable task names for task_run.
+
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+Source: [`packages/shell/tool-tasks/src/index.ts`](../packages/shell/tool-tasks/src/index.ts)
+
+### `task_run`
+
+Run one npm script from the session workspace's package.json through npm. Reports the exit code and a bounded combined-output tail (stdout, then stderr). A nonzero exit is reported as a normal result — read the tail to diagnose it.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "script": {
+      "type": "string",
+      "description": "The npm script name to run (see task_list)."
+    }
+  },
+  "required": [
+    "script"
+  ]
+}
+```
+
+Source: [`packages/shell/tool-tasks/src/index.ts`](../packages/shell/tool-tasks/src/index.ts)
+
+task_list discovers npm scripts from the session workspace package.json; task_run executes one through the configured package manager (default npm) and reports the exit code with a bounded combined-output tail. A nonzero exit is a normal report, not a transport failure.
+
+<a id="deepseek-aidsh-tool-git"></a>
+
+## `@deepseek-ai/dsh-tool-git`
+
+### `git`
+
+Run a structured git operation in the session workspace. Actions: status (porcelain + branch), diff (working tree, or --cached with staged), log (oneline, newest first), show (a ref with stat), branch (list), add (stage paths), commit (message via stdin), checkout (a ref, or paths to discard when allowed), restore (discard tracked changes when allowed), stash (push, or pop with ref="pop"). Network actions (push/pull/fetch) are disabled in this deployment.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "The git operation. One of: status, diff, log, show, branch, add, commit, checkout, restore, stash."
+    },
+    "paths": {
+      "type": "array",
+      "description": "Paths for add / restore / checkout-with-paths / diff.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Commit message (commit only); rides stdin, never a shell quote."
+    },
+    "ref": {
+      "type": "string",
+      "description": "A ref for show / checkout / push / pull / fetch, or \"pop\" for stash."
+    },
+    "staged": {
+      "type": "boolean",
+      "description": "diff the staged index instead of the working tree. Defaults to false."
+    }
+  },
+  "required": [
+    "action"
+  ]
+}
+```
+
+Source: [`packages/shell/tool-git/src/index.ts`](../packages/shell/tool-git/src/index.ts)
+
+One git tool with an action enum: porcelain status, diff/log/show/branch reads, add/commit/checkout/stash local writes, and push/pull/fetch only when the deployment sets network. Refs and paths are validated against shell metacharacters; commit messages ride stdin through -F -; restore/checkout-with-paths discard requires allowDiscard.
+
+<a id="deepseek-aidsh-tool-compact"></a>
+
+## `@deepseek-ai/dsh-tool-compact`
+
+### `compact`
+
+Compact this session's history: replace superseded detail with a summary to free context. Reports the compacted scope (history items and tokens) or a structured reason why compaction did not happen (busy, changed, summary failure, commit or persistence trouble). The conversation is never silently degraded.
+
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+Source: [`packages/compaction/tool-compact/src/index.ts`](../packages/compaction/tool-compact/src/index.ts)
+
+The model-facing manual compaction path, mirroring the human /compact command: reports the compacted history scope, or the structured failure (busy, changed, summary, commit, persistence, cancelled) as an error result. Never silently degrades the conversation.
 
 <a id="deepseek-aidsh-tool-fs-search"></a>
 
