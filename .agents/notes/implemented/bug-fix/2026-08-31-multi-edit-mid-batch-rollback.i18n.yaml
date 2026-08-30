@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-31-multi-edit-mid-batch-rollback.md
-2026-08-31-multi-edit-mid-batch-rollback.md: 571bb1d5cc12d13cbe33c5a19a975042721df4a9
-2026-08-31-multi-edit-mid-batch-rollback.zh.md: 127009dd0d5e2acf2170a60e5cb9e2054ade71bf
+2026-08-31-multi-edit-mid-batch-rollback.md: a60cc8ea2e2353683d2d134abedde32f18083576
+2026-08-31-multi-edit-mid-batch-rollback.zh.md: 5337ecae92e132869ab2e7dd09c25ddf89d3f08c

@@ -25,4 +25,5 @@ Keep the two-phase flow. On a mid-batch failure, the tool now restores every alr
 ## Consequences
 
 - A failed batch leaves the workspace as it was before the call, except when restoration itself fails; that case is loud and names the unrestored files.
+- Restore writes omit the call's execution signal on purpose: they are bounded cleanup of this call's own partial write and must complete even when the call is being canceled.
 - The failure path costs up to one extra write per already-written file. The success path is unchanged.

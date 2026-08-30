@@ -207,23 +207,24 @@ export function apply(ctx: Context, config: Config): void {
       // Phase 2 — write every planned file, version-guarded. A mid-batch
       // failure rolls the already-written files back to their pre-batch
       // content in reverse write order, guarding each restore on the version
-      // the batch's own write produced. Restoration failures never pass
-      // silently: the thrown report names every file whose edited content
-      // remains on disk.
-      const written: { path: string; target: FsTarget; version: FsVersion }[] = []
+      // the batch's own write produced. Restoration writes omit the execution
+      // signal on purpose: they are bounded cleanup of this call's own partial
+      // write and must complete even when the call is being canceled.
+      // Restoration failures never pass silently: the thrown report names
+      // every file whose edited content remains on disk.
+      const written: { path: string; target: FsTarget; version: FsVersion; original: string }[] = []
       try {
         for (const [path, entry] of plan) {
           const outcome = await ctx.fs.writeText(entry.target, entry.content, { kind: 'replaceIfVersion', version: entry.version }, exec.signal)
-          written.push({ path, target: entry.target, version: outcome.version })
+          written.push({ path, target: entry.target, version: outcome.version, original: entry.original })
         }
       } catch (error) {
-        const failed = [...plan.keys()].find(path => !written.some(writtenEntry => writtenEntry.path === path))
+        const writtenPaths = new Set(written.map(entry => entry.path))
+        const failed = [...plan.keys()].find(path => !writtenPaths.has(path))
         const unrestored: string[] = []
         for (const entry of [...written].reverse()) {
-          const original = plan.get(entry.path)?.original
-          if (original === undefined) continue
           try {
-            await ctx.fs.writeText(entry.target, original, { kind: 'replaceIfVersion', version: entry.version }, exec.signal)
+            await ctx.fs.writeText(entry.target, entry.original, { kind: 'replaceIfVersion', version: entry.version })
           } catch {
             unrestored.push(entry.path)
           }

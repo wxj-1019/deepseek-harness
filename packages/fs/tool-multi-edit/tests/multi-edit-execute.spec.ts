@@ -27,6 +27,7 @@ interface WriteCall {
   content: string
   expected: FsWriteIntent | undefined
   producedVersion: string | null
+  hadSignal: boolean
 }
 
 class ScriptedFs extends LocalFileSystem {
@@ -40,11 +41,13 @@ class ScriptedFs extends LocalFileSystem {
   private count = 0
 
   override async writeText(...args: Parameters<FileSystem['writeText']>): Promise<FsWriteOutcome> {
-    const [target, content, expected] = args
+    const [target, content, expected, signal] = args
     this.count += 1
     if (this.failAt.has(this.count)) throw new Error(`injected write failure #${this.count}`)
     const outcome = await super.writeText(...args)
-    this.writes.push({ key: target.targetKey, content, expected, producedVersion: String(outcome.version) })
+    this.writes.push({
+      key: target.targetKey, content, expected, producedVersion: String(outcome.version), hadSignal: signal !== undefined,
+    })
     return outcome
   }
 }
@@ -145,6 +148,9 @@ describe('multi_edit execute', () => {
     const [batchWrite, restoreWrite] = fs.writes
     expect(restoreWrite.content).toBe('alpha one\n')
     expect(restoreWrite.expected).toEqual({ kind: 'replaceIfVersion', version: batchWrite.producedVersion })
+    // The batch write rides the call's signal; the restore is bounded cleanup and rides none.
+    expect(batchWrite.hadSignal).toBe(true)
+    expect(restoreWrite.hadSignal).toBe(false)
   })
 
   it('names unrestored files when restoration itself fails', async () => {

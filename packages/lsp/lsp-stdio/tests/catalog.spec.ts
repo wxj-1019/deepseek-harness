@@ -109,6 +109,19 @@ describe('lsp-stdio catalog apply', () => {
     }
   })
 
+  it('leaves no availability section when provider registration rolls back', async () => {
+    // Two servers claiming the same extension: the second registerProvider
+    // fails and the effect rolls back — the section must not outlive it.
+    const texts = await mountedSection({
+      servers: {
+        one: { command: process.execPath, extensionToLanguage: { '.ts': 'typescript' } },
+        two: { command: process.execPath, extensionToLanguage: { '.ts': 'typescript' } },
+      },
+      catalog: false,
+    }).catch(() => [])
+    expect(texts).toEqual([])
+  })
+
   it('mounts a seed whose binary exists on PATH and skips the absent one without throwing', async () => {
     // A fake seed executable on a private PATH: the catalog seed for
     // typescript-language-server resolves, the pyright seed does not, and the

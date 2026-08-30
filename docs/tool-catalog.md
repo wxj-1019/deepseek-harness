@@ -781,7 +781,7 @@ Directories render with a trailing separator and files show their byte size when
 
 ### `multi_edit`
 
-Apply a batch of literal string edits across one or more files in a single call. Every edit is validated against the current file contents before anything is written: each oldString must occur exactly once in its file unless replaceAll is true, and same-file edits apply in order on the evolving content. Writes are version-guarded — a concurrent change to a file fails that file loudly instead of overwriting. At most 25 edits per call.
+Apply a batch of literal string edits across one or more files in a single call. Every edit is validated against the current file contents before anything is written: each oldString must occur exactly once in its file unless replaceAll is true, and same-file edits apply in order on the evolving content. Writes are version-guarded — a concurrent change to a file fails that file loudly instead of overwriting, and a mid-batch failure rolls already-written files back so no partial batch remains. At most 25 edits per call.
 
 ```json
 {

@@ -284,12 +284,6 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     return built.flatMap(entry => entry.status === 'fulfilled' && entry.value !== undefined ? [entry.value] : [])
   })()
 
-  // Announce which languages actually resolved on this host so the model aims
-  // lsp queries only at servable files; absent when nothing resolved.
-  if (providers.length > 0) {
-    ctx.systemPrompt.section({ name: 'lsp:language-catalog', order: 113, text: catalogSectionText(providers) })
-  }
-
   ctx.effect(() => {
     const disposers: Array<() => void> = []
     try {
@@ -297,6 +291,13 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     } catch (error) {
       for (const dispose of disposers.reverse()) dispose()
       throw error
+    }
+    // Announce which languages actually resolved on this host so the model
+    // aims lsp queries only at servable files. Registered only after every
+    // provider route is live, and disposed with them, so an availability
+    // claim never outlives — or precedes — the routes it describes.
+    if (providers.length > 0) {
+      disposers.push(ctx.systemPrompt.section({ name: 'lsp:language-catalog', order: 113, text: catalogSectionText(providers) }))
     }
     return async () => {
       // Remove every route before process teardown so no new query can enter a draining provider.
