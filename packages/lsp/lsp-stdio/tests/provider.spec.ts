@@ -5,6 +5,7 @@ import { delimiter, join } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
 import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import Lsp, { type LspQueryRequest } from '@deepseek-ai/dsh-lsp'
 import * as LspLocal from '@deepseek-ai/dsh-lsp-stdio'
 import type { Config, LspLocalServerConfig } from '@deepseek-ai/dsh-lsp-stdio'
@@ -48,6 +49,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('onpath', {
       command: 'fake-lsp',
       args: [],
@@ -62,6 +64,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('nope', {
       command: 'fake-lsp',
       args: [],
@@ -77,6 +80,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     // Grab the provider instance by registering, then dispose the whole plugin fiber.
     const lsp = ctx.lsp
     const fiber = await ctx.plugin(LspLocal, config('disp', {
@@ -95,6 +99,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('bad-budget', {
       command: process.execPath,
       args: ['-e', ''],
@@ -109,6 +114,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('bad-cap', {
       command: process.execPath,
       args: ['-e', ''],
@@ -123,6 +129,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('bad-timer', {
       command: process.execPath,
       args: ['-e', ''],
@@ -140,6 +147,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('abs-bad', {
       command: notExe,
       args: [],
@@ -153,6 +161,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('abs-directory', {
       command: ws,
       args: [],
@@ -167,6 +176,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
     // Catalog off + empty table: nothing to serve, rejected at load.
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, { servers: {}, catalog: false })).rejects.toThrow(/servers must contain at least one server/)
     await ctx.fiber.dispose()
   })
@@ -176,6 +186,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, config('', {
       command: process.execPath,
       extensionToLanguage: { '.ts': 'typescript' },
@@ -188,6 +199,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, {
       servers: {
         valid: { command: process.execPath, extensionToLanguage: { '.ts': 'typescript' } },
@@ -204,6 +216,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     const slowStarted = Promise.withResolvers<undefined>()
     const slowAborted = Promise.withResolvers<undefined>()
     const releaseCleanup = Promise.withResolvers<undefined>()
@@ -248,6 +261,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     const subprocess = ctx.subprocess
     const lookupStarted = Promise.withResolvers<AbortSignal>()
     vi.spyOn(subprocess, 'resolveExecutable').mockImplementation(async (_command, _env, signal) => {
@@ -283,6 +297,7 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, {
       servers: {
         first: { command: process.execPath, extensionToLanguage: { '.ts': 'typescript' } },

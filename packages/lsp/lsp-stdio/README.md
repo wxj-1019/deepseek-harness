@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-A **generic stdio language-server backend** for `ctx.lsp`. One plugin instance accepts a named server table and registers one isolated provider per entry. It reads through `ctx.fs` and launches through `ctx.subprocess`, so the server and source always inhabit the mounted execution world. This is a generic host, not a language-server catalog or installer — deployments configure commands and mappings explicitly; presets belong in `cordis.yml` overlays.
+A **generic stdio language-server backend** for `ctx.lsp`. One plugin instance accepts a named server table and registers one isolated provider per entry. It reads through `ctx.fs` and launches through `ctx.subprocess`, so the server and source always inhabit the mounted execution world. The host stays generic: it ships a built-in language catalog seeded on by default (see Configuration), but it is not an installer — deployments that need specific servers configure commands and mappings explicitly; presets belong in `cordis.yml` overlays.
 
 Namespace plugin (`name` / `inject` / `Config` / `apply`, no default export).
 
@@ -35,6 +35,8 @@ The `servers` record key is the stable provider id reserved on `ctx.lsp`; each v
 | `killGraceMs` | `2000` | Grace for request cancellation and for SIGTERM→SIGKILL escalation. |
 
 `servers` must contain at least one entry, and every id must be non-empty. Timer budgets must be positive integers no greater than Node's `2_147_483_647` ms timer limit. All executables resolve at load after credential scrubbing; a bad later entry prevents every provider from registering. Processes launch lazily on the first matching query.
+
+`catalog` (default `true`) seeds a TypeScript and a Python server from the built-in language catalog for ids without an explicit `servers` entry. A seed whose executable is absent on the host is skipped with a warning; when every explicit entry also fails the load still fails loud, and catalog off with an empty table is rejected at load. When at least one provider resolves, the plugin registers a bounded `lsp:language-catalog` prompt section listing each server's extensions and languages, so the model aims `lsp` queries only at servable files.
 
 ## Protocol behavior
 

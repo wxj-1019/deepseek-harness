@@ -9,6 +9,7 @@ import Lsp, { type LspProvider, type LspQueryRequest, type LspQueryResult } from
 import { deadline } from '@deepseek-ai/dsh-timeout'
 import LocalSubprocessRuntime from '@deepseek-ai/dsh-subprocess-local'
 import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import * as LspLocal from '@deepseek-ai/dsh-lsp-stdio'
 import type { LspLocalServerConfig } from '@deepseek-ai/dsh-lsp-stdio'
 
@@ -57,6 +58,7 @@ async function mount(
       return register(provider)
     })
   try {
+    await ctx.plugin(SystemPrompt)
     await ctx.plugin(LspLocal, {
       servers: { fake: fakeServer(fakeEnv, overrides) },
     })
@@ -82,6 +84,7 @@ describe('lsp-stdio end to end over a fake server', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await ctx.plugin(LspLocal, {
       servers: {
         typescript: fakeServer({ LSP_FAKE_HOVER: JSON.stringify({ contents: 'ts' }) }),
@@ -397,6 +400,7 @@ describe('lsp-stdio end to end over a fake server', () => {
       providers.push(provider)
       return register(provider)
     })
+    await ctx.plugin(SystemPrompt)
     const fiber = await ctx.plugin(LspLocal, {
       servers: {
         first: fakeServer(),
@@ -448,6 +452,7 @@ describe('lsp-stdio end to end over a fake server', () => {
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+    await ctx.plugin(SystemPrompt)
     await expect(ctx.plugin(LspLocal, {
       servers: {
         missing: {
@@ -456,6 +461,7 @@ describe('lsp-stdio end to end over a fake server', () => {
           extensionToLanguage: { '.ts': 'typescript' },
         },
       },
+      catalog: false,
     })).rejects.toThrow(/was not found on PATH/)
     await ctx.fiber.dispose()
   })

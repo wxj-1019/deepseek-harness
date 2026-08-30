@@ -14,6 +14,8 @@
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { LspError, LspProviderId } from '@deepseek-ai/dsh-lsp'
+// Type-only: pulls the ctx.systemPrompt declaration merge (the prompt sections service) into this program.
+import type {} from '@deepseek-ai/dsh-system-prompt'
 import type {
   LspProvider,
   LspProviderQuery,
@@ -49,7 +51,7 @@ export { LspConnection } from './connection.ts'
 export const name = 'lsp-stdio'
 
 /** Services required by this plugin. */
-export const inject = ['fs', 'lsp', 'subprocess']
+export const inject = ['fs', 'lsp', 'subprocess', 'systemPrompt']
 
 const DEFAULT_MAX_MESSAGE_BYTES = 16_000_000
 const DEFAULT_MAX_STDERR_BYTES = 1_000_000
@@ -147,7 +149,59 @@ const LspLocalServerConfig: z<LspLocalServerConfig> = z.object({
 
 export const Config: z<Config> = z.object({
   servers: z.dict(LspLocalServerConfig).required(),
+  catalog: z.boolean().default(true),
 })
+
+/** Cap on how many servers the availability prompt section lists. */
+const MAX_CATALOG_SECTION_SERVERS = 12
+/** Cap on how many extensions one availability row lists. */
+const MAX_CATALOG_SECTION_EXTENSIONS = 24
+
+/**
+ * Merge catalog seeds into the explicit server table: a seed mounts only when
+ * `catalog` is on and its id has no explicit entry, which then shadows it.
+ * Pure so the default-on catalog semantics are pinnable without I/O.
+ * @param servers - the explicit provider table, may be empty or omitted.
+ * @param catalog - whether the built-in language catalog mounts; `undefined` behaves as on.
+ * @returns the merged server table in seed-then-explicit order.
+ */
+export function mergeServersWithCatalog(
+  servers: Config['servers'],
+  catalog: boolean | undefined,
+): Map<string, LspLocalServerConfig> {
+  const merged = new Map<string, LspLocalServerConfig>()
+  if (catalog !== false) {
+    for (const [id, seed] of Object.entries(LANGUAGE_CATALOG)) {
+      if (servers?.[id] !== undefined) continue
+      merged.set(id, seed)
+    }
+  }
+  for (const [id, server] of Object.entries(servers ?? {})) merged.set(id, server)
+  return merged
+}
+
+/**
+ * Render the model-facing availability section: which extensions/languages a
+ * language server can serve on this host. Bounded so a large server table or
+ * extension map cannot inflate the prompt.
+ * @param providers - the registered providers (id plus extension map only).
+ * @returns the section text; empty when there is nothing to list.
+ */
+export function catalogSectionText(
+  providers: ReadonlyArray<{ id: string; extensionToLanguage: Readonly<Record<string, string>> }>,
+): string {
+  const rows = providers.slice(0, MAX_CATALOG_SECTION_SERVERS).map((provider) => {
+    const extensions = Object.keys(provider.extensionToLanguage).sort()
+    const shown = extensions.slice(0, MAX_CATALOG_SECTION_EXTENSIONS)
+    const capped = extensions.length > shown.length ? ` (+${extensions.length - shown.length} more)` : ''
+    const languages = [...new Set(Object.values(provider.extensionToLanguage))].sort().join(', ')
+    return `${provider.id}: ${shown.join(' ')}${capped} (${languages})`
+  })
+  if (rows.length === 0) return ''
+  const overflow = providers.length > MAX_CATALOG_SECTION_SERVERS ? `; and ${providers.length - MAX_CATALOG_SECTION_SERVERS} more servers` : ''
+  return `The lsp tool serves these languages on this host — ${rows.join('; ')}${overflow}. `
+    + 'A query on an extension not listed here fails: the file has no language server.'
+}
 
 /** Propagate teardown failures only after every sibling has settled. */
 function throwTeardownFailures(results: readonly PromiseSettledResult<void>[], message: string): void {
@@ -170,16 +224,9 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // Catalog seeds pass through the seed schema so every defaulted field fills
   // in, then explicit servers override same-id seeds. Seeds skip silently when
   // their executable is absent; explicit entries that fail still fail loud.
-  const merged = new Map<string, LspLocalServerConfig>()
-  if (config.catalog === true) {
-    for (const [id, seed] of Object.entries(LANGUAGE_CATALOG)) {
-      if (config.servers?.[id] !== undefined) continue
-      merged.set(id, seed)
-    }
-  }
-  for (const [id, server] of Object.entries(config.servers ?? {})) {
-    merged.set(id, server)
-  }
+  // The catalog is on by default: a host without the binaries registers no
+  // provider and the availability section stays absent.
+  const merged = mergeServersWithCatalog(config.servers, config.catalog)
   const entries: [string, LspLocalServerConfig][] = [...merged.entries()]
   const explicitIds = new Set(Object.keys(config.servers ?? {}))
 
@@ -236,6 +283,12 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     stopSetupCancellation()
     return built.flatMap(entry => entry.status === 'fulfilled' && entry.value !== undefined ? [entry.value] : [])
   })()
+
+  // Announce which languages actually resolved on this host so the model aims
+  // lsp queries only at servable files; absent when nothing resolved.
+  if (providers.length > 0) {
+    ctx.systemPrompt.section({ name: 'lsp:language-catalog', order: 113, text: catalogSectionText(providers) })
+  }
 
   ctx.effect(() => {
     const disposers: Array<() => void> = []

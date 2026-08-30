@@ -49,6 +49,7 @@ describe.skipIf(!built)('built lib real load path (plain node)', () => {
       await ctx.plugin(Lsp)
       await ctx.plugin(LocalSubprocessRuntime)
       await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
+      await ctx.plugin(SystemPrompt)
       await ctx.plugin(LspLocal, {
         servers: {
           fake: {
