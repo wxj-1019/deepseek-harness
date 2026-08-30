@@ -5,8 +5,10 @@
  * counted BEFORE anything writes, then each file writes through the
  * version-guarded replace intent (a concurrent change fails that write
  * loudly instead of overwriting). Edits to the same file apply sequentially
- * on the evolving content. All-or-nothing across files is best effort: a
- * failed write reports which edits landed and which did not.
+ * on the evolving content. A mid-batch write failure rolls every
+ * already-written file back to its pre-batch content in reverse write order;
+ * the failure names the file that broke the batch and, should restoration
+ * itself fail, the files whose edited content remains on disk.
  * @module @deepseek-ai/dsh-tool-multi-edit
  */
 
@@ -126,7 +128,8 @@ export function apply(ctx: Context, config: Config): void {
     name: 'tool:multi-edit',
     order: 104,
     text: 'Use multi_edit to land a batch of related edits in ONE call: every oldString is verified against the '
-      + 'current files before anything writes, and same-file edits apply in order on the evolving content. '
+      + 'current files before anything writes, same-file edits apply in order on the evolving content, and a '
+      + 'mid-batch failure rolls written files back so no partial batch remains. '
       + 'Each oldString must occur exactly once unless replaceAll is set; read the file first when unsure of the text.',
   })
 
@@ -135,7 +138,8 @@ export function apply(ctx: Context, config: Config): void {
     description: 'Apply a batch of literal string edits across one or more files in a single call. Every edit is '
       + 'validated against the current file contents before anything is written: each oldString must occur exactly '
       + 'once in its file unless replaceAll is true, and same-file edits apply in order on the evolving content. '
-      + 'Writes are version-guarded — a concurrent change to a file fails that file loudly instead of overwriting. '
+      + 'Writes are version-guarded — a concurrent change to a file fails that file loudly instead of overwriting, '
+      + 'and a mid-batch failure rolls already-written files back so no partial batch remains. '
       + `At most ${maxEdits} edits per call.`,
     parameters: {
       edits: {
@@ -177,8 +181,9 @@ export function apply(ctx: Context, config: Config): void {
       const resolveOptions = () => ({ ...(cwd !== undefined ? { cwd } : {}), signal: exec.signal })
 
       // Phase 1 — read and plan every file: evolving per-file content with
-      // each edit folded in, plus the version each write must guard on.
-      const plan = new Map<string, { target: FsTarget; version: FsVersion; content: string; count: number }>()
+      // each edit folded in, plus the version each write must guard on and
+      // the pre-batch content a rollback restores.
+      const plan = new Map<string, { target: FsTarget; version: FsVersion; original: string; content: string; count: number }>()
       for (const edit of edits) {
         let entry = plan.get(edit.path)
         if (entry === undefined) {
@@ -187,7 +192,8 @@ export function apply(ctx: Context, config: Config): void {
           if (info === undefined || info.type !== 'file') {
             throw new Error(`${edit.path}: not found (multi_edit edits existing files; use write to create)`)
           }
-          entry = { target, version: info.version, content: await ctx.fs.readText(target, exec.signal), count: 0 }
+          const original = await ctx.fs.readText(target, exec.signal)
+          entry = { target, version: info.version, original, content: original, count: 0 }
           plan.set(edit.path, entry)
         }
         try {
@@ -199,17 +205,36 @@ export function apply(ctx: Context, config: Config): void {
       }
 
       // Phase 2 — write every planned file, version-guarded. A mid-batch
-      // failure reports the landed files and rethrows the failure.
-      const written: string[] = []
+      // failure rolls the already-written files back to their pre-batch
+      // content in reverse write order, guarding each restore on the version
+      // the batch's own write produced. Restoration failures never pass
+      // silently: the thrown report names every file whose edited content
+      // remains on disk.
+      const written: { path: string; target: FsTarget; version: FsVersion }[] = []
       try {
         for (const [path, entry] of plan) {
-          await ctx.fs.writeText(entry.target, entry.content, { kind: 'replaceIfVersion', version: entry.version }, exec.signal)
-          written.push(path)
+          const outcome = await ctx.fs.writeText(entry.target, entry.content, { kind: 'replaceIfVersion', version: entry.version }, exec.signal)
+          written.push({ path, target: entry.target, version: outcome.version })
         }
       } catch (error) {
-        const failed = [...plan.keys()].find(path => !written.includes(path))
-        throw new Error(`Wrote ${written.length} of ${plan.size} file(s) (${written.join(', ') || 'none'}); `
-          + `${failed ?? 'the next file'} failed: ${(error as Error).message}`)
+        const failed = [...plan.keys()].find(path => !written.some(writtenEntry => writtenEntry.path === path))
+        const unrestored: string[] = []
+        for (const entry of [...written].reverse()) {
+          const original = plan.get(entry.path)?.original
+          if (original === undefined) continue
+          try {
+            await ctx.fs.writeText(entry.target, original, { kind: 'replaceIfVersion', version: entry.version }, exec.signal)
+          } catch {
+            unrestored.push(entry.path)
+          }
+        }
+        let message = `${failed ?? 'the next file'} failed: ${(error as Error).message}`
+        const restored = written.length - unrestored.length
+        if (written.length > 0) {
+          message += `; rolled back ${restored} of ${written.length} written file(s) to their pre-batch content`
+          if (unrestored.length > 0) message += `; RESTORE FAILED — edited content remains in ${unrestored.join(', ')}`
+        }
+        throw new Error(message)
       }
       return { applied: edits.length, files: [...plan.keys()] }
     },
