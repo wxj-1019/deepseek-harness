@@ -166,3 +166,24 @@ describe('describe() layers and redaction', () => {
     expect(verbatim?.value).toEqual({ apiKey: 'user-key', baseURL: 'https://user' })
   })
 })
+
+describe('redactSecrets fail-closed', () => {
+  // A schemastery `union` node shapes as a list of branches; the walker has no
+  // `union` case, so a secret inside one must fail closed at redaction time.
+  function unionWithSecret(): z<never> {
+    const branch = { type: 'string', meta: { role: 'secret' } }
+    return { type: 'union', anyOf: [branch] } as unknown as z<never>
+  }
+
+  it('throws instead of returning a value when a secret sits behind an unsupported container', () => {
+    const value = { token: 'super-secret' }
+    expect(() => redactSecrets(unionWithSecret(), value)).toThrow(/unsupported container/)
+  })
+
+  it('still walks supported containers without throwing', () => {
+    const schema = { type: 'object', dict: { key: { type: 'string', meta: { role: 'secret' } } } }
+    const result = redactSecrets(schema as unknown as z<never>, { key: 'value' })
+    expect(result.secrets).toEqual([{ path: ['key'], set: true }])
+    expect(result.value).toEqual({})
+  })
+})

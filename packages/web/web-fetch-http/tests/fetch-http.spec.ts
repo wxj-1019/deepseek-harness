@@ -9,6 +9,7 @@ import * as fetchPlugin from '@deepseek-ai/dsh-web-fetch-http'
 import { classifyContentType, decoderForCharset, isSameOrigin, parseCharset, validateFetchUrl } from '../src/policy.ts'
 
 const limits: HttpFetchLimits = {
+  allowPrivateNetwork: true,
   maxUrlLength: 2048,
   maxResponseBytes: 5_000_000,
   maxBodyChars: 100_000,
@@ -37,7 +38,7 @@ afterEach(async () => {
 })
 
 function provider(overrides: Partial<HttpFetchLimits> = {}): HttpFetchProvider {
-  return new HttpFetchProvider({ ...limits, ...overrides })
+  return new HttpFetchProvider({ ...limits, allowPrivateNetwork: true, ...overrides })
 }
 
 describe('policy helpers', () => {
@@ -367,11 +368,28 @@ describe('HttpFetchProvider body cancellation on error paths', () => {
   })
 })
 
+describe('private-network guard', () => {
+  it('rejects literal loopback targets with the guard code by default', async () => {
+    const guard = provider({ allowPrivateNetwork: false })
+    await expect(guard.fetch({ url: 'http://127.0.0.1:9/x' }))
+      .rejects.toThrow(/private or link-local/)
+  })
+
+  it('rejects private-range and metadata literals through isPrivateAddress', async () => {
+    // Direct unit check through the provider's guard path with literal IPs.
+    const guard = provider({ allowPrivateNetwork: false })
+    for (const host of ['10.0.0.1', '192.168.1.1', '169.254.169.254', '[::1]', '[fd00::1]']) {
+      await expect(guard.fetch({ url: `http://${host}/x` }))
+        .rejects.toThrow(/private or link-local/)
+    }
+  })
+})
+
 describe('web-fetch-http plugin registration', () => {
   it('registers the provider into ctx.web (HMR-safe)', async () => {
     const ctx = new Context()
     await ctx.plugin(WebRuntime, { fetchProvider: LOCAL_FETCH_PROVIDER_ID })
-    const fiber = await ctx.plugin(fetchPlugin, {})
+    const fiber = await ctx.plugin(fetchPlugin, { allowPrivateNetwork: true })
     await expect(ctx.web.fetch({ url: `${base}/` }))
       .resolves.toMatchObject({ statusCode: 200 })
     await fiber.dispose()
@@ -421,7 +439,7 @@ describe('web-fetch-http plugin registration', () => {
   it('accepts maxRedirects: 0 (follow no redirects) as valid config', async () => {
     const ctx = new Context()
     await ctx.plugin(WebRuntime, { fetchProvider: LOCAL_FETCH_PROVIDER_ID })
-    const fiber = await ctx.plugin(fetchPlugin, { maxRedirects: 0 })
+    const fiber = await ctx.plugin(fetchPlugin, { maxRedirects: 0, allowPrivateNetwork: true })
     await expect(ctx.web.fetch({ url: `${base}/` }))
       .resolves.toMatchObject({ statusCode: 200 })
     await fiber.dispose()

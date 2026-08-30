@@ -103,3 +103,30 @@ export function decoderForCharset(charset: string | undefined): TextDecoder {
     throw new WebError(`unsupported charset "${charset}"`, 'WEB_UNSUPPORTED_CONTENT_TYPE', { cause: error })
   }
 }
+
+/**
+ * Whether one IP literal (IPv4, IPv6, or IPv4-mapped IPv6) falls in a range a
+ * private-network fetch guard must block: loopback, RFC1918 private, link-local
+ * (incl. the cloud metadata endpoint), carrier-grade NAT, unspecified, and
+ * IPv6 unique-local.
+ * @param ip - a parsed IP literal without zone or brackets.
+ * @returns true when the address must not be fetched.
+ */
+export function isPrivateAddress(ip: string): boolean {
+  const lower = ip.toLowerCase()
+  if (lower.startsWith('::ffff:')) return isPrivateAddress(lower.slice(7))
+  if (lower === '::' || lower === '::1') return true
+  if (lower.startsWith('fe8') || lower.startsWith('fe9') || lower.startsWith('fea') || lower.startsWith('feb')) return true
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true
+  const v4 = lower.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  if (v4 === null) return false
+  const octets = [Number(v4[1]), Number(v4[2]), Number(v4[3]), Number(v4[4])]
+  if (octets.some(octet => octet > 255)) return false
+  const [a, b] = [octets[0] ?? 999, octets[1] ?? 999]
+  if (a === 0 || a === 10 || a === 127) return true
+  if (a === 169 && b === 254) return true
+  if (a === 172 && b >= 16 && b <= 31) return true
+  if (a === 192 && b === 168) return true
+  if (a === 100 && b >= 64 && b <= 127) return true
+  return false
+}

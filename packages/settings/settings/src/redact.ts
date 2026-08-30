@@ -47,6 +47,40 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/** Bound depth for the transitive secret scan. */
+const SECRET_SCAN_MAX_DEPTH = 24
+
+/**
+ * Whether a schema fragment declares ANY `role('secret')` anywhere beneath it
+ * (deep scan over every own property, so union/intersection/transform shapes
+ * the walker cannot name are still covered).
+ * @param node - a schema fragment to scan.
+ * @returns true when a secret marker is reachable.
+ */
+function declaresSecret(node: unknown): boolean {
+  return declaresSecretAt(node, 0)
+}
+
+function declaresSecretAt(node: unknown, depth: number): boolean {
+  if (depth > SECRET_SCAN_MAX_DEPTH || node === null || typeof node !== 'object') return false
+  const record = node as Record<string, unknown>
+  const meta = record.meta
+  if (meta !== null && typeof meta === 'object' && (meta as Record<string, unknown>).role === 'secret') {
+    return true
+  }
+  for (const value of Object.values(record)) {
+    if (value === null || typeof value !== 'object') continue
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        if (declaresSecretAt(entry, depth + 1)) return true
+      }
+      continue
+    }
+    if (declaresSecretAt(value, depth + 1)) return true
+  }
+  return false
+}
+
 function walk(node: SchemaNode | undefined, value: unknown, path: string[], secrets: RedactedSecret[]): unknown {
   if (node === undefined) return value
   if (node.meta?.role === 'secret') {
@@ -84,9 +118,15 @@ function walk(node: SchemaNode | undefined, value: unknown, path: string[], secr
       return value.map((entry, index) => walk(node.inner, entry, [...path, String(index)], secrets))
     }
     default:
-      // TODO(settings-wire-redaction): Fail closed instead — a secret reachable
-      // only through a union, intersection, or transform is returned verbatim
-      // here, with nothing recording that it was missed.
+      // Fail closed: a secret reachable only through a container this walker
+      // cannot name (union, intersection, transform) must not cross the wire
+      // verbatim. The schema author re-declares it on a supported container.
+      if (node !== undefined && declaresSecret(node)) {
+        throw new Error(
+          `settings: a role('secret') field sits behind an unsupported container at "${path.join('.') || '<root>'}"; `
+          + 'declare it directly on an object, dict, or array so redaction can reach it',
+        )
+      }
       return value
   }
 }

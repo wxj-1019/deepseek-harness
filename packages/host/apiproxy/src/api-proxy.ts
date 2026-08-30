@@ -2119,8 +2119,10 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
             isAborted(signal)
             || (error instanceof SessionQueryError && error.code === 'SESSION_QUERY_ABORTED')
           ) return cancelled()
-          // XXX: Redact provider details before exposing this gateway beyond
-          // its current single-user local deployment.
+          // This gateway is a single-user local surface: seam-authored error
+          // messages (work budget, oversized page, ...) are intended to cross,
+          // and the tests pin them. A deployment exposing the gateway beyond
+          // localhost must add redaction at that boundary first.
           return err(request, {
             code: 'internal',
             message: `session search failed: ${String(error)}`,

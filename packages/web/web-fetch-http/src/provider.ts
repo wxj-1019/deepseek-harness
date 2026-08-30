@@ -11,7 +11,8 @@
 import { WebError } from '@deepseek-ai/dsh-web'
 import type { WebFetchBody, WebFetchProvider, WebFetchRequest, WebFetchResult } from '@deepseek-ai/dsh-web'
 import { deadline, timeoutOf } from '@deepseek-ai/dsh-timeout'
-import { classifyContentType, decoderForCharset, isSameOrigin, parseCharset, validateFetchUrl } from './policy.ts'
+import { lookup } from 'node:dns/promises'
+import { classifyContentType, decoderForCharset, isPrivateAddress, isSameOrigin, parseCharset, validateFetchUrl } from './policy.ts'
 
 /** Resolved provider limits (the plugin's schemastery Config supplies defaults). */
 export interface HttpFetchLimits {
@@ -27,6 +28,8 @@ export interface HttpFetchLimits {
   maxRedirects: number
   /** `User-Agent` header sent on every request. */
   userAgent: string
+  /** Whether hostnames resolving into private/link-local ranges may be fetched. Defaults to false. */
+  allowPrivateNetwork: boolean
 }
 
 /** Stable id this provider registers under. */
@@ -58,6 +61,12 @@ export class HttpFetchProvider implements WebFetchProvider {
     let redirectsFollowed = 0
 
     for (;;) {
+      if (!this.limits.allowPrivateNetwork) {
+        // SSRF guard: the hostname must resolve to public addresses before any
+        // request is issued. Re-checked on every redirect hop so a hop cannot
+        // redirect into a private range.
+        await this.assertResolvesPublic(currentUrl, signal)
+      }
       const response = await this.requestOnce(currentUrl, signal)
 
       if (isRedirectStatus(response.status)) {
@@ -98,6 +107,28 @@ export class HttpFetchProvider implements WebFetchProvider {
 
       return await this.readBody(response, currentUrl, signal)
     }
+  }
+
+  /**
+   * Resolve the URL's hostname and reject when any resolved address is private
+   * or link-local. Resolution happens per hop, so the guard follows redirects.
+   * @param url - the validated request URL.
+   * @param signal - the caller's cancellation signal.
+   */
+  private async assertResolvesPublic(url: URL, signal: AbortSignal): Promise<void> {
+    const hostname = url.hostname.replace(/^\[|\]$/g, '')
+    // A literal IP is checked directly; a name is resolved and every returned
+    // address is checked (dual-stack hosts can answer privately on one family).
+    const addresses = /^[0-9.:]+$/.test(hostname)
+      ? [hostname]
+      : (await lookup(hostname, { all: true, verbatim: true })).map(entry => entry.address)
+    if (addresses.some(address => isPrivateAddress(address))) {
+      throw new WebError(
+        `refusing to fetch ${url.hostname}: it resolves into a private or link-local network range`,
+        'WEB_PRIVATE_NETWORK_BLOCKED',
+      )
+    }
+    void signal
   }
 
   private async requestOnce(url: URL, signal: AbortSignal): Promise<Response> {
