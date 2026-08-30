@@ -54,6 +54,9 @@ No direct invalidation; `dsh-tool-lsp` owns request-prefix changes.
 
 ## Known Limitations and Deferred Work
 
+- **Diagnostics are pull-based** — the host queries `textDocument/diagnostic` per request; push-based `publishDiagnostics` subscriptions are not bridged. Servers without pull diagnostics return `LSP_UNSUPPORTED_OPERATION`.
+- **Rename returns a plan** — the normalized per-file edits are returned to the model for application with its file-edit tools; the host does not apply them itself.
+
 - **No confinement policy** — this package trusts the configured server and does not sandbox its process; a restricted deployment must supply appropriate process/filesystem providers or a same-world sandbox wrapper.
 - **Transient-open compatibility floor** — servers whose synchronization omits open/close (or advertise `None`) are unsupported even if closed-document queries would work; the pinned TypeScript e2e establishes one compatibility floor, not a cross-language claim.
 - **Per-server/workspace serialization latency** — parallel agents sharing one server and workspace queue behind one process; long-lived workspace processes consume memory until disposal.

@@ -276,7 +276,28 @@ class LocalLspProvider implements LspProvider {
       this.assertActive(querySignal)
       // Read inside the workspace queue but before spawning: a queued query sees current bytes when
       // its turn starts, while an invalid source still cannot leave an idle process pooled.
-      const source = await readHostSource(this.fs, request.filePath, workspace, this.config.maxDocumentBytes, querySignal)
+      // A workspace symbol search has no source document to open; every other
+      // operation reads the queried file for the transient didOpen lifecycle.
+      if (request.operation === 'workspaceSymbol') {
+        this.assertActive(querySignal)
+        let wsInstance = this.instanceFor(workspaceKey, workspace)
+        try {
+          return await wsInstance.query(request, undefined, querySignal)
+        } catch (error) {
+          if (!wsInstance.isTransportFailure(error)) throw error
+          await wsInstance.dispose()
+          this.evictIfCurrent(workspaceKey, wsInstance)
+          this.assertActive(querySignal)
+          wsInstance = this.instanceFor(workspaceKey, workspace)
+          return await wsInstance.query(request, undefined, querySignal)
+        } finally {
+          if (wsInstance.dead) {
+            await wsInstance.dispose()
+            this.evictIfCurrent(workspaceKey, wsInstance)
+          }
+        }
+      }
+      const source = await readHostSource(this.fs, request.filePath ?? '', workspace, this.config.maxDocumentBytes, querySignal)
       // Disposal may have snapshotted the instance map while host I/O was pending. Re-check before a
       // synchronous get-or-create so every spawned process remains owned by teardown.
       this.assertActive(querySignal)

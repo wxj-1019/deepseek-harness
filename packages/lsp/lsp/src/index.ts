@@ -23,6 +23,8 @@ import type {
 
 export { LspProviderId } from './brand.ts'
 export type {
+  LspDiagnostic,
+  LspFileEdits,
   LspHover,
   LspLocation,
   LspOperation,
@@ -33,6 +35,7 @@ export type {
   LspQueryResult,
   LspRange,
   LspService,
+  LspSymbolInfo,
 } from './types.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -141,7 +144,19 @@ export class Lsp extends Service implements LspService {
   }
 
   async query(request: LspQueryRequest, signal?: AbortSignal): Promise<LspQueryResult> {
-    const route = this.routes.get(finalExtension(request.filePath))
+    // A workspace symbol search has no file to route by: every registered
+    // provider answers, and the rows merge in registration order.
+    if (request.operation === 'workspaceSymbol') {
+      const routes = [...this.routes.values()]
+      if (routes.length === 0) {
+        throw new LspError('no LSP provider is registered', 'LSP_UNAVAILABLE')
+      }
+      const merged = await Promise.all(routes.map(route =>
+        route.provider.query({ ...request, languageId: route.languageId }, signal)
+          .then(result => result.kind === 'symbols' ? result.symbols : [])))
+      return { kind: 'symbols', symbols: merged.flat() }
+    }
+    const route = this.routes.get(finalExtension(request.filePath ?? ''))
     if (route === undefined) {
       throw new LspError(`no LSP provider handles "${request.filePath}"`, 'LSP_UNAVAILABLE')
     }

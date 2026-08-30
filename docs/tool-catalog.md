@@ -886,7 +886,7 @@ Run a structured git operation in the session workspace. Actions: status (porcel
     },
     "paths": {
       "type": "array",
-      "description": "Paths for add / restore / checkout-with-paths / diff.",
+      "description": "Paths for add / restore / checkout-with-paths / diff. No whitespace or shell metacharacters (quoting is unnecessary: values pass as plain arguments).",
       "items": {
         "type": "string"
       }
@@ -1363,12 +1363,16 @@ Query a language server for precise code navigation. operation is one of goToDef
   "properties": {
     "operation": {
       "type": "string",
-      "description": "goToDefinition, findReferences, goToImplementation, or hover.",
+      "description": "goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); workspaceSymbol (query required); rename (file_path, line, character, new_name).",
       "enum": [
         "goToDefinition",
         "findReferences",
         "goToImplementation",
-        "hover"
+        "hover",
+        "documentSymbol",
+        "workspaceSymbol",
+        "diagnostics",
+        "rename"
       ]
     },
     "file_path": {
@@ -1377,18 +1381,23 @@ Query a language server for precise code navigation. operation is one of goToDef
     },
     "line": {
       "type": "number",
-      "description": "One-based line of the cursor."
+      "description": "One-based line of the cursor (cursor operations and rename)."
     },
     "character": {
       "type": "number",
-      "description": "One-based UTF-16 column of the cursor."
+      "description": "One-based UTF-16 column of the cursor (cursor operations and rename)."
+    },
+    "query": {
+      "type": "string",
+      "description": "Symbol name fragment for workspaceSymbol."
+    },
+    "new_name": {
+      "type": "string",
+      "description": "The new identifier for rename."
     }
   },
   "required": [
-    "operation",
-    "file_path",
-    "line",
-    "character"
+    "operation"
   ]
 }
 ```

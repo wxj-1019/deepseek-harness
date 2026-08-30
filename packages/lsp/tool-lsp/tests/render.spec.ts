@@ -6,7 +6,6 @@ import {
   DEFAULT_MAX_RESULT_CHARS,
   formatHover,
   formatLocations,
-  LSP_OPERATIONS,
   parseLspArgs,
   presentLspCall,
   renderUri,
@@ -21,17 +20,29 @@ function loc(uri: string, line: number, character = 0): LspLocation {
 }
 
 describe('parseLspArgs', () => {
-  it('accepts the four operations and converts one-based to zero-based', () => {
-    for (const operation of LSP_OPERATIONS) {
+  it('accepts the cursor operations and converts one-based to zero-based', () => {
+    for (const operation of ['goToDefinition', 'findReferences', 'goToImplementation', 'hover', 'rename'] as const) {
       const input = parseLspArgs({ operation, file_path: 'a.ts', line: 3, character: 5 })
       expect(input.operation).toBe(operation)
-      expect(input.position).toEqual({ line: 2, character: 4 })
+      expect('position' in input && input.position).toEqual({ line: 2, character: 4 })
     }
   })
 
   it('rejects an unknown operation', () => {
-    expect(() => parseLspArgs({ operation: 'rename', file_path: 'a.ts', line: 1, character: 1 }))
+    expect(() => parseLspArgs({ operation: 'nope', file_path: 'a.ts', line: 1, character: 1 }))
       .toThrow(/operation must be one of/)
+  })
+
+  it('routes documentSymbol and workspaceSymbol without a cursor', () => {
+    const outline = parseLspArgs({ operation: 'documentSymbol', file_path: 'a.ts' })
+    expect(outline).toEqual({ operation: 'documentSymbol', filePath: 'a.ts' })
+    const search = parseLspArgs({ operation: 'workspaceSymbol', query: 'run' })
+    expect(search).toEqual({ operation: 'workspaceSymbol', query: 'run' })
+  })
+
+  it('rejects cursor coordinates on non-cursor operations and requires them on cursor ones', () => {
+    expect(() => parseLspArgs({ operation: 'workspaceSymbol', query: '' })).toThrow('non-empty')
+    expect(() => parseLspArgs({ operation: 'goToDefinition', file_path: 'a.ts' })).toThrow('line and character are required')
   })
 
   it('rejects a blank file_path', () => {

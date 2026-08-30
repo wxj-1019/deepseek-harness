@@ -90,7 +90,7 @@ export class LspInstance {
    * @param signal - optional cancellation for this query's full lifecycle.
    * @returns the normalized result.
    */
-  query(request: LspProviderQuery, source: HostSource, signal?: AbortSignal): Promise<LspQueryResult> {
+  query(request: LspProviderQuery, source: HostSource | undefined, signal?: AbortSignal): Promise<LspQueryResult> {
     // Serialize behind prior work, but observe abort DURING the queue wait too: if an earlier query
     // hangs (e.g. a signal-less service caller), a later tool's timeout must still be able to give up
     // rather than block on the shared tail forever.
@@ -124,7 +124,7 @@ export class LspInstance {
     await this.connection.notify('initialized', {})
   }
 
-  private async runQuery(request: LspProviderQuery, source: HostSource, signal?: AbortSignal): Promise<LspQueryResult> {
+  private async runQuery(request: LspProviderQuery, source: HostSource | undefined, signal?: AbortSignal): Promise<LspQueryResult> {
     if (this.disposed) throw new LspError('LSP instance was disposed', 'LSP_DISPOSED')
     /* v8 ignore next -- the abortable queue wait rejects a pre-aborted signal before runQuery; this is a belt-and-suspenders guard. */
     if (signal?.aborted) throw abortError(signal)
@@ -146,15 +146,22 @@ export class LspInstance {
     if (!supportsOperation(capabilities, request.operation)) {
       throw new LspError(`server does not support ${request.operation}`, 'LSP_UNSUPPORTED_OPERATION')
     }
-    if (!supportsTransientOpen(capabilities.textDocumentSync)) {
+    // The transient open/close lifecycle applies to document-bound queries only; a
+    // workspace symbol search never opens a document.
+    if (source !== undefined && !supportsTransientOpen(capabilities.textDocumentSync)) {
       throw new LspError('server does not support the transient textDocument/didOpen this host requires', 'LSP_UNSUPPORTED_OPERATION')
     }
 
-    const uri = source.fileUrl
+    const uri = source?.fileUrl ?? ''
     let opened = false
     try {
       /* v8 ignore next -- guards an abort landing between the ready wait and didOpen; not deterministically reproducible. */
       if (signal?.aborted) throw abortError(signal)
+      if (source === undefined) {
+        // Workspace-level query: no document lifecycle at all.
+        const payload = await this.sendRequest(request, uri, signal)
+        return this.normalize(request.operation, payload)
+      }
       try {
         await abortable(this.connection.notify('textDocument/didOpen', {
           textDocument: { uri, languageId: request.languageId, version: 1, text: source.text },
@@ -166,7 +173,7 @@ export class LspInstance {
         throw error
       }
       opened = true
-      const payload = await this.sendRequest(request.operation, uri, request.position, signal)
+      const payload = await this.sendRequest(request, uri, signal)
       return this.normalize(request.operation, payload)
     } finally {
       // A disposed or closed instance (e.g. an aborted request whose server ignored
@@ -189,19 +196,25 @@ export class LspInstance {
     }
   }
 
-  private async sendRequest(
-    operation: LspOperation,
-    uri: string,
-    position: LspProviderQuery['position'],
-    signal?: AbortSignal,
-  ): Promise<unknown> {
-    const params = {
-      textDocument: { uri },
-      position: { line: position.line, character: position.character },
-      // findReferences always includes declarations: the caller gets no flag and impact analysis
-      // never omits the defining site.
-      ...(operation === 'findReferences' ? { context: { includeDeclaration: true } } : {}),
-    }
+  private async sendRequest(request: LspProviderQuery, uri: string, signal?: AbortSignal): Promise<unknown> {
+    const operation = request.operation
+    // Per-operation params: cursor operations take a position; outline and
+    // diagnostics read the whole document; rename carries the new identifier;
+    // a workspace symbol search is text-free.
+    const positionParams = { textDocument: { uri }, position: request.position }
+    const params =
+      operation === 'documentSymbol' || operation === 'diagnostics'
+        ? { textDocument: { uri } }
+        : operation === 'workspaceSymbol'
+          ? { query: request.query ?? '' }
+          : operation === 'rename'
+            ? { ...positionParams, newName: request.newName }
+            : {
+              ...positionParams,
+              // findReferences always includes declarations: the caller gets no flag and impact analysis
+              // never omits the defining site.
+              ...(operation === 'findReferences' ? { context: { includeDeclaration: true } } : {}),
+            }
     const requestId = this.connection.peekNextId()
     const send = this.connection.request(requestMethod(operation), params)
     if (signal === undefined) return send

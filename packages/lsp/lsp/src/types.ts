@@ -10,11 +10,15 @@
 import type { LspProviderId } from './brand.ts'
 
 /**
- * The four semantic queries the seam and model expose. A closed union: adding an operation is a
- * compile-enforced change across the seam, providers, and the tool. Symbols and call hierarchy are
- * not operations here; they need different schemas.
+ * The semantic queries the seam and model expose. A closed union: adding an operation is a
+ * compile-enforced change across the seam, providers, and the tool. Cursor operations
+ * (`goToDefinition`, `findReferences`, `goToImplementation`, `hover`) require a position;
+ * `documentSymbol` and `diagnostics` read a whole file; `workspaceSymbol` searches by query text;
+ * `rename` returns a normalized workspace-edit plan the model applies with its file-edit tools.
  */
-export type LspOperation = 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
+export type LspOperation =
+  | 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
+  | 'documentSymbol' | 'workspaceSymbol' | 'diagnostics' | 'rename'
 
 /** A zero-based UTF-16 cursor coordinate, matching the LSP wire convention. */
 export interface LspPosition {
@@ -39,11 +43,15 @@ export interface LspQueryRequest {
   /** Which semantic query to run. */
   readonly operation: LspOperation
   /** The source file to query (relative to `workspaceRoot` or absolute; the provider canonicalizes). */
-  readonly filePath: string
-  /** The zero-based UTF-16 cursor position to query at. */
-  readonly position: LspPosition
+  readonly filePath?: string
+  /** The zero-based UTF-16 cursor position to query at; required by cursor operations only. */
+  readonly position?: LspPosition
   /** The workspace root the provider resolves against and indexes; required, never defaulted. */
   readonly workspaceRoot: string
+  /** The query text for `workspaceSymbol`; ignored elsewhere. */
+  readonly query?: string
+  /** The new identifier for `rename`; ignored elsewhere. */
+  readonly newName?: string
 }
 
 /**
@@ -85,6 +93,46 @@ export interface LspHover {
 export type LspQueryResult =
   | { readonly kind: 'locations'; readonly locations: readonly LspLocation[]; readonly resolvedWorkspaceUri: string }
   | { readonly kind: 'hover'; readonly hover: LspHover | null }
+  | { readonly kind: 'symbols'; readonly symbols: readonly LspSymbolInfo[] }
+  | { readonly kind: 'diagnostics'; readonly diagnostics: readonly LspDiagnostic[] }
+  | { readonly kind: 'workspaceEdit'; readonly edits: readonly LspFileEdits[] }
+
+/** One text edit within a renamed document. */
+export interface LspTextEdit {
+  readonly range: LspRange
+  readonly newText: string
+}
+
+/** One symbol row of an outline or workspace symbol search. */
+export interface LspSymbolInfo {
+  /** Symbol display name. */
+  readonly name: string
+  /** LSP `SymbolKind` number (1 File, 12 Function, 6 Method, ...). */
+  readonly kind: number
+  /** The immediate container name for a nested symbol, when known. */
+  readonly container?: string
+  /** The document URI the symbol lives in. */
+  readonly uri: string
+  /** The symbol's full range. */
+  readonly range: LspRange
+}
+
+/** One published or pulled diagnostic for a document. */
+export interface LspDiagnostic {
+  readonly range: LspRange
+  /** The diagnostic message, verbatim from the server. */
+  readonly message: string
+  /** LSP severity (1 error, 2 warning, 3 information, 4 hint) when the server reports it. */
+  readonly severity?: number
+  /** The diagnostic's source tag (e.g. `typescript`), when supplied. */
+  readonly source?: string
+}
+
+/** The edits for one document of a rename plan, applied top-to-bottom. */
+export interface LspFileEdits {
+  readonly uri: string
+  readonly edits: readonly LspTextEdit[]
+}
 
 /**
  * A language-server backend registered on `ctx.lsp`. Each provider owns a stable {@link

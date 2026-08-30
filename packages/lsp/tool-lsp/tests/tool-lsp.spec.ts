@@ -7,6 +7,7 @@ import ToolRuntime from '@deepseek-ai/dsh-tools'
 import Lsp, { LspProviderId, type LspProvider, type LspProviderQuery, type LspQueryResult } from '@deepseek-ai/dsh-lsp'
 import * as ToolLsp from '@deepseek-ai/dsh-tool-lsp'
 import { DEFAULT_LSP_TOOL_TIMEOUT_MS, LSP_PROMPT_TEXT } from '@deepseek-ai/dsh-tool-lsp'
+import { LSP_OPERATIONS } from '../src/render.ts'
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 
 /** A scripted provider recording queries; `respond` yields the result or throws. */
@@ -85,7 +86,7 @@ describe('tool-lsp registration', () => {
   it('exposes exactly the four operations in the schema enum', async () => {
     const { ctx } = await mount(stubProvider(() => okLocations))
     const schema = ctx.tools.get('lsp')?.parameters as { properties: { operation: { enum: string[] } } }
-    expect(schema.properties.operation.enum).toEqual(['goToDefinition', 'findReferences', 'goToImplementation', 'hover'])
+    expect(schema.properties.operation.enum).toEqual([...LSP_OPERATIONS])
   })
 
   it('has no default export (namespace plugin shape)', () => {
@@ -203,7 +204,7 @@ describe('tool-lsp execution', () => {
 
   it('returns a structured INVALID_ARGS on a bad operation', async () => {
     const { ctx } = await mount(stubProvider(() => okLocations))
-    const result = await call(ctx, { operation: 'rename', file_path: 'a.ts', line: 1, character: 1 }, workspaceRoot)
+    const result = await call(ctx, { operation: 'nope', file_path: 'a.ts', line: 1, character: 1 }, workspaceRoot)
     expect(result.isError).toBe(true)
     expect(result.error?.info?.code).toBe('INVALID_ARGS')
   })

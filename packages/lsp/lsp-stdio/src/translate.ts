@@ -6,10 +6,13 @@
  */
 
 import type {
+  LspDiagnostic,
+  LspFileEdits,
   LspHover,
   LspLocation,
   LspOperation,
   LspRange,
+  LspSymbolInfo,
 } from '@deepseek-ai/dsh-lsp'
 import { LspError } from '@deepseek-ai/dsh-lsp'
 import { assertNever } from '@deepseek-ai/dsh-llm'
@@ -35,6 +38,10 @@ export function requestMethod(operation: LspOperation): string {
     case 'findReferences': return 'textDocument/references'
     case 'goToImplementation': return 'textDocument/implementation'
     case 'hover': return 'textDocument/hover'
+    case 'documentSymbol': return 'textDocument/documentSymbol'
+    case 'workspaceSymbol': return 'workspace/symbol'
+    case 'diagnostics': return 'textDocument/diagnostic'
+    case 'rename': return 'textDocument/rename'
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'requestMethod')
   }
@@ -47,6 +54,10 @@ function capabilityValue(capabilities: WireServerCapabilities, operation: LspOpe
     case 'findReferences': return capabilities.referencesProvider
     case 'goToImplementation': return capabilities.implementationProvider
     case 'hover': return capabilities.hoverProvider
+    case 'documentSymbol': return capabilities.documentSymbolProvider
+    case 'workspaceSymbol': return capabilities.workspaceSymbolProvider
+    case 'diagnostics': return capabilities.diagnosticProvider
+    case 'rename': return capabilities.renameProvider
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'capabilityValue')
   }
@@ -227,6 +238,176 @@ function isMarkedString(value: unknown): value is WireMarkedString {
   if (value === null || typeof value !== 'object') return false
   const record = value as Record<string, unknown>
   return typeof record.language === 'string' && typeof record.value === 'string'
+}
+
+/** LSP SymbolKind numbers for the names the outline view renders. */
+export const SYMBOL_KIND_NAMES: readonly string[] = [
+  'File', 'Module', 'Namespace', 'Package', 'Class', 'Method', 'Property', 'Field',
+  'Constructor', 'Enum', 'Interface', 'Function', 'Variable', 'Constant', 'String',
+  'Number', 'Boolean', 'Array', 'Object', 'Key', 'Null', 'EnumMember', 'Struct',
+  'Event', 'Operator', 'TypeParameter',
+]
+
+/** The display name for a numeric SymbolKind, falling back to the number. */
+export function symbolKindName(kind: number): string {
+  return SYMBOL_KIND_NAMES[kind - 1] ?? String(kind)
+}
+
+/** Structural guard for a `Location`-shaped value used by symbol payloads. */
+function symbolLocation(value: unknown): { uri: string; range: LspRange } | undefined {
+  if (value === null || typeof value !== 'object') return undefined
+  const record = value as Record<string, unknown>
+  if (typeof record.uri !== 'string' || !isRange(record.range)) return undefined
+  return { uri: record.uri, range: toRange(record.range) }
+}
+
+/**
+ * Normalize a `textDocument/documentSymbol` result (hierarchical
+ * `DocumentSymbol[]`, flat `SymbolInformation[]`, or `null`) into flat symbol
+ * rows. Hierarchical children flatten with their container chain as the
+ * `container` field; every row's URI is the queried document's.
+ * @param payload - the raw documentSymbol result.
+ * @param uri - the queried document URI (DocumentSymbol rows carry no URI).
+ * @returns the flattened symbol rows.
+ * @throws Error when a payload entry is structurally invalid.
+ */
+export function normalizeDocumentSymbols(payload: unknown, uri: string): LspSymbolInfo[] {
+  if (payload === null) return []
+  if (payload === undefined || !Array.isArray(payload)) {
+    throw malformedResponse('LSP documentSymbol result was missing or not an array')
+  }
+  const rows: LspSymbolInfo[] = []
+  const walk = (value: unknown, container: string | undefined): void => {
+    if (value === null || typeof value !== 'object') {
+      throw malformedResponse('LSP documentSymbol contained a non-object entry')
+    }
+    const record = value as Record<string, unknown>
+    if (typeof record.name !== 'string' || typeof record.kind !== 'number') {
+      throw malformedResponse('LSP documentSymbol entry lacked a name or kind')
+    }
+    const range = isRange(record.range) ? toRange(record.range) : undefined
+    if (range === undefined) throw malformedResponse('LSP documentSymbol entry lacked a range')
+    rows.push({ name: record.name, kind: record.kind, ...(container !== undefined ? { container } : {}), uri, range })
+    if (Array.isArray(record.children)) {
+      for (const child of record.children) walk(child, record.name)
+    }
+  }
+  for (const entry of payload) {
+    // A SymbolInformation entry carries a location instead of a range + children.
+    const record = entry as Record<string, unknown>
+    if (record.location !== undefined) {
+      const located = symbolLocation(record.location)
+      if (located === undefined || typeof record.name !== 'string' || typeof record.kind !== 'number') {
+        throw malformedResponse('LSP documentSymbol contained a malformed SymbolInformation entry')
+      }
+      rows.push({ name: record.name, kind: record.kind, uri: located.uri, range: located.range })
+      continue
+    }
+    walk(entry, undefined)
+  }
+  return rows
+}
+
+/**
+ * Normalize a `workspace/symbol` result (`SymbolInformation[]` or `null`) into
+ * flat symbol rows.
+ * @param payload - the raw workspace symbol result.
+ * @returns the symbol rows.
+ * @throws Error when a payload entry is structurally invalid.
+ */
+export function normalizeWorkspaceSymbols(payload: unknown): LspSymbolInfo[] {
+  if (payload === null) return []
+  if (payload === undefined || !Array.isArray(payload)) {
+    throw malformedResponse('LSP workspace symbol result was missing or not an array')
+  }
+  const rows: LspSymbolInfo[] = []
+  for (const element of payload) {
+    if (element === null || typeof element !== 'object') {
+      throw malformedResponse('LSP workspace symbol contained a non-object entry')
+    }
+    const record = element as Record<string, unknown>
+    const located = symbolLocation(record.location)
+    if (typeof record.name !== 'string' || typeof record.kind !== 'number' || located === undefined) {
+      throw malformedResponse('LSP workspace symbol contained a malformed SymbolInformation entry')
+    }
+    rows.push({
+      name: record.name,
+      kind: record.kind,
+      ...(typeof record.containerName === 'string' ? { container: record.containerName } : {}),
+      uri: located.uri,
+      range: located.range,
+    })
+  }
+  return rows
+}
+
+/** Structural guard for one wire `Diagnostic`. */
+function isDiagnostic(value: unknown): value is { range: WireRange; message: string; severity?: number; source?: string } {
+  if (value === null || typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  return typeof record.message === 'string' && isRange(record.range)
+}
+
+/**
+ * Normalize a `textDocument/diagnostic` pull result (`DiagnosticReport` or
+ * `null`): `kind: 'full'` carries the items; `unchanged` and `null` yield an
+ * empty list (this host pulls fresh every query, so nothing is cached).
+ * @param payload - the raw pull-diagnostics result.
+ * @returns the normalized diagnostics.
+ * @throws Error when a `full` report contains a malformed item.
+ */
+export function normalizeDiagnostics(payload: unknown): LspDiagnostic[] {
+  if (payload === null) return []
+  if (typeof payload !== 'object') throw malformedResponse('LSP diagnostics result was not an object')
+  const report = payload as Record<string, unknown>
+  if (report.kind === 'unchanged') return []
+  if (report.kind !== 'full' || !Array.isArray(report.items)) {
+    throw malformedResponse('LSP diagnostics result was not a full report')
+  }
+  return report.items.map((item) => {
+    if (!isDiagnostic(item)) throw malformedResponse('LSP diagnostics contained a malformed entry')
+    return {
+      range: toRange(item.range),
+      message: item.message,
+      ...item.severity !== undefined ? { severity: item.severity } : {},
+      ...item.source !== undefined ? { source: item.source } : {},
+    }
+  })
+}
+
+/**
+ * Normalize a `textDocument/rename` `WorkspaceEdit` (or `null`) into a flat
+ * per-file edit plan. `documentChanges` (versioned entries) is a protocol
+ * capability this host does not bridge and rejects loudly.
+ * @param payload - the raw rename result.
+ * @returns one entry per touched document, in server order.
+ * @throws Error for a null plan, an unsupported `documentChanges` shape, or malformed edits.
+ */
+export function normalizeWorkspaceEdit(payload: unknown): readonly LspFileEdits[] {
+  if (payload === null) return []
+  if (typeof payload !== 'object') throw malformedResponse('LSP rename result was not an object')
+  const edit = payload as Record<string, unknown>
+  if (edit.documentChanges !== undefined) {
+    throw malformedResponse('LSP rename used documentChanges, which this host does not support')
+  }
+  const changes = edit.changes
+  if (changes === undefined || changes === null || typeof changes !== 'object') {
+    throw malformedResponse('LSP rename result carried no changes')
+  }
+  const rows: { uri: string; edits: { range: LspRange; newText: string }[] }[] = []
+  for (const [uri, entries] of Object.entries(changes as Record<string, unknown>)) {
+    if (!Array.isArray(entries)) throw malformedResponse('LSP rename edits for a document were not an array')
+    const fileEdits = entries.map((entry) => {
+      if (entry === null || typeof entry !== 'object' || !isRange((entry as Record<string, unknown>).range)
+        || typeof (entry as Record<string, unknown>).newText !== 'string') {
+        throw malformedResponse('LSP rename contained a malformed TextEdit')
+      }
+      const typed = entry as { range: WireRange; newText: string }
+      return { range: toRange(typed.range), newText: typed.newText }
+    })
+    rows.push({ uri, edits: fileEdits })
+  }
+  return rows
 }
 
 /** Create the stable structured error used for malformed server result payloads. */

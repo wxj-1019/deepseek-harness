@@ -21,8 +21,11 @@ import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,
+  formatDiagnostics,
   formatHover,
   formatLocations,
+  formatSymbols,
+  formatWorkspaceEdit,
   LSP_OPERATIONS,
   parseLspArgs,
   presentLspCall,
@@ -112,11 +115,15 @@ export function apply(ctx: Context, config: Config): void {
         type: 'string',
         required: true,
         enum: [...LSP_OPERATIONS],
-        description: 'goToDefinition, findReferences, goToImplementation, or hover.',
+        description: 'goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); '
+          + 'documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); '
+          + 'workspaceSymbol (query required); rename (file_path, line, character, new_name).',
       },
-      file_path: { type: 'string', required: true, description: 'The source file to query, relative to the workspace or absolute.' },
-      line: { type: 'number', required: true, description: 'One-based line of the cursor.' },
-      character: { type: 'number', required: true, description: 'One-based UTF-16 column of the cursor.' },
+      file_path: { type: 'string', description: 'The source file to query, relative to the workspace or absolute.' },
+      line: { type: 'number', description: 'One-based line of the cursor (cursor operations and rename).' },
+      character: { type: 'number', description: 'One-based UTF-16 column of the cursor (cursor operations and rename).' },
+      query: { type: 'string', description: 'Symbol name fragment for workspaceSymbol.' },
+      new_name: { type: 'string', description: 'The new identifier for rename.' },
     },
     output: {
       schema: {
@@ -162,6 +169,79 @@ export function apply(ctx: Context, config: Config): void {
               },
             },
           },
+          {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              kind: { type: 'string', required: true, const: 'symbols' },
+              symbols: {
+                type: 'array',
+                required: true,
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    name: { type: 'string', required: true },
+                    kind: { type: 'number', required: true },
+                    container: { type: 'string' },
+                    uri: { type: 'string', required: true },
+                    range: { ...LSP_RANGE_OUTPUT_SCHEMA, required: true },
+                  },
+                },
+              },
+            },
+          },
+          {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              kind: { type: 'string', required: true, const: 'diagnostics' },
+              diagnostics: {
+                type: 'array',
+                required: true,
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    range: { ...LSP_RANGE_OUTPUT_SCHEMA, required: true },
+                    message: { type: 'string', required: true },
+                    severity: { type: 'number' },
+                    source: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              kind: { type: 'string', required: true, const: 'workspaceEdit' },
+              edits: {
+                type: 'array',
+                required: true,
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    uri: { type: 'string', required: true },
+                    edits: {
+                      type: 'array',
+                      required: true,
+                      items: {
+                        type: 'object',
+                        additionalProperties: false,
+                        properties: {
+                          range: { ...LSP_RANGE_OUTPUT_SCHEMA, required: true },
+                          newText: { type: 'string', required: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         ],
       },
       render: (_args, value) => {
@@ -170,6 +250,12 @@ export function apply(ctx: Context, config: Config): void {
             return [{ type: 'text', text: formatLocations(value.locations, value.resolvedWorkspaceUri, resolved.maxLocations, resolved.maxResultChars) }]
           case 'hover':
             return [{ type: 'text', text: formatHover(value.hover, resolved.maxResultChars) }]
+          case 'symbols':
+            return [{ type: 'text', text: formatSymbols(value.symbols, '', resolved.maxLocations, resolved.maxResultChars) }]
+          case 'diagnostics':
+            return [{ type: 'text', text: formatDiagnostics(value.diagnostics, '', resolved.maxLocations, resolved.maxResultChars) }]
+          case 'workspaceEdit':
+            return [{ type: 'text', text: formatWorkspaceEdit(value.edits, '', resolved.maxResultChars) }]
           /* v8 ignore next -- exhaustive over the output schema's closed union; unreachable. */
           default:
             return assertNever(value, 'tool-lsp output')
@@ -185,8 +271,10 @@ export function apply(ctx: Context, config: Config): void {
       }
       const result = await ctx.lsp.query({
         operation: input.operation,
-        filePath: input.filePath,
-        position: input.position,
+        ...('filePath' in input ? { filePath: input.filePath } : {}),
+        ...('position' in input ? { position: input.position } : {}),
+        ...('query' in input ? { query: input.query } : {}),
+        ...('newName' in input ? { newName: input.newName } : {}),
         workspaceRoot,
       }, exec.signal)
       switch (result.kind) {
@@ -218,6 +306,47 @@ export function apply(ctx: Context, config: Config): void {
                     },
                   },
               },
+          }
+        case 'symbols':
+          return {
+            kind: 'symbols' as const,
+            symbols: result.symbols.map(symbol => ({
+              name: symbol.name,
+              kind: symbol.kind,
+              ...(symbol.container !== undefined ? { container: symbol.container } : {}),
+              uri: symbol.uri,
+              range: {
+                start: { line: symbol.range.start.line, character: symbol.range.start.character },
+                end: { line: symbol.range.end.line, character: symbol.range.end.character },
+              },
+            })),
+          }
+        case 'diagnostics':
+          return {
+            kind: 'diagnostics' as const,
+            diagnostics: result.diagnostics.map(diagnostic => ({
+              range: {
+                start: { line: diagnostic.range.start.line, character: diagnostic.range.start.character },
+                end: { line: diagnostic.range.end.line, character: diagnostic.range.end.character },
+              },
+              message: diagnostic.message,
+              ...(diagnostic.severity !== undefined ? { severity: diagnostic.severity } : {}),
+              ...(diagnostic.source !== undefined ? { source: diagnostic.source } : {}),
+            })),
+          }
+        case 'workspaceEdit':
+          return {
+            kind: 'workspaceEdit' as const,
+            edits: result.edits.map(file => ({
+              uri: file.uri,
+              edits: file.edits.map(edit => ({
+                range: {
+                  start: { line: edit.range.start.line, character: edit.range.start.character },
+                  end: { line: edit.range.end.line, character: edit.range.end.character },
+                },
+                newText: edit.newText,
+              })),
+            })),
           }
         /* v8 ignore next -- exhaustive over the closed LspQueryResult union; unreachable. */
         default:
