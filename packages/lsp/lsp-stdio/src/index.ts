@@ -83,10 +83,48 @@ export interface LspLocalServerConfig {
   killGraceMs?: number
 }
 
+/**
+ * Built-in language catalog: provider id → seed server for the most common
+ * languages. Seeds only mount when their executable resolves on the host.
+ */
+
+function catalogServer(command: string, extensionToLanguage: Record<string, string>): LspLocalServerConfig {
+  return {
+    command,
+    args: ['--stdio'],
+    env: {},
+    extensionToLanguage,
+    initializationOptions: null,
+    configuration: null,
+    maxMessageBytes: DEFAULT_MAX_MESSAGE_BYTES,
+    maxStderrBytes: DEFAULT_MAX_STDERR_BYTES,
+    maxDocumentBytes: DEFAULT_MAX_DOCUMENT_BYTES,
+    shutdownTimeoutMs: DEFAULT_SHUTDOWN_TIMEOUT_MS,
+    killGraceMs: DEFAULT_KILL_GRACE_MS,
+  }
+}
+
+const LANGUAGE_CATALOG: Record<string, LspLocalServerConfig> = {
+  typescript: catalogServer('typescript-language-server', {
+    '.ts': 'typescript', '.tsx': 'typescript',
+    '.js': 'javascript', '.jsx': 'javascript', '.mjs': 'javascript', '.cjs': 'javascript',
+  }),
+  python: catalogServer('pyright-langserver', { '.py': 'python' }),
+}
+
 /** Plugin configuration: provider id → local language-server configuration. */
 export interface Config {
-  /** Non-empty table of stable provider ids to independent local server configurations. */
-  servers: Record<string, LspLocalServerConfig>
+  /**
+   * Explicit provider table; entries override same-id catalog seeds. Empty or
+   * omitted leaves only the catalog seeds (when `catalog` is on).
+   */
+  servers?: Record<string, LspLocalServerConfig>
+  /**
+   * Seed a TypeScript and a Python server from the built-in language catalog.
+   * True by default; a seed whose executable is absent on the host is skipped
+   * silently, while an explicit `servers` entry that fails still fails loud.
+   */
+  catalog?: boolean
 }
 
 /** One server config after schemastery fills every default. */
@@ -129,8 +167,21 @@ function throwTeardownFailures(results: readonly PromiseSettledResult<void>[], m
  * @param config - the resolved plugin configuration (schemastery has filled every default).
  */
 export async function apply(ctx: Context, config: Config): Promise<void> {
-  const entries = Object.entries(config.servers)
-  if (entries.length === 0) throw new Error('lsp-stdio: servers must contain at least one server')
+  // Catalog seeds pass through the seed schema so every defaulted field fills
+  // in, then explicit servers override same-id seeds. Seeds skip silently when
+  // their executable is absent; explicit entries that fail still fail loud.
+  const merged = new Map<string, LspLocalServerConfig>()
+  if (config.catalog === true) {
+    for (const [id, seed] of Object.entries(LANGUAGE_CATALOG)) {
+      if (config.servers?.[id] !== undefined) continue
+      merged.set(id, seed)
+    }
+  }
+  for (const [id, server] of Object.entries(config.servers ?? {})) {
+    merged.set(id, server)
+  }
+  const entries: [string, LspLocalServerConfig][] = [...merged.entries()]
+  const explicitIds = new Set(Object.keys(config.servers ?? {}))
 
   const setupAbort = new AbortController()
   const stopSetupCancellation = ctx.on('internal/plugin', (fiber) => {
@@ -144,6 +195,9 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // Resolve every server-local setting before registration so a bad later command or bound cannot
   // publish an earlier provider. Registry-level mapping conflicts are rolled back below.
   const providers = await (async () => {
+    if (entries.length === 0) {
+      throw new Error('lsp-stdio: servers must contain at least one server (or enable the built-in language catalog)')
+    }
     const lookups = entries.map(async ([providerId, rawConfig]) => {
       if (providerId.trim() === '') throw new Error('lsp-stdio: server ids must be non-empty strings')
       const resolved = rawConfig as ResolvedServerConfig
@@ -152,7 +206,16 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
         resolved.command,
         resolved.env,
         setupAbort.signal,
-      )
+      ).catch((error: unknown) => {
+        // A catalog seed whose binary is absent is a skip, not an error: the
+        // language server simply is not installed on this host.
+        if (!explicitIds.has(providerId)) {
+          console.warn(`lsp-stdio: catalog server "${providerId}" skipped (${(error as Error).message})`)
+          return undefined
+        }
+        throw error
+      })
+      if (executable === undefined) return undefined
       setupAbort.signal.throwIfAborted()
       return new LocalLspProvider(
         providerId,
@@ -162,15 +225,16 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
         spec => ctx.subprocess.spawn(spec),
       )
     })
-    try {
-      return await Promise.all(lookups)
-    } catch (error: unknown) {
-      setupAbort.abort(error)
-      await Promise.allSettled(lookups)
-      throw error
-    } finally {
-      stopSetupCancellation()
+    const built = await Promise.allSettled(lookups)
+    const failures = built.filter(entry => entry.status === 'rejected')
+    // Only-rejected means even the explicit servers failed: fail loud. A mix
+    // of fulfilled and rejected means absent catalog seeds were skipped —
+    // that is the catalog's own semantics, not an error.
+    if (failures.length === built.length && built.length > 0) {
+      throw (failures[0] as PromiseRejectedResult).reason
     }
+    stopSetupCancellation()
+    return built.flatMap(entry => entry.status === 'fulfilled' && entry.value !== undefined ? [entry.value] : [])
   })()
 
   ctx.effect(() => {

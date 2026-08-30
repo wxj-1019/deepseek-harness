@@ -30,7 +30,9 @@ function query(): LspQueryRequest {
 
 /** Wrap one server entry in the plugin's named server table. */
 function config(providerId: string, server: LspLocalServerConfig): Config {
-  return { servers: { [providerId]: server } }
+  // Single-server assertions: the built-in language catalog is off so the
+  // catalog seeds cannot shadow the explicitly configured server.
+  return { servers: { [providerId]: server }, catalog: false }
 }
 
 describe('lsp-stdio provider resolution', () => {
@@ -159,12 +161,13 @@ describe('lsp-stdio provider resolution', () => {
     await ctx.fiber.dispose()
   })
 
-  it('rejects an empty server table at load', async () => {
+  it('boots catalog seeds with an empty server table and rejects when the catalog is off', async () => {
     const ctx = new Context()
     await ctx.plugin(Lsp)
     await ctx.plugin(LocalSubprocessRuntime)
     await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
-    await expect(ctx.plugin(LspLocal, { servers: {} })).rejects.toThrow(/servers must contain at least one server/)
+    // Catalog off + empty table: nothing to serve, rejected at load.
+    await expect(ctx.plugin(LspLocal, { servers: {}, catalog: false })).rejects.toThrow(/servers must contain at least one server/)
     await ctx.fiber.dispose()
   })
 
@@ -190,6 +193,7 @@ describe('lsp-stdio provider resolution', () => {
         valid: { command: process.execPath, extensionToLanguage: { '.ts': 'typescript' } },
         missing: { command: 'definitely-not-a-real-lsp-binary-xyz', extensionToLanguage: { '.py': 'python' } },
       },
+      catalog: false,
     })).rejects.toThrow(/was not found on PATH/)
     await expect(ctx.lsp.query(query())).rejects.toThrow(expect.objectContaining({ code: 'LSP_UNAVAILABLE' }))
     await ctx.fiber.dispose()
