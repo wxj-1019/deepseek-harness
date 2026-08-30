@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, test } from 'vitest'
 import {
   negotiatePositionEncoding,
   normalizeHover,
   normalizeLocations,
   requestMethod,
+  normalizeDiagnostics,
+  normalizeDocumentSymbols,
+  normalizeWorkspaceEdit,
+  normalizeWorkspaceSymbols,
+  symbolKindName,
   supportsOperation,
   supportsTransientOpen,
 } from '@deepseek-ai/dsh-lsp-stdio'
@@ -169,5 +174,95 @@ describe('normalizeHover', () => {
   it('rejects a malformed range instead of silently dropping it', () => {
     expect(() => normalizeHover({ contents: 'x', range: { start: { line: 1 } } }))
       .toThrow(expect.objectContaining({ code: 'LSP_MALFORMED_RESPONSE' }))
+  })
+})
+
+describe('extended operations', () => {
+  test('requestMethod and capabilityValue map the four new operations', () => {
+    expect(requestMethod('documentSymbol')).toBe('textDocument/documentSymbol')
+    expect(requestMethod('workspaceSymbol')).toBe('workspace/symbol')
+    expect(requestMethod('diagnostics')).toBe('textDocument/diagnostic')
+    expect(requestMethod('rename')).toBe('textDocument/rename')
+    const capabilities = {
+      documentSymbolProvider: true,
+      workspaceSymbolProvider: { workDoneProgress: true },
+      diagnosticProvider: { interFileDependencies: false },
+      renameProvider: { prepareProvider: false },
+    } as unknown as Parameters<typeof supportsOperation>[0]
+    expect(supportsOperation(capabilities, 'documentSymbol')).toBe(true)
+    expect(supportsOperation(capabilities, 'workspaceSymbol')).toBe(true)
+    expect(supportsOperation(capabilities, 'diagnostics')).toBe(true)
+    expect(supportsOperation(capabilities, 'rename')).toBe(true)
+    expect(supportsOperation({}, 'documentSymbol')).toBe(false)
+  })
+
+  test('normalizeDocumentSymbols flattens hierarchical entries with containers', () => {
+    const payload = [
+      {
+        name: 'ClassA', kind: 5, range: { start: { line: 0, character: 0 }, end: { line: 9, character: 1 } },
+        children: [
+          { name: 'methodA', kind: 6, range: { start: { line: 1, character: 2 }, end: { line: 2, character: 3 } } },
+        ],
+      },
+    ]
+    const rows = normalizeDocumentSymbols(payload, 'file:///w/a.ts')
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toMatchObject({ name: 'ClassA', uri: 'file:///w/a.ts' })
+    expect(rows[1]).toMatchObject({ name: 'methodA', container: 'ClassA', kind: 6 })
+  })
+
+  test('normalizeDocumentSymbols accepts flat SymbolInformation and null', () => {
+    const flat = [{ name: 'fn', kind: 12, location: { uri: 'file:///w/a.ts', range: { start: { line: 0, character: 0 }, end: { line: 0, character: 2 } } } }]
+    expect(normalizeDocumentSymbols(flat, 'file:///w/a.ts')).toHaveLength(1)
+    expect(normalizeDocumentSymbols(null, 'file:///w/a.ts')).toEqual([])
+    expect(() => normalizeDocumentSymbols([{}], 'file:///w/a.ts')).toThrow(/lacked a name or kind/)
+  })
+
+  test('normalizeWorkspaceSymbols flattens SymbolInformation with containers', () => {
+    const payload = [
+      { name: 'helper', kind: 12, containerName: 'Utils', location: { uri: 'file:///w/u.ts', range: { start: { line: 3, character: 0 }, end: { line: 3, character: 6 } } } },
+    ]
+    const rows = normalizeWorkspaceSymbols(payload)
+    expect(rows).toMatchObject([{ name: 'helper', container: 'Utils', uri: 'file:///w/u.ts' }])
+    expect(normalizeWorkspaceSymbols(null)).toEqual([])
+    expect(() => normalizeWorkspaceSymbols([{ name: 'x' }])).toThrow(/malformed SymbolInformation/)
+  })
+
+  test('normalizeDiagnostics reads full reports and yields empty for unchanged or null', () => {
+    const report = {
+      kind: 'full',
+      items: [
+        { range: { start: { line: 0, character: 0 }, end: { line: 0, character: 3 } }, message: 'x is not defined', severity: 1, source: 'ts' },
+      ],
+    }
+    const rows = normalizeDiagnostics(report)
+    expect(rows).toMatchObject([{ message: 'x is not defined', severity: 1 }])
+    expect(normalizeDiagnostics({ kind: 'unchanged' })).toEqual([])
+    expect(normalizeDiagnostics(null)).toEqual([])
+    expect(() => normalizeDiagnostics({ kind: 'full', items: [{}] })).toThrow(/malformed/)
+  })
+
+  test('normalizeWorkspaceEdit flattens per-file changes and rejects documentChanges', () => {
+    const payload = {
+      changes: {
+        'file:///w/a.ts': [
+          { range: { start: { line: 0, character: 0 }, end: { line: 0, character: 3 } }, newText: 'beta' },
+        ],
+        'file:///w/b.ts': [
+          { range: { start: { line: 1, character: 0 }, end: { line: 1, character: 2 } }, newText: 'gamma' },
+        ],
+      },
+    }
+    const plan = normalizeWorkspaceEdit(payload)
+    expect(plan).toHaveLength(2)
+    expect(plan[0]).toMatchObject({ uri: 'file:///w/a.ts', edits: [{ newText: 'beta' }] })
+    expect(normalizeWorkspaceEdit(null)).toEqual([])
+    expect(() => normalizeWorkspaceEdit({ documentChanges: [] })).toThrow(/documentChanges/)
+  })
+
+  test('symbolKindName resolves known kinds and falls back for unknown ones', () => {
+    expect(symbolKindName(12)).toBe('Function')
+    expect(symbolKindName(5)).toBe('Class')
+    expect(symbolKindName(99)).toBe('99')
   })
 })

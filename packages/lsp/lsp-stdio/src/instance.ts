@@ -21,8 +21,12 @@ import type { HostSource } from './host.ts'
 import type { WireInitializeResult, WireServerCapabilities } from './protocol.ts'
 import {
   negotiatePositionEncoding,
+  normalizeDiagnostics,
+  normalizeDocumentSymbols,
   normalizeHover,
   normalizeLocations,
+  normalizeWorkspaceEdit,
+  normalizeWorkspaceSymbols,
   requestMethod,
   supportsOperation,
   supportsTransientOpen,
@@ -160,7 +164,7 @@ export class LspInstance {
       if (source === undefined) {
         // Workspace-level query: no document lifecycle at all.
         const payload = await this.sendRequest(request, uri, signal)
-        return this.normalize(request.operation, payload)
+        return this.normalize(request.operation, payload, uri)
       }
       try {
         await abortable(this.connection.notify('textDocument/didOpen', {
@@ -174,7 +178,7 @@ export class LspInstance {
       }
       opened = true
       const payload = await this.sendRequest(request, uri, signal)
-      return this.normalize(request.operation, payload)
+      return this.normalize(request.operation, payload, uri)
     } finally {
       // A disposed or closed instance (e.g. an aborted request whose server ignored
       // `$/cancelRequest`) is already tearing down; sending didClose would race that teardown and let
@@ -253,9 +257,21 @@ export class LspInstance {
     }
   }
 
-  private normalize(operation: LspOperation, payload: unknown): LspQueryResult {
+  private normalize(operation: LspOperation, payload: unknown, uri: string): LspQueryResult {
     if (operation === 'hover') {
       return { kind: 'hover', hover: normalizeHover(payload) }
+    }
+    if (operation === 'documentSymbol') {
+      return { kind: 'symbols', symbols: normalizeDocumentSymbols(payload, uri) }
+    }
+    if (operation === 'workspaceSymbol') {
+      return { kind: 'symbols', symbols: normalizeWorkspaceSymbols(payload) }
+    }
+    if (operation === 'diagnostics') {
+      return { kind: 'diagnostics', diagnostics: normalizeDiagnostics(payload) }
+    }
+    if (operation === 'rename') {
+      return { kind: 'workspaceEdit', edits: normalizeWorkspaceEdit(payload) }
     }
     // The filesystem provider owns URI syntax for the execution platform, which may differ from the
     // harness host. Preserve that coordinate through rendering instead of reparsing `spec.cwd` there.

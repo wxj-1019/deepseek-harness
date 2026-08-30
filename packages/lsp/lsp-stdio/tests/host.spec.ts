@@ -42,12 +42,29 @@ async function readSource(filePath: string, maxBytes = BIG, signal?: AbortSignal
   return await readHostSource(fs, filePath, await workspace(), maxBytes, signal)
 }
 
+
+/** Unprivileged Windows accounts cannot create symlinks: the affected tests probe once and skip. */
+const canSymlink = await (async () => {
+  try {
+    const { mkdtemp } = await import('node:fs/promises')
+    const { symlinkSync, unlinkSync } = await import('node:fs')
+    const probeRoot = await mkdtemp(join(tmpdir(), 'lsp-symlink-probe-'))
+    const probePath = join(probeRoot, 'probe')
+    symlinkSync(probePath, probePath)
+    unlinkSync(probePath)
+    await rm(probeRoot, { recursive: true, force: true })
+    return true
+  } catch {
+    return false
+  }
+})()
+
 describe('canonicalizeWorkspace', () => {
   it('returns the realpath of a directory', async () => {
     expect((await workspace()).canonicalPath).toBe(ws)
   })
 
-  it('resolves a symlinked workspace to its target so aliases share identity', async () => {
+  it.skipIf(!canSymlink)('resolves a symlinked workspace to its target so aliases share identity', async () => {
     const link = join(root, 'ws-link')
     await symlink(ws, link)
     expect((await canonicalizeWorkspace(fs, link)).canonicalPath).toBe(ws)
@@ -99,7 +116,7 @@ describe('readHostSource', () => {
     expect(source.fileUrl).toBe(pathToFileURL(abs).href)
   })
 
-  it('accepts a source reached through a symlink that stays inside the workspace', async () => {
+  it.skipIf(!canSymlink)('accepts a source reached through a symlink that stays inside the workspace', async () => {
     await mkdir(join(ws, 'real'))
     await writeFile(join(ws, 'real', 'c.ts'), 'c')
     await symlink(join(ws, 'real'), join(ws, 'linked'))
@@ -107,7 +124,7 @@ describe('readHostSource', () => {
     expect(source.fileUrl).toBe(pathToFileURL(join(ws, 'real', 'c.ts')).href)
   })
 
-  it('rejects a source whose canonical path escapes the workspace via symlink', async () => {
+  it.skipIf(!canSymlink)('rejects a source whose canonical path escapes the workspace via symlink', async () => {
     const outside = join(root, 'outside.ts')
     await writeFile(outside, 'secret')
     await symlink(outside, join(ws, 'escape.ts'))
