@@ -378,6 +378,25 @@ export function normalizeDiagnostics(payload: unknown): LspDiagnostic[] {
 }
 
 /**
+ * Normalize a `textDocument/publishDiagnostics` notification: the pushed
+ * diagnostics array for one document URI.
+ * @param params - the raw notification params.
+ * @returns the document URI and its normalized diagnostics (empty when absent).
+ * @throws Error for missing params/URI or a malformed diagnostics entry.
+ */
+export function normalizePublishDiagnostics(params: unknown): { uri: string; diagnostics: LspDiagnostic[] } {
+  if (params === null || typeof params !== 'object') throw malformedResponse('LSP publishDiagnostics params were not an object')
+  const record = params as Record<string, unknown>
+  if (typeof record.uri !== 'string' || record.uri === '') {
+    throw malformedResponse('LSP publishDiagnostics params carried no document URI')
+  }
+  const diagnostics = record.diagnostics === undefined
+    ? []
+    : normalizeDiagnostics({ kind: 'full', items: record.diagnostics })
+  return { uri: record.uri, diagnostics }
+}
+
+/**
  * Normalize a `textDocument/rename` `WorkspaceEdit` (or `null`) into a flat
  * per-file edit plan. `documentChanges` (versioned entries) is a protocol
  * capability this host does not bridge and rejects loudly.

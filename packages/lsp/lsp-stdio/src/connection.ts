@@ -238,6 +238,18 @@ export class LspConnection {
     for (const message of messages) this.dispatch(message)
   }
 
+  private readonly notificationListeners = new Set<(method: string, params: unknown) => void>()
+
+  /**
+   * Subscribe to server-to-client notifications (e.g. `textDocument/publishDiagnostics`).
+   * @param listener - invoked for every notification frame the connection decodes.
+   * @returns the disposer removing this listener.
+   */
+  onNotification(listener: (method: string, params: unknown) => void): () => void {
+    this.notificationListeners.add(listener)
+    return () => this.notificationListeners.delete(listener)
+  }
+
   private dispatch(message: unknown): void {
     if (message === null || typeof message !== 'object') return
     const frame = message as Record<string, unknown>
@@ -251,7 +263,15 @@ export class LspConnection {
       return
     }
     if (typeof method === 'string') {
-      // A server→client notification (e.g. diagnostics, logs): ignored by this MVP host.
+      // A server→client notification. A listener that throws must not take down the
+      // decode loop, so each invocation is isolated and its error absorbed here.
+      for (const listener of this.notificationListeners) {
+        try {
+          listener(method, frame.params)
+        } catch {
+          // Listener failures are the listener's problem; the frame stream continues.
+        }
+      }
       return
     }
     if (typeof id === 'number') this.handleResponse(id, frame)

@@ -44,6 +44,7 @@ const noShutdown = process.env.LSP_FAKE_NO_SHUTDOWN === '1'
 const onOpen = process.env.LSP_FAKE_ON_OPEN
 const errorReply = process.env.LSP_FAKE_ERROR === '1'
 const garbage = process.env.LSP_FAKE_GARBAGE === '1'
+const pushOnOpen = process.env.LSP_FAKE_PUSH_DIAGNOSTICS === '1'
 
 let serverRequestId = 10_000
 const pendingServerRequests = new Map<number, string>()
@@ -101,6 +102,13 @@ function handle(message: { id?: number; method?: string; params?: unknown; resul
     pendingServerRequests.delete(id)
     process.stderr.write(`REPLY ${kind} ${JSON.stringify({ result: message.result, error: message.error })}\n`)
     return
+  }
+  if (method === 'textDocument/didOpen' && pushOnOpen) {
+    const document = (message.params ?? {}) as { textDocument?: { uri?: string } }
+    send({
+      method: 'textDocument/publishDiagnostics',
+      params: { uri: document.textDocument?.uri, diagnostics: envJson('LSP_FAKE_PUBLISH_DIAGNOSTICS', []) },
+    })
   }
   if (method === 'initialize') {
     if (garbage) process.stdout.write('this is not a framed message\r\n')

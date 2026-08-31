@@ -56,7 +56,7 @@ No direct invalidation; `dsh-tool-lsp` owns request-prefix changes.
 
 ## Known Limitations and Deferred Work
 
-- **Diagnostics are pull-based** — the host queries `textDocument/diagnostic` per request; push-based `publishDiagnostics` subscriptions are not bridged. Servers without pull diagnostics return `LSP_UNSUPPORTED_OPERATION`.
+- **Diagnostics pull from `textDocument/diagnostic` when the server advertises it; a server without pull support falls back to the push channel — the query opens the document transiently and waits a bounded `publishGraceMs` (default 250) for a `publishDiagnostics` push, returning the latest pushed set for that document.
 - **Rename returns a plan** — the normalized per-file edits are returned to the model for application with its file-edit tools; the host does not apply them itself.
 
 - **No confinement policy** — this package trusts the configured server and does not sandbox its process; a restricted deployment must supply appropriate process/filesystem providers or a same-world sandbox wrapper.

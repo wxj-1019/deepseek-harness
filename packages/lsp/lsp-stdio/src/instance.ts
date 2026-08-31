@@ -7,7 +7,7 @@
  * @module @deepseek-ai/dsh-lsp-stdio/instance
  */
 
-import { LspError } from '@deepseek-ai/dsh-lsp'
+import { LspError, type LspDiagnostic } from '@deepseek-ai/dsh-lsp'
 import type {
   LspOperation,
   LspProviderQuery,
@@ -26,6 +26,7 @@ import {
   normalizeHover,
   normalizeLocations,
   normalizeFormattingEdits,
+  normalizePublishDiagnostics,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
   requestMethod,
@@ -41,6 +42,8 @@ export interface InstanceSpec extends ConnectionSpec {
   readonly initializationOptions: unknown
   /** Graceful `shutdown`/`exit` budget before escalation (ms). */
   readonly shutdownTimeoutMs: number
+  /** Bounded wait for a push after didOpen when a diagnostics query falls back to the push channel (ms). */
+  readonly publishGraceMs?: number
 }
 
 /**
@@ -67,6 +70,10 @@ export class LspInstance {
    */
   constructor(private readonly spec: InstanceSpec, spawner: ConnectionSpawner, writer?: ConnectionWriter) {
     this.connection = new LspConnection(spec, spawner, (method, params) => this.answerServerRequest(method, params), writer)
+    this.connection.onNotification((method, params) => {
+      if (method !== 'textDocument/publishDiagnostics') return
+      this.cachePublishedDiagnostics(params)
+    })
     this.ready = this.initialize()
     // A handshake rejection must not surface as an unhandled rejection before the first query awaits
     // it; queries attach the real handler.
@@ -149,7 +156,12 @@ export class LspInstance {
     /* v8 ignore next -- `ready` resolves only after capabilities are set, else it rejects above; defensive. */
     if (capabilities === undefined) throw new Error('LSP instance is not initialized')
     if (!supportsOperation(capabilities, request.operation)) {
-      throw new LspError(`server does not support ${request.operation}`, 'LSP_UNSUPPORTED_OPERATION')
+      // A server without pull diagnostics may still push on the transient open; fall back to
+      // a bounded wait for that push instead of failing the query outright.
+      const pushFallback = request.operation === 'diagnostics' && source !== undefined
+      if (!pushFallback) {
+        throw new LspError(`server does not support ${request.operation}`, 'LSP_UNSUPPORTED_OPERATION')
+      }
     }
     // The transient open/close lifecycle applies to document-bound queries only; a
     // workspace symbol search never opens a document.
@@ -158,6 +170,7 @@ export class LspInstance {
     }
 
     const uri = source?.fileUrl ?? ''
+    const sinceSeq = this.publishSeq
     let opened = false
     try {
       /* v8 ignore next -- guards an abort landing between the ready wait and didOpen; not deterministically reproducible. */
@@ -178,6 +191,10 @@ export class LspInstance {
         throw error
       }
       opened = true
+      if (request.operation === 'diagnostics' && !supportsOperation(capabilities, 'diagnostics')) {
+        const pushed = await this.waitForPublished(uri, sinceSeq, signal)
+        return { kind: 'diagnostics', diagnostics: pushed ?? [] }
+      }
       const payload = await this.sendRequest(request, uri, signal)
       return this.normalize(request.operation, payload, uri)
     } finally {
@@ -198,6 +215,46 @@ export class LspInstance {
           }
         }
       }
+    }
+  }
+
+  /** Latest pushed diagnostics per document URI, newest write wins, bounded by eviction. */
+  private readonly publishedDiagnostics = new Map<string, { diagnostics: LspDiagnostic[]; seq: number }>()
+  private publishSeq = 0
+
+  private cachePublishedDiagnostics(params: unknown): void {
+    let published: { uri: string; diagnostics: LspDiagnostic[] }
+    try {
+      published = normalizePublishDiagnostics(params)
+    } catch {
+      // A malformed push is server noise, not a query failure; drop it.
+      return
+    }
+    this.publishSeq += 1
+    if (this.publishedDiagnostics.size >= 32 && !this.publishedDiagnostics.has(published.uri)) {
+      const oldest = this.publishedDiagnostics.keys().next().value
+      if (oldest !== undefined) this.publishedDiagnostics.delete(oldest)
+    }
+    this.publishedDiagnostics.set(published.uri, { diagnostics: published.diagnostics, seq: this.publishSeq })
+  }
+
+  /** Wait a bounded grace for a push newer than `sinceSeq` to land for `uri`. */
+  private async waitForPublished(uri: string, sinceSeq: number, signal?: AbortSignal): Promise<LspDiagnostic[] | undefined> {
+    const grace = deadline(undefined, this.spec.publishGraceMs ?? 250, 'LSP_PUBLISH_GRACE')
+    try {
+      for (;;) {
+        const cached = this.publishedDiagnostics.get(uri)
+        if (cached !== undefined && cached.seq > sinceSeq) return cached.diagnostics
+        if (grace.signal.aborted) return this.publishedDiagnostics.get(uri)?.diagnostics
+        if (signal?.aborted) throw abortError(signal)
+        // The sleep rides only the caller signal; the grace deadline must exit via the
+        // loop checks above, because abortable would turn expiry into a rejection.
+        const sleep = new Promise<void>((resolve) => { setTimeout(resolve, 10) })
+        if (signal === undefined) await sleep
+        else await abortable(sleep, signal)
+      }
+    } finally {
+      grace[Symbol.dispose]()
     }
   }
 

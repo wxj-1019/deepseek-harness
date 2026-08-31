@@ -396,3 +396,17 @@ async function waitForFile(path: string, timeoutMs = 3000): Promise<void> {
     await new Promise<void>(resolve => setTimeout(resolve, 10))
   }
 }
+
+describe('LspInstance push diagnostics fallback', () => {
+  it('returns pushed diagnostics when pull is unsupported', async () => {
+    const instance = makeInstance({
+      LSP_FAKE_CAPS: JSON.stringify({ diagnosticProvider: false }),
+      LSP_FAKE_PUSH_DIAGNOSTICS: '1',
+      LSP_FAKE_PUBLISH_DIAGNOSTICS: JSON.stringify([{ range: { start: { line: 0, character: 0 }, end: { line: 0, character: 4 } }, message: 'pushed', severity: 1 }]),
+    })
+    await expect(run(instance, 'diagnostics')).resolves.toEqual({
+      kind: 'diagnostics',
+      diagnostics: [{ range: { start: { line: 0, character: 0 }, end: { line: 0, character: 4 } }, message: 'pushed', severity: 1 }],
+    })
+  })
+})

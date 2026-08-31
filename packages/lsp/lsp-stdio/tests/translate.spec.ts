@@ -7,6 +7,7 @@ import {
   normalizeDiagnostics,
   normalizeDocumentSymbols,
   normalizeFormattingEdits,
+  normalizePublishDiagnostics,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
   symbolKindName,
@@ -286,5 +287,21 @@ describe('formatting', () => {
   it('normalizeFormattingEdits rejects non-array payloads and malformed edits', () => {
     expect(() => normalizeFormattingEdits({}, 'file:///ws/a.ts')).toThrowError(/was not an array/)
     expect(() => normalizeFormattingEdits([{ range: { start: { line: 0 } }, newText: 'x' }], 'file:///ws/a.ts')).toThrowError(/malformed TextEdit/)
+  })
+})
+
+describe('normalizePublishDiagnostics', () => {
+  it('normalizes the pushed array per document URI and defaults absent diagnostics', () => {
+    expect(normalizePublishDiagnostics({ uri: 'file:///ws/a.ts', diagnostics: [{ range: RANGE, message: 'boom', severity: 1 }] })).toEqual({
+      uri: 'file:///ws/a.ts',
+      diagnostics: [{ range: RANGE, message: 'boom', severity: 1 }],
+    })
+    expect(normalizePublishDiagnostics({ uri: 'file:///ws/a.ts' })).toEqual({ uri: 'file:///ws/a.ts', diagnostics: [] })
+  })
+
+  it('rejects missing params, URIs, and malformed entries', () => {
+    expect(() => normalizePublishDiagnostics(null)).toThrowError(/were not an object/)
+    expect(() => normalizePublishDiagnostics({})).toThrowError(/no document URI/)
+    expect(() => normalizePublishDiagnostics({ uri: 'file:///ws/a.ts', diagnostics: [{ message: 'no range' }] })).toThrowError(/malformed entry/)
   })
 })

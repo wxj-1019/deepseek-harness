@@ -38,6 +38,7 @@ export {
   normalizeHover,
   normalizeLocations,
   normalizeFormattingEdits,
+  normalizePublishDiagnostics,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
   requestMethod,
@@ -59,6 +60,7 @@ const DEFAULT_MAX_STDERR_BYTES = 1_000_000
 const DEFAULT_MAX_DOCUMENT_BYTES = 4_000_000
 const DEFAULT_SHUTDOWN_TIMEOUT_MS = 5_000
 const DEFAULT_KILL_GRACE_MS = 2_000
+const DEFAULT_PUBLISH_GRACE_MS = 250
 
 /** One configured local language server and its host bounds. */
 export interface LspLocalServerConfig {
@@ -84,6 +86,8 @@ export interface LspLocalServerConfig {
   shutdownTimeoutMs?: number
   /** Request-cancel and SIGTERM→SIGKILL grace (ms). Default 2000. */
   killGraceMs?: number
+  /** Bounded wait for a push after didOpen when a diagnostics query falls back to the push channel (ms). Default 250. */
+  publishGraceMs?: number
 }
 
 /**
@@ -104,6 +108,7 @@ function catalogServer(command: string, extensionToLanguage: Record<string, stri
     maxDocumentBytes: DEFAULT_MAX_DOCUMENT_BYTES,
     shutdownTimeoutMs: DEFAULT_SHUTDOWN_TIMEOUT_MS,
     killGraceMs: DEFAULT_KILL_GRACE_MS,
+    publishGraceMs: DEFAULT_PUBLISH_GRACE_MS,
   }
 }
 
@@ -146,6 +151,7 @@ const LspLocalServerConfig: z<LspLocalServerConfig> = z.object({
   maxDocumentBytes: z.number().default(DEFAULT_MAX_DOCUMENT_BYTES),
   shutdownTimeoutMs: z.number().max(MAX_TIMER_DELAY_MS).default(DEFAULT_SHUTDOWN_TIMEOUT_MS),
   killGraceMs: z.number().max(MAX_TIMER_DELAY_MS).default(DEFAULT_KILL_GRACE_MS),
+  publishGraceMs: z.number().max(MAX_TIMER_DELAY_MS).default(250),
 })
 
 export const Config: z<Config> = z.object({
@@ -315,6 +321,7 @@ function validateServerConfig(providerId: string, resolved: ResolvedServerConfig
   // nonpositive value would let a server that ignores shutdown hang disposal forever. Fail at load.
   assertTimer(providerId, 'shutdownTimeoutMs', resolved.shutdownTimeoutMs)
   assertTimer(providerId, 'killGraceMs', resolved.killGraceMs)
+  assertTimer(providerId, 'publishGraceMs', resolved.publishGraceMs)
   // Byte caps must be positive: a nonpositive stderr cap defeats the retained-tail bound
   // (`slice(-0)` keeps everything), `maxMessageBytes: 0` makes every response fatal, and a bad
   // document cap fails later in the read path instead of at load.
@@ -490,6 +497,7 @@ class LocalLspProvider implements LspProvider {
       maxStderrBytes: this.config.maxStderrBytes,
       shutdownTimeoutMs: this.config.shutdownTimeoutMs,
       killGraceMs: this.config.killGraceMs,
+      publishGraceMs: this.config.publishGraceMs,
     }
     return new LspInstance(spec, this.spawner)
   }
