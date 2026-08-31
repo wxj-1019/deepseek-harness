@@ -25,16 +25,20 @@ export const inject = ['tools', 'fs', 'systemPrompt']
 export interface Config {
   /** Max entries one `ls` call retains inline; later entries drop with a count note. */
   maxEntries?: number
+  /** Deepest recursion `depth` may request for the tree mode (default 8). */
+  maxDepth?: number
 }
 
 export const Config: z<Config> = z.object({
   maxEntries: z.number().default(500),
+  maxDepth: z.number().default(8),
 })
 
 /** Validated `ls` arguments. */
 export interface LsInput {
   path?: string
   all: boolean
+  depth: number
 }
 
 /**
@@ -43,11 +47,16 @@ export interface LsInput {
  * @param args - the schema-validated `ls` arguments.
  * @returns the accepted input.
  */
-export function parseLsArgs(args: { path?: string; all?: boolean }): LsInput {
+export function parseLsArgs(args: { path?: string; all?: boolean; depth?: number }): LsInput {
   if (args.path !== undefined && args.path.trim().length === 0) {
     throw new Error('path must be a non-empty string when given')
   }
-  return args.path === undefined ? { all: args.all === true } : { path: args.path, all: args.all === true }
+  const depth = args.depth === undefined ? 0 : args.depth
+  if (!Number.isInteger(depth) || depth < 0) {
+    throw new Error('depth must be a non-negative integer; omit it for a flat listing')
+  }
+  const base = { all: args.all === true, depth }
+  return args.path === undefined ? base : { path: args.path, ...base }
 }
 
 /** One formatted listing line: directories carry a trailing separator. */
@@ -89,6 +98,60 @@ export function formatListing(entries: readonly { name: string; type: string; si
   return hidden > 0 ? `${shown.join('\n')}\n\n(+${hidden} more entries not shown)` : shown.join('\n')
 }
 
+/** One tree row: the entry plus its relative path from the listed root ("src/util/x.ts"). */
+export interface TreeRow {
+  readonly name: string
+  readonly type: string
+  readonly size?: number
+  readonly path: string
+}
+
+/**
+ * Recursively collect a tree as flat rows carrying relative paths. The entry
+ * budget counts every row; once exhausted the walk stops descending and
+ * reports truncation. Depth 0 lists only the root's direct entries.
+ * @param dir - the relative directory to list ('' is the root).
+ * @param depth - how many levels below `dir` to descend.
+ * @param all - include dot-prefixed entries.
+ * @param maxEntries - the total row budget.
+ * @param listDir - lists one relative directory's entries.
+ * @returns the rows and whether the budget cut the walk short.
+ */
+export async function collectTree(
+  dir: string,
+  depth: number,
+  all: boolean,
+  maxEntries: number,
+  listDir: (relativeDir: string) => Promise<readonly { name: string; type: string; size?: number }[]>,
+): Promise<{ readonly rows: readonly TreeRow[]; readonly truncated: boolean }> {
+  const rows: TreeRow[] = []
+  let budget = maxEntries
+  let truncated = false
+  const walk = async (current: string, remaining: number): Promise<void> => {
+    if (budget <= 0) { truncated = true; return }
+    const entries = await listDir(current)
+    // Breadth-first per level: list every sibling before descending into
+    // directories, so a budget cut keeps the top of the tree complete.
+    const dirs: string[] = []
+    for (const entry of entries) {
+      if (budget <= 0) { truncated = true; return }
+      if (!all && entry.name.startsWith('.')) continue
+      budget -= 1
+      const path = current === '' ? entry.name : current + '/' + entry.name
+      rows.push({
+        name: entry.name,
+        type: entry.type,
+        ...entry.size !== undefined ? { size: entry.size } : {},
+        path,
+      })
+      if (entry.type === 'directory' && remaining > 0) dirs.push(path)
+    }
+    for (const dir of dirs) await walk(dir, remaining - 1)
+  }
+  await walk(dir, depth)
+  return { rows, truncated }
+}
+
 /** The display name for one entry (directories carry the trailing separator). */
 function displayName(name: string, type: string): string {
   return type === 'directory' ? `${name}/` : name
@@ -101,12 +164,14 @@ function displayName(name: string, type: string): string {
  */
 export function apply(ctx: Context, config: Config): void {
   const maxEntries = config.maxEntries ?? 500
+  const maxDepth = config.maxDepth ?? 8
   ctx.systemPrompt.section({
     name: 'tool:ls',
     order: 103,
     text: 'Use the ls tool — not shell commands — to list a directory\'s entries. '
       + 'Directories render with a trailing slash; files show their byte size when available. '
-      + 'Entries are capped, so prefer narrowing to a subdirectory over listing a huge tree.',
+      + 'Entries are capped, so prefer narrowing to a subdirectory over listing a huge tree. '
+      + 'Set depth to a positive integer to recurse that many levels; rows then carry their relative path.',
   })
 
   const tool = defineTool({
@@ -118,6 +183,7 @@ export function apply(ctx: Context, config: Config): void {
     parameters: {
       path: { type: 'string', description: 'Directory to list. Defaults to the session workspace; a relative path resolves against it.' },
       all: { type: 'boolean', description: 'Include dot-prefixed entries (e.g. ".git", ".env"). Defaults to false.' },
+      depth: { type: 'number', description: 'Recurse this many levels below the listed directory (a tree); 0 or omitted lists only direct entries. Capped by the deployment maximum.' },
     },
     output: {
       schema: {
@@ -135,6 +201,7 @@ export function apply(ctx: Context, config: Config): void {
                 name: { type: 'string', required: true },
                 type: { type: 'string', required: true },
                 size: { type: 'number' },
+                path: { type: 'string', description: 'Relative path from the listed directory (tree mode only).' },
               },
             },
           },
@@ -154,12 +221,29 @@ export function apply(ctx: Context, config: Config): void {
     },
     async execute(args, exec: ToolExecution) {
       const input = parseLsArgs(args)
+      if (input.depth > maxDepth) {
+        throw new Error(`depth ${input.depth} exceeds the deployment maximum of ${maxDepth}`)
+      }
       const path = input.path ?? '.'
       const cwd = exec.agent?.session.header.cwd
       const target = await ctx.fs.resolve(path, { ...(cwd !== undefined ? { cwd } : {}), signal: exec.signal })
-      const listed = await ctx.fs.listDir(target, exec.signal)
-      const visible = input.all ? listed : listed.filter(entry => !entry.name.startsWith('.'))
-      const entries = sortEntries(visible).map(entry => ({
+      const listDir = async (relativeDir: string): Promise<readonly { name: string; type: string; size?: number }[]> => {
+        const listed = relativeDir === ''
+          ? await ctx.fs.listDir(target, exec.signal)
+          : await ctx.fs.listDir(await ctx.fs.resolve(relativeDir, { cwd, signal: exec.signal }), exec.signal)
+        return input.all ? listed : listed.filter(entry => !entry.name.startsWith('.'))
+      }
+      if (input.depth > 0) {
+        const { rows, truncated } = await collectTree('', input.depth, input.all, maxEntries, listDir)
+        return { path, entries: rows.map(row => ({
+          name: row.name,
+          type: row.type,
+          ...row.size !== undefined ? { size: row.size } : {},
+          path: row.path,
+        })), ...(truncated ? { truncated: true } : {}) }
+      }
+      const listed = await listDir('')
+      const entries = sortEntries(listed).map(entry => ({
         name: entry.name,
         type: entry.type,
         ...entry.size !== undefined ? { size: entry.size } : {},

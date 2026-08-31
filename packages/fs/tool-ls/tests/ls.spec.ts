@@ -5,12 +5,12 @@
  */
 
 import { describe, expect, test } from 'vitest'
-import { formatListing, parseLsArgs, sortEntries } from '../src/index.ts'
+import { collectTree, formatListing, parseLsArgs, sortEntries } from '../src/index.ts'
 
 describe('ls tool helpers', () => {
   test('parseLsArgs accepts an omitted path and rejects a blank one', () => {
-    expect(parseLsArgs({})).toEqual({ path: undefined, all: false })
-    expect(parseLsArgs({ path: 'src', all: true })).toEqual({ path: 'src', all: true })
+    expect(parseLsArgs({})).toEqual({ all: false, depth: 0 })
+    expect(parseLsArgs({ path: 'src', all: true })).toEqual({ path: 'src', all: true, depth: 0 })
     expect(() => parseLsArgs({ path: '   ' })).toThrow('non-empty')
   })
 
@@ -44,5 +44,29 @@ describe('ls tool helpers', () => {
 
   test('formatListing renders an empty directory', () => {
     expect(formatListing([], 500)).toBe('(empty directory)')
+  })
+})
+
+describe('collectTree', () => {
+  test('walks depth levels as flat rows with relative paths', async () => {
+    const tree: Record<string, string[]> = {
+      '': ['src', 'a.txt'],
+      src: ['util', 'index.ts'],
+      'src/util': ['helper.ts'],
+    }
+    const listDir = async (dir: string): Promise<readonly { name: string; type: string; size?: number }[]> =>
+      (tree[dir] ?? []).map(name => ({ name, type: name.includes('.') ? 'file' : 'directory' }))
+    const flat = await collectTree('', 0, true, 500, listDir)
+    expect(flat.rows.map(row => row.path)).toEqual(['src', 'a.txt'])
+    const deep = await collectTree('', 1, true, 500, listDir)
+    expect(deep.rows.map(row => row.path)).toEqual(['src', 'a.txt', 'src/util', 'src/index.ts'])
+  })
+  test('stops descending when the entry budget runs out', async () => {
+    const tree: Record<string, string[]> = { '': ['a', 'b'], a: ['x', 'y'] }
+    const listDir = async (dir: string): Promise<readonly { name: string; type: string; size?: number }[]> =>
+      (tree[dir] ?? []).map(name => ({ name, type: 'directory' }))
+    const result = await collectTree('', 2, true, 2, listDir)
+    expect(result.truncated).toBe(true)
+    expect(result.rows.map(row => row.path)).toEqual(['a', 'b'])
   })
 })
