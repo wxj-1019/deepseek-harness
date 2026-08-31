@@ -1,0 +1,8 @@
+version: 1
+scenario: multi-edit-turn
+profile: acp
+composition: multi-edit
+recording: live
+header:
+  class: multi-edit
+  pin: true

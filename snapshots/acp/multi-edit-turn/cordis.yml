@@ -1,0 +1,33 @@
+# multi_edit scenario overlay: mounts the batch-edit tool beside the shipped
+# ACP tool set and re-pins the model so replay composition stays deterministic.
+# The tool list changes, so the scenario pins its own header class.
+- id: acp
+  name: '@deepseek-ai/dsh-acp'
+  config:
+    provider: deepseek-official
+    model: deepseek-v4-flash
+
+- id: session-persistence-jsonl
+  name: '@deepseek-ai/dsh-session-persistence-jsonl'
+  config:
+    root: !!js process.env.DSH_SNAPSHOT_SESSIONS_ROOT ?? './.sessions'
+    compression: none
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+- id: system-prompt
+  name: '@deepseek-ai/dsh-system-prompt'
+  config:
+    persona: |
+      You are a coding assistant powered by the {{model}} model. Your working directory is {{cwd}}. Your bash tool runs under a file sandbox — a `[sandbox: file access denied …]` result is policy, not a command bug.
+
+      Verify your work by running the code or tests. Keep answers brief and factual.
+
+- id: tool-multi-edit
+  name: '@deepseek-ai/dsh-tool-multi-edit'
+
+- id: spill-local
+  name: '@deepseek-ai/dsh-spill-local'

@@ -15,7 +15,7 @@ import type {
   LspSymbolInfo,
 } from '@deepseek-ai/dsh-lsp'
 import { LspError } from '@deepseek-ai/dsh-lsp'
-import { assertNever } from '@deepseek-ai/dsh-llm'
+import { assertNever } from '@deepseek-ai/dsh-util-values'
 import type {
   WireHover,
   WireLocation,
