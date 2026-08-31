@@ -48,3 +48,22 @@ describe('multi_edit helpers', () => {
     expect(occurrenceCount(content, 'const')).toBe(2)
   })
 })
+
+describe('multi_edit regex mode', () => {
+  test('validateEdits accepts a compilable pattern and rejects a broken one', () => {
+    expect(validateEdits([{ path: 'a.ts', oldString: '\d+', newString: 'N', regex: true }], 5).ok).toBe(true)
+    const bad = validateEdits([{ path: 'a.ts', oldString: '(', newString: 'N', regex: true }], 5)
+    expect(bad.ok).toBe(false)
+    if (!bad.ok) expect(bad.rejections[0]?.reason).toContain('not a valid regular expression')
+  })
+  test('applyOne replaces exactly one match by default and all with replaceAll', () => {
+    expect(applyOne('a1 b', '\\d+', 'X', false, true)).toBe('aX b')
+    expect(applyOne('a1 b22 c333', '\\d+', 'X', true, true)).toBe('aX bX cX')
+  })
+  test('applyOne expands capture groups in the replacement', () => {
+    expect(applyOne('hello world', '(\\w+) (\\w+)', '$2, $1', false, true)).toBe('world, hello')
+  })
+  test('applyOne rejects a non-matching pattern like a missing literal', () => {
+    expect(() => applyOne('abc', 'z+', 'X', false, true)).toThrowError('oldString not found in file')
+  })
+})

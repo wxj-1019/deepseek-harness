@@ -46,6 +46,8 @@ export interface EditInput {
   readonly newString: string
   /** Replace every occurrence instead of requiring exactly one. */
   readonly replaceAll?: boolean
+  /** Treat `oldString` as a regular expression; `$1..$9` groups in `newString` are expanded. */
+  readonly regex?: boolean
 }
 
 /** One validated edit (argument errors already rejected). */
@@ -54,6 +56,7 @@ export interface ValidatedEdit {
   readonly oldString: string
   readonly newString: string
   readonly replaceAll: boolean
+  readonly regex: boolean
 }
 
 /** Validation failure for one edit, reported per index. */
@@ -78,24 +81,35 @@ export function validateEdits(edits: readonly EditInput[], maxEdits: number):
     if (edit.path.trim().length === 0) rejections.push({ index, reason: 'path must be a non-empty string' })
     else if (edit.oldString.length === 0) rejections.push({ index, reason: 'oldString must be non-empty' })
     else if (edit.oldString === edit.newString) rejections.push({ index, reason: 'newString must differ from oldString' })
+    else if (edit.regex === true) {
+      try {
+        new RegExp(edit.oldString)
+      } catch {
+        rejections.push({ index, reason: 'oldString is not a valid regular expression' })
+      }
+    }
   })
   return rejections.length > 0 ? { ok: false, rejections } : { ok: true, edits: edits.map(edit => ({
     path: edit.path,
     oldString: edit.oldString,
     newString: edit.newString,
     replaceAll: edit.replaceAll === true,
+    regex: edit.regex === true,
   })) }
 }
 
-/** The number of times `needle` occurs in `content`. */
-export function occurrenceCount(content: string, needle: string): number {
-  let count = 0
-  let at = content.indexOf(needle)
-  while (at !== -1) {
-    count += 1
-    at = content.indexOf(needle, at + needle.length)
+/** The number of times `needle` occurs in `content`, as a literal or a regex. */
+export function occurrenceCount(content: string, needle: string, regex: boolean): number {
+  if (!regex) {
+    let count = 0
+    let at = content.indexOf(needle)
+    while (at !== -1) {
+      count += 1
+      at = content.indexOf(needle, at + needle.length)
+    }
+    return count
   }
-  return count
+  return (content.match(new RegExp(needle, 'g')) ?? []).length
 }
 
 /**
@@ -108,13 +122,17 @@ export function occurrenceCount(content: string, needle: string): number {
  * @returns the edited text.
  * @throws Error when the occurrence requirement is not met.
  */
-export function applyOne(content: string, oldString: string, newString: string, replaceAll: boolean): string {
-  const count = occurrenceCount(content, oldString)
+export function applyOne(content: string, oldString: string, newString: string, replaceAll: boolean, regex: boolean): string {
+  const count = occurrenceCount(content, oldString, regex)
   if (count === 0) throw new Error('oldString not found in file')
   if (count > 1 && !replaceAll) {
     throw new Error(`oldString occurs ${count} times; make it unique or set replaceAll`)
   }
-  return replaceAll ? content.split(oldString).join(newString) : content.replace(oldString, newString)
+  if (!regex) return replaceAll ? content.split(oldString).join(newString) : content.replace(oldString, newString)
+  // A non-replaceAll call already proved a single match, so a plain replace is exact.
+  return replaceAll
+    ? content.replace(new RegExp(oldString, 'g'), newString)
+    : content.replace(new RegExp(oldString), newString)
 }
 
 /**
@@ -153,6 +171,7 @@ export function apply(ctx: Context, config: Config): void {
             oldString: { type: 'string', required: true, description: 'The exact existing text to replace.' },
             newString: { type: 'string', required: true, description: 'The replacement text.' },
             replaceAll: { type: 'boolean', description: 'Replace every occurrence. Defaults to false (exactly one).' },
+            regex: { type: 'boolean', description: 'Treat oldString as a regular expression (ECMAScript syntax). Defaults to false (literal). $1..$9 capture groups in newString expand to their match.' },
           },
         },
       },
@@ -197,7 +216,7 @@ export function apply(ctx: Context, config: Config): void {
           plan.set(edit.path, entry)
         }
         try {
-          entry.content = applyOne(entry.content, edit.oldString, edit.newString, edit.replaceAll)
+          entry.content = applyOne(entry.content, edit.oldString, edit.newString, edit.replaceAll, edit.regex)
           entry.count += 1
         } catch (error) {
           throw new Error(`${edit.path}: ${(error as Error).message}`)
