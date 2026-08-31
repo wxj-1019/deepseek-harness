@@ -1355,7 +1355,7 @@ Registered only inside live root Agent scopes created after the opt-in Schedule 
 
 ### `lsp`
 
-Query a language server for precise code navigation. operation is one of goToDefinition, findReferences, goToImplementation, hover. line and character are one-based UTF-16 cursor coordinates. findReferences includes the declaration.
+Query a language server for precise code navigation. operation is one of goToDefinition, findReferences, goToImplementation, hover, formatting. line and character are one-based UTF-16 cursor coordinates. findReferences includes the declaration. formatting returns the formatted edit plan for the whole file.
 
 ```json
 {
@@ -1363,7 +1363,7 @@ Query a language server for precise code navigation. operation is one of goToDef
   "properties": {
     "operation": {
       "type": "string",
-      "description": "goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); workspaceSymbol (query required); rename (file_path, line, character, new_name).",
+      "description": "goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); workspaceSymbol (query required); rename (file_path, line, character, new_name); formatting (file_path only).",
       "enum": [
         "goToDefinition",
         "findReferences",
@@ -1372,7 +1372,8 @@ Query a language server for precise code navigation. operation is one of goToDef
         "documentSymbol",
         "workspaceSymbol",
         "diagnostics",
-        "rename"
+        "rename",
+        "formatting"
       ]
     },
     "file_path": {

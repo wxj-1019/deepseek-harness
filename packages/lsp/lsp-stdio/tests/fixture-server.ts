@@ -58,6 +58,7 @@ function resultFor(method: string): unknown {
     case 'textDocument/definition': return envJson('LSP_FAKE_DEF', null)
     case 'textDocument/references': return envJson('LSP_FAKE_REFS', null)
     case 'textDocument/implementation': return envJson('LSP_FAKE_IMPL', null)
+    case 'textDocument/formatting': return envJson('LSP_FAKE_FORMATTING', null)
     case 'textDocument/hover': {
       // LSP_FAKE_ECHO_ENV names a variable whose VALUE becomes the hover
       // contents — a test can assert exactly what env reached this process.

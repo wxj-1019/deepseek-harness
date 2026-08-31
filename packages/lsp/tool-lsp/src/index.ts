@@ -65,12 +65,18 @@ export interface Config {
   maxResultChars?: number
   /** Tool-call timeout budget in ms (default 60000). */
   timeoutMs?: number
+  /** Spaces per indentation level for `formatting` (default 2). */
+  formattingTabSize?: number
+  /** Whether `formatting` indents with spaces rather than tabs (default true). */
+  formattingInsertSpaces?: boolean
 }
 
 export const Config: z<Config> = z.object({
   maxLocations: z.number().default(DEFAULT_MAX_LOCATIONS),
   maxResultChars: z.number().default(DEFAULT_MAX_RESULT_CHARS),
   timeoutMs: z.number().max(MAX_TIMER_DELAY_MS).default(DEFAULT_LSP_TOOL_TIMEOUT_MS),
+  formattingTabSize: z.number().default(2),
+  formattingInsertSpaces: z.boolean().default(true),
 })
 
 type ResolvedConfig = Required<Config>
@@ -102,6 +108,7 @@ export function apply(ctx: Context, config: Config): void {
   const resolved = config as ResolvedConfig
   assertPositiveInteger('maxLocations', resolved.maxLocations)
   assertPositiveInteger('maxResultChars', resolved.maxResultChars)
+  assertPositiveInteger('formattingTabSize', resolved.formattingTabSize)
   assertTimer('timeoutMs', resolved.timeoutMs)
 
   ctx.systemPrompt.section({ name: 'tool:lsp', order: 112, text: LSP_PROMPT_TEXT })
@@ -109,7 +116,7 @@ export function apply(ctx: Context, config: Config): void {
   ctx.tools.register(defineTool({
     name: 'lsp',
     description:
-      'Query a language server for precise code navigation. operation is one of goToDefinition, findReferences, goToImplementation, hover. line and character are one-based UTF-16 cursor coordinates. findReferences includes the declaration.',
+      'Query a language server for precise code navigation. operation is one of goToDefinition, findReferences, goToImplementation, hover, formatting. line and character are one-based UTF-16 cursor coordinates. findReferences includes the declaration. formatting returns the formatted edit plan for the whole file.',
     parameters: {
       operation: {
         type: 'string',
@@ -117,7 +124,7 @@ export function apply(ctx: Context, config: Config): void {
         enum: [...LSP_OPERATIONS],
         description: 'goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); '
           + 'documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); '
-          + 'workspaceSymbol (query required); rename (file_path, line, character, new_name).',
+          + 'workspaceSymbol (query required); rename (file_path, line, character, new_name); formatting (file_path only).',
       },
       file_path: { type: 'string', description: 'The source file to query, relative to the workspace or absolute.' },
       line: { type: 'number', description: 'One-based line of the cursor (cursor operations and rename).' },
@@ -275,6 +282,9 @@ export function apply(ctx: Context, config: Config): void {
         ...('position' in input ? { position: input.position } : {}),
         ...('query' in input ? { query: input.query } : {}),
         ...('newName' in input ? { newName: input.newName } : {}),
+        ...(input.operation === 'formatting'
+          ? { formatting: { tabSize: resolved.formattingTabSize, insertSpaces: resolved.formattingInsertSpaces } }
+          : {}),
         workspaceRoot,
       }, exec.signal)
       switch (result.kind) {

@@ -104,6 +104,7 @@ describe('tool-lsp registration', () => {
       ToolLsp.apply(new Context(), {
         maxLocations: 100,
         maxResultChars: 16_000,
+        formattingTabSize: 2,
         timeoutMs: MAX_TIMER_DELAY_MS + 1,
       })
     }).toThrow(/timeoutMs/)

@@ -37,6 +37,7 @@ export {
   normalizeDocumentSymbols,
   normalizeHover,
   normalizeLocations,
+  normalizeFormattingEdits,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
   requestMethod,

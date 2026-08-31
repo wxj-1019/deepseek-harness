@@ -42,6 +42,7 @@ export function requestMethod(operation: LspOperation): string {
     case 'workspaceSymbol': return 'workspace/symbol'
     case 'diagnostics': return 'textDocument/diagnostic'
     case 'rename': return 'textDocument/rename'
+    case 'formatting': return 'textDocument/formatting'
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'requestMethod')
   }
@@ -58,6 +59,7 @@ function capabilityValue(capabilities: WireServerCapabilities, operation: LspOpe
     case 'workspaceSymbol': return capabilities.workspaceSymbolProvider
     case 'diagnostics': return capabilities.diagnosticProvider
     case 'rename': return capabilities.renameProvider
+    case 'formatting': return capabilities.documentFormattingProvider
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'capabilityValue')
   }
@@ -408,6 +410,29 @@ export function normalizeWorkspaceEdit(payload: unknown): readonly LspFileEdits[
     rows.push({ uri, edits: fileEdits })
   }
   return rows
+}
+
+/**
+ * Normalize a `textDocument/formatting` result: an array of `TextEdit` for the
+ * queried document (or `null` for no edits), wrapped as one file's edit plan
+ * so the tool renders formatting exactly like a single-file rename.
+ * @param payload - the server's raw formatting result.
+ * @param uri - the queried document's URI; the plan's only file key.
+ * @returns one `LspFileEdits` for the document, empty when the server returned `null`.
+ * @throws Error for a non-array payload or a malformed `TextEdit`.
+ */
+export function normalizeFormattingEdits(payload: unknown, uri: string): readonly LspFileEdits[] {
+  if (payload === null) return []
+  if (!Array.isArray(payload)) throw malformedResponse('LSP formatting result was not an array')
+  const edits = payload.map((entry) => {
+    if (entry === null || typeof entry !== 'object' || !isRange((entry as Record<string, unknown>).range)
+      || typeof (entry as Record<string, unknown>).newText !== 'string') {
+      throw malformedResponse('LSP formatting contained a malformed TextEdit')
+    }
+    const typed = entry as { range: WireRange; newText: string }
+    return { range: toRange(typed.range), newText: typed.newText }
+  })
+  return [{ uri, edits }]
 }
 
 /** Create the stable structured error used for malformed server result payloads. */

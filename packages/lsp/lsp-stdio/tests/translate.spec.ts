@@ -6,6 +6,7 @@ import {
   requestMethod,
   normalizeDiagnostics,
   normalizeDocumentSymbols,
+  normalizeFormattingEdits,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
   symbolKindName,
@@ -264,5 +265,26 @@ describe('extended operations', () => {
     expect(symbolKindName(12)).toBe('Function')
     expect(symbolKindName(5)).toBe('Class')
     expect(symbolKindName(99)).toBe('99')
+  })
+})
+
+describe('formatting', () => {
+  it('maps formatting to its request and capability slot', () => {
+    expect(requestMethod('formatting')).toBe('textDocument/formatting')
+    expect(supportsOperation({ documentFormattingProvider: true }, 'formatting')).toBe(true)
+    expect(supportsOperation({ documentFormattingProvider: { workDoneProgress: true } }, 'formatting')).toBe(true)
+    expect(supportsOperation({}, 'formatting')).toBe(false)
+  })
+
+  it('normalizeFormattingEdits wraps the document TextEdits as a single-file plan and accepts null', () => {
+    expect(normalizeFormattingEdits(null, 'file:///ws/a.ts')).toEqual([])
+    expect(normalizeFormattingEdits([{ range: RANGE, newText: '  x' }], 'file:///ws/a.ts')).toEqual([
+      { uri: 'file:///ws/a.ts', edits: [{ range: RANGE, newText: '  x' }] },
+    ])
+  })
+
+  it('normalizeFormattingEdits rejects non-array payloads and malformed edits', () => {
+    expect(() => normalizeFormattingEdits({}, 'file:///ws/a.ts')).toThrowError(/was not an array/)
+    expect(() => normalizeFormattingEdits([{ range: { start: { line: 0 } }, newText: 'x' }], 'file:///ws/a.ts')).toThrowError(/malformed TextEdit/)
   })
 })

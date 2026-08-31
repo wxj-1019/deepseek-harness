@@ -76,6 +76,7 @@ export interface WireServerCapabilities {
   readonly workspaceSymbolProvider?: WireProviderCapability
   readonly diagnosticProvider?: WireProviderCapability
   readonly renameProvider?: WireProviderCapability
+  readonly documentFormattingProvider?: WireProviderCapability
 }
 
 /** The `initialize` result envelope. */

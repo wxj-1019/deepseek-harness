@@ -25,6 +25,7 @@ import {
   normalizeDocumentSymbols,
   normalizeHover,
   normalizeLocations,
+  normalizeFormattingEdits,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
   requestMethod,
@@ -213,12 +214,14 @@ export class LspInstance {
           ? { query: request.query ?? '' }
           : operation === 'rename'
             ? { ...positionParams, newName: request.newName }
-            : {
-              ...positionParams,
-              // findReferences always includes declarations: the caller gets no flag and impact analysis
-              // never omits the defining site.
-              ...(operation === 'findReferences' ? { context: { includeDeclaration: true } } : {}),
-            }
+            : operation === 'formatting'
+              ? { textDocument: { uri }, options: request.formatting }
+              : {
+                ...positionParams,
+                // findReferences always includes declarations: the caller gets no flag and impact analysis
+                // never omits the defining site.
+                ...(operation === 'findReferences' ? { context: { includeDeclaration: true } } : {}),
+              }
     const requestId = this.connection.peekNextId()
     const send = this.connection.request(requestMethod(operation), params)
     if (signal === undefined) return send
@@ -272,6 +275,9 @@ export class LspInstance {
     }
     if (operation === 'rename') {
       return { kind: 'workspaceEdit', edits: normalizeWorkspaceEdit(payload) }
+    }
+    if (operation === 'formatting') {
+      return { kind: 'workspaceEdit', edits: normalizeFormattingEdits(payload, uri) }
     }
     // The filesystem provider owns URI syntax for the execution platform, which may differ from the
     // harness host. Preserve that coordinate through rendering instead of reparsing `spec.cwd` there.

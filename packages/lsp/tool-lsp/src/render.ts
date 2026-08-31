@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 /** The eight operations the tool exposes, as a runtime tuple for schema enum + validation. */
 export const LSP_OPERATIONS: readonly LspOperation[] = [
   'goToDefinition', 'findReferences', 'goToImplementation', 'hover',
-  'documentSymbol', 'workspaceSymbol', 'diagnostics', 'rename',
+  'documentSymbol', 'workspaceSymbol', 'diagnostics', 'rename', 'formatting',
 ]
 
 /** Operations anchored to a cursor position. */
@@ -56,7 +56,7 @@ type CursorOperation = Extract<LspOperation, 'goToDefinition' | 'findReferences'
 /** Validated `lsp` arguments after per-operation checks: a discriminated union. */
 export type LspToolInput =
   | { readonly operation: CursorOperation; readonly filePath: string; readonly position: LspPosition }
-  | { readonly operation: 'documentSymbol' | 'diagnostics'; readonly filePath: string }
+  | { readonly operation: 'documentSymbol' | 'diagnostics' | 'formatting'; readonly filePath: string }
   | { readonly operation: 'workspaceSymbol'; readonly query: string }
   | { readonly operation: 'rename'; readonly filePath: string; readonly position: LspPosition; readonly newName: string }
 

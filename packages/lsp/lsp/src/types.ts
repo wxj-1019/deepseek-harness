@@ -14,11 +14,12 @@ import type { LspProviderId } from './brand.ts'
  * compile-enforced change across the seam, providers, and the tool. Cursor operations
  * (`goToDefinition`, `findReferences`, `goToImplementation`, `hover`) require a position;
  * `documentSymbol` and `diagnostics` read a whole file; `workspaceSymbol` searches by query text;
- * `rename` returns a normalized workspace-edit plan the model applies with its file-edit tools.
+ * `rename` returns a normalized workspace-edit plan the model applies with its file-edit tools;
+ * `formatting` returns the same plan shape for one document.
  */
 export type LspOperation =
   | 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
-  | 'documentSymbol' | 'workspaceSymbol' | 'diagnostics' | 'rename'
+  | 'documentSymbol' | 'workspaceSymbol' | 'diagnostics' | 'rename' | 'formatting'
 
 /** A zero-based UTF-16 cursor coordinate, matching the LSP wire convention. */
 export interface LspPosition {
@@ -52,6 +53,16 @@ export interface LspQueryRequest {
   readonly query?: string
   /** The new identifier for `rename`; ignored elsewhere. */
   readonly newName?: string
+  /** Indentation options for `formatting`; ignored elsewhere. */
+  readonly formatting?: LspFormattingOptions
+}
+
+/** Indentation options for `formatting`, forwarded as LSP `FormattingOptions`. */
+export interface LspFormattingOptions {
+  /** Spaces per indentation level. */
+  readonly tabSize: number
+  /** Indent with spaces rather than tabs. */
+  readonly insertSpaces: boolean
 }
 
 /**

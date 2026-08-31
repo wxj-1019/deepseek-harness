@@ -12,7 +12,7 @@ This package owns the Service Definition role of the LSP capability:
 | `@deepseek-ai/dsh-lsp-stdio` | Service Provider: a generic local backend that registers configured stdio language-server providers |
 | `@deepseek-ai/dsh-tool-lsp` | Consumer: the model-facing `lsp` tool over `ctx.lsp` |
 
-The seam exposes exactly four semantic operations — `goToDefinition`, `findReferences`, `goToImplementation`, `hover` — and no generic JSON-RPC escape hatch, so no protocol payload or unreviewed command/mutation reaches a provider through `ctx.lsp`.
+The seam exposes a closed set of semantic operations — `goToDefinition`, `findReferences`, `goToImplementation`, `hover`, `documentSymbol`, `workspaceSymbol`, `diagnostics`, `rename`, `formatting` — and no generic JSON-RPC escape hatch, so no protocol payload or unreviewed command/mutation reaches a provider through `ctx.lsp`.
 
 ## Service API (`ctx.lsp`)
 
@@ -40,5 +40,5 @@ No direct invalidation; `dsh-tool-lsp` owns request-prefix changes.
 ## Known Limitations and Deferred Work
 
 - **Exclusive extension ownership within one runtime** — two providers cannot both claim `.ts`, even with different language ids; overlaps fail registration. The intended extension is a deployment-configured selector above registrations, which can relax exclusive reservation without adding provider choice to model input ([seam Agent Note](../../../.agents/notes/implemented/architecture/2026-07-15-lsp-capability-seam.md)).
-- **Four operations only** — symbols and call hierarchy are deferred (they need different schemas); diagnostics need separate freshness/accumulation rules; mutations (rename, code actions, formatting) require separate tools with preview, permission, and write-policy integration.
+- **No applied mutations** — rename and formatting return edit PLANS the model applies with its own file-edit tools; the host rejects `workspace/applyEdit`. Call hierarchy and code actions remain deferred (different schemas; preview, permission, and write-policy integration).
 - **No observation API** — availability is observed only by running `query()` and routing the thrown `LspError` codes; there is no provider-change event or capability-status query.

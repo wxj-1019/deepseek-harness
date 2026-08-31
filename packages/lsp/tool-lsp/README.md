@@ -2,13 +2,13 @@
 
 English | [中文](README.zh.md)
 
-The model-facing **`lsp` tool** over `ctx.lsp`: one read-only tool with eight operations for precise code navigation. It owns the model schema, prompt guidance, coordinate conversion, result limits and formatting, and UI presentation; it imports no provider.
+The model-facing **`lsp` tool** over `ctx.lsp`: one read-only tool with nine operations for precise code navigation and formatting. It owns the model schema, prompt guidance, coordinate conversion, result limits and formatting, and UI presentation; it imports no provider.
 
 Namespace plugin (`name` / `inject` / `Config` / `apply`, no default export). Injects `tools`, `lsp`, and `systemPrompt`.
 
 ## The tool
 
-`lsp` accepts `operation` (`goToDefinition` | `findReferences` | `goToImplementation` | `hover`), `file_path`, `line`, and `character`. `line` and `character` are positive, one-based UTF-16 cursor coordinates; the tool converts them to the seam's zero-based positions and converts rendered locations back. `findReferences` includes declarations so impact analysis does not omit the defining site. Provider, language id, workspace root, limits, timeout, initialization, and executable stay outside model input.
+`lsp` accepts `operation` (`goToDefinition` | `findReferences` | `goToImplementation` | `hover` | `documentSymbol` | `workspaceSymbol` | `diagnostics` | `rename` | `formatting`), `file_path`, `line`, and `character`. `line` and `character` are positive, one-based UTF-16 cursor coordinates; the tool converts them to the seam's zero-based positions and converts rendered locations back. `findReferences` includes declarations so impact analysis does not omit the defining site. Provider, language id, workspace root, limits, timeout, initialization, and executable stay outside model input.
 
 The tool requires the workspace root from the session `header.cwd`, with no fallback: absence fails as `LSP_WORKSPACE_REQUIRED` before querying. Its canonical result is the complete normalized Service Definition union: `{ kind: "locations", locations, resolvedWorkspaceUri }` or `{ kind: "hover", hover }`; Code Mode can inspect every acquired location and zero-based range directly. Native rendering projects stable, file-grouped `path:line:character` entries against the provider's canonical workspace URI rather than applying host-platform path rules to the session cwd. A `file:` URI becomes a workspace-relative path inside that URI or a URI-derived absolute path outside it; malformed and non-`file:` URIs stay verbatim. Empty locations and `null` hover are successful no-result responses; malformed provider payloads remain structured errors.
 
