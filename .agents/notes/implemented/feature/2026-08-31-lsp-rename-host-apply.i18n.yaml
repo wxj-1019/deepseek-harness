@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-31-lsp-rename-host-apply.md
+2026-08-31-lsp-rename-host-apply.md: 10e3479c49a978856ff9ec8585ac022d680be022
+2026-08-31-lsp-rename-host-apply.zh.md: ef088b639dd4a769edfaf3be284a77f4bddbeb0f

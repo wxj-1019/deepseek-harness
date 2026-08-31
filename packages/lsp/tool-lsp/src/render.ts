@@ -58,7 +58,7 @@ export type LspToolInput =
   | { readonly operation: CursorOperation; readonly filePath: string; readonly position: LspPosition }
   | { readonly operation: 'documentSymbol' | 'diagnostics' | 'formatting'; readonly filePath: string }
   | { readonly operation: 'workspaceSymbol'; readonly query: string }
-  | { readonly operation: 'rename'; readonly filePath: string; readonly position: LspPosition; readonly newName: string }
+  | { readonly operation: 'rename'; readonly filePath: string; readonly position: LspPosition; readonly newName: string; readonly apply: boolean }
 
 /** The raw, schema-typed argument shape (line/character only for cursor operations). */
 export interface LspToolArgs {
@@ -111,6 +111,7 @@ export function parseLspArgs(args: LspToolArgs): LspToolInput {
     filePath: args.file_path,
     position: toPosition(args),
     newName: args.new_name ?? '',
+    apply: args.apply === true,
   } as LspToolInput
 }
 

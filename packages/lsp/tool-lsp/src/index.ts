@@ -31,6 +31,9 @@ import {
   presentLspCall,
 } from './render.ts'
 import { sessionCwd } from './session-cwd.ts'
+import { applyRenamePlan } from './apply-rename.ts'
+// Type-only: pulls the ctx.fs declaration merge (the filesystem service) into this program.
+import type {} from '@deepseek-ai/dsh-fs'
 
 export {
   DEFAULT_MAX_LOCATIONS,
@@ -48,7 +51,7 @@ export { sessionCwd } from './session-cwd.ts'
 export const name = 'tool-lsp'
 
 /** Services required by this plugin. */
-export const inject = ['tools', 'lsp', 'systemPrompt']
+export const inject = ['tools', 'lsp', 'systemPrompt', 'fs']
 
 /** Default tool-call timeout budget (ms), covering the queued open/query/close lifecycle. */
 export const DEFAULT_LSP_TOOL_TIMEOUT_MS = 60_000
@@ -131,6 +134,7 @@ export function apply(ctx: Context, config: Config): void {
       character: { type: 'number', description: 'One-based UTF-16 column of the cursor (cursor operations and rename).' },
       query: { type: 'string', description: 'Symbol name fragment for workspaceSymbol.' },
       new_name: { type: 'string', description: 'The new identifier for rename.' },
+      apply: { type: 'boolean', description: 'rename only: the host applies the plan itself with version guards and reports applied files; default false returns the plan for you to apply.' },
     },
     output: {
       schema: {
@@ -223,6 +227,15 @@ export function apply(ctx: Context, config: Config): void {
             type: 'object',
             additionalProperties: false,
             properties: {
+              kind: { type: 'string', required: true, const: 'rename-applied' },
+              applied: { type: 'number', required: true },
+              files: { type: 'array', required: true, items: { type: 'string' } },
+            },
+          },
+          {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
               kind: { type: 'string', required: true, const: 'workspaceEdit' },
               edits: {
                 type: 'array',
@@ -261,6 +274,8 @@ export function apply(ctx: Context, config: Config): void {
             return [{ type: 'text', text: formatSymbols(value.symbols, '', resolved.maxLocations, resolved.maxResultChars) }]
           case 'diagnostics':
             return [{ type: 'text', text: formatDiagnostics(value.diagnostics, '', resolved.maxLocations, resolved.maxResultChars) }]
+          case 'rename-applied':
+            return [{ type: 'text', text: `Applied rename across ${value.files.length} file(s): ${value.files.join(', ')}` }]
           case 'workspaceEdit':
             return [{ type: 'text', text: formatWorkspaceEdit(value.edits, '', resolved.maxResultChars) }]
           /* v8 ignore next -- exhaustive over the output schema's closed union; unreachable. */
@@ -345,6 +360,14 @@ export function apply(ctx: Context, config: Config): void {
             })),
           }
         case 'workspaceEdit':
+          if (input.operation === 'rename' && input.apply) {
+            const applied = await applyRenamePlan(ctx.fs, result.edits, workspaceRoot, exec.signal)
+            return {
+              kind: 'rename-applied' as const,
+              applied: result.edits.reduce((count, file) => count + file.edits.length, 0),
+              files: [...applied.files],
+            }
+          }
           return {
             kind: 'workspaceEdit' as const,
             edits: result.edits.map(file => ({

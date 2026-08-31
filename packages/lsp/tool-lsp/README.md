@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-The model-facing **`lsp` tool** over `ctx.lsp`: one read-only tool with nine operations for precise code navigation and formatting. It owns the model schema, prompt guidance, coordinate conversion, result limits and formatting, and UI presentation; it imports no provider.
+The model-facing **`lsp` tool** over `ctx.lsp`: one tool with nine operations for precise code navigation and formatting. Read-only by default: rename accepts an opt-in `apply` flag where the host applies the plan itself through `ctx.fs` (URI-to-path conversion, workspace containment, version-guarded writes, and rollback on a mid-apply failure); without it, rename and formatting return edit plans for the model to apply. It owns the model schema, prompt guidance, coordinate conversion, result limits and formatting, and UI presentation; it imports no provider.
 
 Namespace plugin (`name` / `inject` / `Config` / `apply`, no default export). Injects `tools`, `lsp`, and `systemPrompt`.
 

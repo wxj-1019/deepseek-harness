@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Context } from '@deepseek-ai/cordis'
+import LocalFileSystem from '@deepseek-ai/dsh-fs-local'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import Lsp, { LspProviderId, type LspProvider, type LspProviderQuery, type LspQueryResult } from '@deepseek-ai/dsh-lsp'
@@ -36,6 +37,7 @@ async function mount(
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(Lsp)
+  await ctx.plugin(LocalFileSystem, { cwd: process.cwd() })
   if (provider) (ctx.lsp as Lsp).registerProvider(provider)
   await ctx.plugin(ToolLsp, config)
   return { ctx }
