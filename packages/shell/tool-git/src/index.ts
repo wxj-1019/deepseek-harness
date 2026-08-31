@@ -104,7 +104,7 @@ export function buildGitCommand(request: GitRequest, caps: { logMaxCount: number
     case 'diff': {
       const refs = paths.map(validateRef)
       const spec = refs.length > 0 ? ` -- ${refs.join(' ')}` : ''
-      return { command: `git diff --stat${staged ? ' --cached' : ''}${spec}` }
+      return { command: `git diff --numstat${staged ? ' --cached' : ''}${spec}` }
     }
     case 'log':
       return { command: `git log --oneline -n ${caps.logMaxCount}` }
@@ -165,6 +165,46 @@ export function parseStatusPorcelain(text: string): readonly StatusEntry[] {
   })
 }
 
+/** One parsed `git log --oneline` row. */
+export interface CommitEntry {
+  readonly hash: string
+  readonly subject: string
+}
+
+/**
+ * Parse `git log --oneline` lines (hash + space + subject) into rows.
+ * @param text - the raw log output.
+ * @returns the parsed commits in server order (newest first).
+ */
+export function parseLogOneline(text: string): readonly CommitEntry[] {
+  return text.split('\n').flatMap((line) => {
+    const at = line.indexOf(' ')
+    if (at <= 0) return []
+    return [{ hash: line.slice(0, at), subject: line.slice(at + 1) }]
+  })
+}
+
+/** One parsed `git diff --numstat` row; binary files carry null counts. */
+export interface NumstatEntry {
+  readonly path: string
+  readonly additions: number | null
+  readonly deletions: number | null
+}
+
+/**
+ * Parse `git diff --numstat` rows (additions TAB deletions TAB path).
+ * @param text - the raw numstat output.
+ * @returns one entry per changed file.
+ */
+export function parseNumstat(text: string): readonly NumstatEntry[] {
+  return text.split('\n').flatMap((line) => {
+    if (line.trim() === '') return []
+    const parts = line.split('\t')
+    if (parts.length < 3) return []
+    const toCount = (value: string | undefined): number | null => value === '-' || value === undefined ? null : Number(value)
+    return [{ path: parts.slice(2).join('\t'), additions: toCount(parts[0]), deletions: toCount(parts[1]) }]
+  })
+}
 /** Register the `git` tool. */
 export function apply(ctx: Context, config: Config): void {
   const caps = {
@@ -215,6 +255,41 @@ export function apply(ctx: Context, config: Config): void {
           action: { type: 'string', required: true },
           exitCode: { type: 'number', required: true },
           output: { type: 'string', required: true },
+          entries: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                index: { type: 'string', required: true },
+                worktree: { type: 'string', required: true },
+                path: { type: 'string', required: true },
+              },
+            },
+          },
+          commits: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                hash: { type: 'string', required: true },
+                subject: { type: 'string', required: true },
+              },
+            },
+          },
+          files: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                path: { type: 'string', required: true },
+                additions: { type: ['number', 'null'] },
+                deletions: { type: ['number', 'null'] },
+              },
+            },
+          },
         },
       },
       render: (_args, value) => [{
@@ -243,7 +318,14 @@ export function apply(ctx: Context, config: Config): void {
         signal: exec.signal,
       }))
       const output = [result.stdout.text, result.stderr.text].filter(part => part.length > 0).join('\n')
-      return { action, exitCode: result.exitCode ?? -1, output }
+      const structured = action === 'status'
+        ? { entries: parseStatusPorcelain(result.stdout.text) }
+        : action === 'log'
+          ? { commits: parseLogOneline(result.stdout.text) }
+          : action === 'diff'
+            ? { files: parseNumstat(result.stdout.text) }
+            : {}
+      return { action, exitCode: result.exitCode ?? -1, output, ...structured }
     },
   })
   ctx.tools.register(tool)

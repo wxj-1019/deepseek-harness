@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, test } from 'vitest'
-import { parseScripts, tail } from '../src/index.ts'
+import { discoverWorkspaces, parseScripts, parseWorkspaces, tail } from '../src/index.ts'
 
 describe('task tool helpers', () => {
   test('parseScripts extracts script names in declaration order', () => {
@@ -26,5 +26,22 @@ describe('task tool helpers', () => {
     expect(tail('short', 100)).toBe('short')
     const cut = tail('0123456789', 4)
     expect(cut).toBe('…(truncated)\n6789')
+  })
+})
+
+describe('nested workspaces', () => {
+  test('parseWorkspaces reads the array and object forms', () => {
+    expect(parseWorkspaces(JSON.stringify({ workspaces: ['packages/*'] }))).toEqual(['packages/*'])
+    expect(parseWorkspaces(JSON.stringify({ workspaces: { packages: ['apps/*', 'lib'] } }))).toEqual(['apps/*', 'lib'])
+    expect(parseWorkspaces(JSON.stringify({ name: 'solo' }))).toEqual([])
+  })
+  test('discoverWorkspaces expands whole-segment stars over listed directories', async () => {
+    const tree: Record<string, string[]> = {
+      '': ['packages', 'apps', 'docs'],
+      packages: ['core', 'web'],
+      apps: ['api'],
+    }
+    const listDir = async (dir: string): Promise<readonly string[]> => tree[dir] ?? []
+    await expect(discoverWorkspaces(['packages/*', 'apps/api'], listDir)).resolves.toEqual(['apps/api', 'packages/core', 'packages/web'])
   })
 })
