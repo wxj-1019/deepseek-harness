@@ -1,0 +1,5 @@
+{"steps":[
+  { "op": "initialize" },
+  { "op": "newSession" },
+  { "op": "prompt", "text": "In config.txt, use the multi_edit tool ONCE to replace the literal text DEBUG with RELEASE and the literal text 3 with 5 in the same batch. Reply with exactly the single word DONE." }
+]}

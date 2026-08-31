@@ -1,0 +1,10 @@
+# multi_edit-scenario overlay: mounts the batch-edit tool beside the base ACP
+# tool set. The tool list changes, so the scenario pins its own header class.
+- id: base
+  name: '@deepseek-ai/cordis-plugin-include'
+  config:
+    path: ./cordis.yml
+    patches:
+      - insert:
+          - id: tool-multi-edit
+            name: '@deepseek-ai/dsh-tool-multi-edit'

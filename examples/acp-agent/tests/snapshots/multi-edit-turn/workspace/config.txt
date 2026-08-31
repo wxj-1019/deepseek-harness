@@ -1,0 +1,2 @@
+mode = DEBUG
+retries = 3
