@@ -23,6 +23,7 @@ import type {
 
 export { LspProviderId } from './brand.ts'
 export type {
+  LspCallRow,
   LspDiagnostic,
   LspFileEdits,
   LspHover,

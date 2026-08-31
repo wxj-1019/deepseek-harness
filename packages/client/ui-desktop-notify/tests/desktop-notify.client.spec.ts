@@ -4,8 +4,9 @@
  * republish).
  */
 import { describe, expect, it, vi } from 'vitest'
-import type { SessionId, SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
 import {
   browserNotifyPort,

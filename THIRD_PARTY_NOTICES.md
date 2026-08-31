@@ -59,6 +59,10 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`@vscode/ripgrep`](https://github.com/microsoft/vscode-ripgrep) | MIT |
 | [`@xterm/headless`](https://github.com/xtermjs/xterm.js) | MIT |
 | [`@yarnpkg/parsers`](https://github.com/yarnpkg/berry) | BSD-2-Clause |
+| [`@yeesy369/dsh-browser`](https://github.com/xylt369/dsh-browser) | MIT |
+| [`@yeesy369/dsh-browser-playwright`](https://github.com/xylt369/dsh-browser) | MIT |
+| [`@yeesy369/dsh-tool-browser`](https://github.com/xylt369/dsh-browser) | MIT |
+| [`@yeesy369/dsh-web-permission`](https://github.com/xylt369/dsh-browser) | MIT |
 | [`acorn`](https://github.com/acornjs/acorn) | MIT |
 | [`anser`](https://github.com/IonicaBizau/anser) | MIT |
 | [`buffer`](https://github.com/feross/buffer) | MIT |
@@ -67,6 +71,7 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`commander`](https://github.com/tj/commander.js) | MIT |
 | [`compression`](https://github.com/expressjs/compression) | MIT |
 | [`diff`](https://github.com/kpdecker/jsdiff) | BSD-3-Clause |
+| [`dsh-better-sidebar`](https://github.com/omdsh-dev/DSH-better-sidebar) | MIT |
 | [`e2b`](https://github.com/e2b-dev/e2b) | MIT |
 | [`eventsource-parser`](https://github.com/rexxars/eventsource-parser) | MIT |
 | [`fflate`](https://github.com/101arrowz/fflate) | MIT |

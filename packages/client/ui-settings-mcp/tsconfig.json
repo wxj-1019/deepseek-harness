@@ -9,16 +9,15 @@
     "src"
   ],
   "references": [
+    {"path":"../ui-session"},
+    {"path":"../store"},
     {
       "path": "../locale"
     },
     {
       "path": "../../../vendor/cordis"
     },
-    {
-      "path": "../runtime"
-    },
-    {
+        {
       "path": "../ui-settings-plugins"
     },
     {

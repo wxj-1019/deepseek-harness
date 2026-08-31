@@ -18,7 +18,8 @@ import z from '@deepseek-ai/schemastery'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { contentHasImage } from '@deepseek-ai/dsh-llm'
 import type { LlmCallConfig, VisionRouteService } from '@deepseek-ai/dsh-llm'
-import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
+// Type-only: pulls the settings service Context merge (ctx.settings).
+import type {} from '@deepseek-ai/dsh-settings'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -28,7 +29,7 @@ declare module '@deepseek-ai/cordis' {
 }
 
 /** Settings namespace carrying the deployment's vision-model route. */
-export const VISION_MODEL_SETTINGS_NAMESPACE = settingsNamespace('vision-model')
+export const VISION_MODEL_SETTINGS_NAMESPACE = 'vision-model'
 
 /** Stored and composed vision-model routing configuration. */
 export interface VisionModelSettings {
@@ -66,11 +67,13 @@ export class VisionRouteConfig extends Service implements VisionRouteService {
   constructor(ctx: Context, _config: Config = {}) {
     super(ctx, 'visionRoute')
     this.source = () => ROUTING_OFF
-    installSettingsSection(ctx, VISION_MODEL_SETTINGS_NAMESPACE, VISION_MODEL_SETTINGS_SCHEMA, ROUTING_OFF, {
-      setSource: (current) => { this.source = current },
-      // Every consumer reads through configured(), so no registration-level
-      // fact needs rebuilding when the settings document changes.
-      onChange: () => {},
+    ctx.inject(['settings'], (settingsCtx) => {
+      settingsCtx.settings.installSection(ctx, VISION_MODEL_SETTINGS_NAMESPACE, VISION_MODEL_SETTINGS_SCHEMA, ROUTING_OFF, {
+        setSource: (source) => { this.source = source },
+        // Every consumer reads through configured(), so no registration-level
+        // fact needs rebuilding when the settings document changes.
+        onChange: () => {},
+      })
     })
     ctx.on('agent/pre-step', async (payload, next) => {
       // One flag per open turn: a turn that ever carried an image keeps

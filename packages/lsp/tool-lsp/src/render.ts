@@ -70,6 +70,7 @@ export interface LspToolArgs {
   readonly character?: number
   readonly query?: string
   readonly new_name?: string
+  readonly apply?: boolean
 }
 
 /**

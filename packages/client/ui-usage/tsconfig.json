@@ -8,6 +8,7 @@
     "src"
   ],
   "references": [
+    { "path": "../ui-renderer" },
     {
       "path": "../../../vendor/cordis"
     },
@@ -24,7 +25,7 @@
       "path": "../locale"
     },
     {
-      "path": "../runtime"
+      "path": "../store"
     },
     {
       "path": "../ui-conversation"

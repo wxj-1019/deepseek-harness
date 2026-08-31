@@ -3,7 +3,7 @@
  * detection, and the interrupt predicate.
  */
 import { describe, expect, it } from 'vitest'
-import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { completedSince, runningOf, shouldNotify } from '../src/client/notifications.ts'
 import { listState, summary } from './support.client.ts'
 

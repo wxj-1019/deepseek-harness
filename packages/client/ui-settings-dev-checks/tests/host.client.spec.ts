@@ -1,6 +1,6 @@
 import { Context } from '@deepseek-ai/cordis'
 import { describe, expect, it } from 'vitest'
-import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import {
   apply,
   DEV_CHECKS_SETTINGS_DEFAULTS,
@@ -21,7 +21,7 @@ describe('ui-settings-dev-checks host', () => {
     await ctx.plugin(MemorySettings).await()
     const fiber = ctx.plugin({ apply })
     await fiber.await()
-    const ns = settingsNamespace(DEV_CHECKS_SETTINGS_NAMESPACE)
+    const ns = DEV_CHECKS_SETTINGS_NAMESPACE
     expect(ctx.settings.get(ns)).toEqual(DEV_CHECKS_SETTINGS_DEFAULTS)
     await ctx.settings.update(ns, { e2e: false, docSync: false })
     expect(ctx.settings.get(ns)).toEqual({ ...DEV_CHECKS_SETTINGS_DEFAULTS, e2e: false, docSync: false })

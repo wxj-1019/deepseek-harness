@@ -33,6 +33,12 @@
       "path": "../lsp"
     },
     {
+      "path": "../../fs/fs"
+    },
+    {
+      "path": "../../sandbox/sandbox"
+    },
+    {
       "path": "../../runtime-diagnostics/invariants"
     }
   ]

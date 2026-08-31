@@ -4,7 +4,7 @@
  * list. The data arrives entirely through the `sessions.list` snapshot feed
  * and the bound settings scope, so the plugin issues no RPC of its own.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import {
@@ -19,6 +19,9 @@ import { NotificationRow } from './NotificationRow.tsx'
 import type { NotificationRowInjected } from './NotificationRow.tsx'
 import { DESKTOP_NOTIFY_SETTINGS_NAMESPACE, type DesktopNotifySettings } from '../desktop-notify-settings.ts'
 import { en, NS, zh, type DesktopNotifyKey } from './locales.ts'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {

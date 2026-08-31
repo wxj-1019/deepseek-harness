@@ -1,10 +1,10 @@
 /** Host registration: durable ui-aqua section, /backgrounds routes, and the boot glass style. */
 
 import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-attachment'
 import { assertTrustedAuthority } from '@deepseek-ai/dsh-client-connection/trust'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import {
   AQUA_DEFAULTS, AQUA_SETTINGS_NAMESPACE, AquaSectionSchema, aquaBootCss, aquaBootScript,
   type AquaSection,
@@ -17,7 +17,7 @@ export {
   type AquaSection, type WallpaperImageRef, type WallpaperRef, type WallpaperVideoRef,
 } from './aqua-settings.ts'
 
-const NAMESPACE = settingsNamespace(AQUA_SETTINGS_NAMESPACE)
+const NAMESPACE = AQUA_SETTINGS_NAMESPACE
 
 /** Host-row config: the deployment's serving authorities for the route fence. */
 export interface AquaHostConfig {

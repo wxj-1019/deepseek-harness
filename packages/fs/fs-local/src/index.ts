@@ -20,6 +20,7 @@ import type {
   FsWriteIntent,
   FsWriteOutcome,
 } from '@deepseek-ai/dsh-fs'
+import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'
 import {
   applyLiteralEdit,
   listDirectory,
@@ -172,6 +173,7 @@ export class LocalFileSystem extends FileSystem {
     content: string,
     expected?: FsWriteIntent,
     signal?: AbortSignal,
+    _sandboxPolicy?: SandboxExecutionPolicy,
   ): Promise<FsWriteOutcome> {
     return this.withLock(target.targetKey, async () => {
       const existing = await probe(target.targetKey)

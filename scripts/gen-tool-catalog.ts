@@ -489,10 +489,11 @@ const TOOL_PACKAGES: ToolPackage[] = [
     pkg: '@deepseek-ai/dsh-tool-lsp',
     dir: 'tool-lsp',
     source: 'packages/lsp/tool-lsp/src/index.ts',
-    requires: ['ctx.tools', 'ctx.lsp', 'ctx.systemPrompt'],
+    requires: ['ctx.tools', 'ctx.lsp', 'ctx.systemPrompt', 'ctx.fs'],
     writes: ['tool/call', 'tool/result'],
     async mount(ctx) {
-      // The tool registers from the seam alone; the schema does not depend on any provider.
+      // The rename path resolves, stats, and guarded-writes files through ctx.fs.
+      await ctx.plugin(LocalFileSystem)
       await ctx.plugin(Lsp)
       await ctx.plugin(ToolLsp)
     },

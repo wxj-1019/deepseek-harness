@@ -6,7 +6,7 @@
  */
 import { useState } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 // Type-only: loads the `settings.mcpServers` LocaleNamespaceMap merge the locale seat resolves against.
 import type {} from './locales.ts'
 // Type-only: pulls the `settings.plugin.item` SlotMap merge.

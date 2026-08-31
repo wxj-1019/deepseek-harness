@@ -5,7 +5,8 @@
  * one session's bit falling true→false between two snapshots.
  */
 
-import type { SessionId, SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
 
 /** Running bits carried from the previous snapshot, keyed by session. */
 export type RunningMap = ReadonlyMap<SessionId, boolean>

@@ -165,6 +165,7 @@ export function apply(ctx: Context, config: Config): void {
           scripts: { type: 'array', required: true, items: { type: 'string' } },
           workspaces: {
             type: 'array',
+            required: true,
             items: {
               type: 'object',
               additionalProperties: false,
@@ -253,7 +254,7 @@ export function apply(ctx: Context, config: Config): void {
         signal: exec.signal,
       }))
       const combined = tail(`${result.stdout.text}${result.stderr.text.length > 0 ? `\n${result.stderr.text}` : ''}`, outputMaxChars)
-      return { script, workspace: workspace === '' ? undefined : workspace, exitCode: result.exitCode ?? -1, output: combined }
+      return { script, ...(workspace !== '' ? { workspace } : {}), exitCode: result.exitCode ?? -1, output: combined }
     },
   })
   ctx.tools.register(runTool)

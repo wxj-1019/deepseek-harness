@@ -7,6 +7,9 @@
  * @module @deepseek-ai/dsh-client-ui-user-todo/client/UserTodoButton
  */
 
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+// Type-only: pulls the workspace standard-kit merge (useWorkspaces).
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
   IconCheckOutline14, IconChevronDownOutline14, IconCloseOutline16, IconPlusOutline16,

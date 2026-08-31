@@ -100,14 +100,16 @@ describe('readVideoFile', () => {
     const saved = await saveVideoFile(root, { data: container('mp4'), mediaType: 'video/mp4' }, LIMITS)
     const sha = saved.attachmentId.slice('sha256:'.length)
     const objectPath = join(root, 'objects', sha.slice(0, 2), sha)
-    const { readFile, writeFile } = await import('node:fs/promises')
+    const { chmod, readFile, writeFile } = await import('node:fs/promises')
 
     const dangling = { ...saved, attachmentId: `sha256:${'ab'.repeat(32)}` } as VideoAttachmentRef
     await expect(readVideoFile(root, dangling)).rejects.toMatchObject({ code: 'ATTACHMENT_NOT_FOUND' })
 
+    await chmod(objectPath, 0o600)
     await writeFile(objectPath, Buffer.from(container('webm')))
     await expect(readVideoFile(root, saved)).rejects.toMatchObject({ code: 'ATTACHMENT_CORRUPT' })
 
+    await chmod(objectPath, 0o600)
     await writeFile(objectPath, Buffer.from(container('mp4')))
     await expect(readVideoFile(root, refOf(saved, 'video/webm'))).rejects.toMatchObject({ code: 'ATTACHMENT_CORRUPT' })
     await expect(readVideoFile(root, { ...saved, bytes: saved.bytes + 1 })).rejects.toMatchObject({ code: 'ATTACHMENT_CORRUPT' })

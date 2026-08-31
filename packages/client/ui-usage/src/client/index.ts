@@ -4,7 +4,7 @@
  * token-usage table from the usage-ledger storage domain. Export discipline:
  * packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // Type-only: pulls the conversation SlotMap merge (the 'conversation.view' entry)
 // and the sessions Context merge (standard kit visibility).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -15,6 +15,8 @@ import type { UsageLedgerRemoteFace } from './controller.ts'
 import { UsageSection } from './UsageSection.tsx'
 import type { UsageSectionInjected } from './slots.ts'
 import { en, zh, type UsageKey } from './locales.ts'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 
 export type { UsageLedgerController, UsageLedgerRemoteFace } from './controller.ts'
 export type { UsageSectionProps } from './UsageSection.tsx'

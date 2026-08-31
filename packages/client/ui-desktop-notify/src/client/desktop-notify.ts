@@ -6,14 +6,10 @@
  * wires both subscriptions (returned disposer = HMR-safe teardown).
  */
 
-import {
-  createSnapshotStore,
-  type ObservableSnapshot,
-  type SessionId,
-  type SessionListState,
-  type SettingsScope,
-  type SnapshotStore,
-} from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore, type ObservableSnapshot, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { DesktopNotifySettings } from '../desktop-notify-settings.ts'
 import { ENABLED_FIELD } from '../desktop-notify-settings.ts'
 import { completedSince, runningOf, shouldNotify, type RunningMap } from './notifications.ts'

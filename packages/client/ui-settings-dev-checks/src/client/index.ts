@@ -6,7 +6,7 @@
  * CI never consults them. Reads and writes ride the settingsScope transport.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // Type-only: pulls the shell's SlotMap merge (the 'settings.section' entry)
 // and the ctx.settingsScope Context merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
@@ -16,6 +16,8 @@ import { DevChecksSection } from './DevChecksSection.tsx'
 import type { DevChecksSectionInjected } from './DevChecksSection.tsx'
 import { en, zh, type DevChecksKey } from './locales.ts'
 import { DEV_CHECKS_SETTINGS_NAMESPACE, type DevChecksSettings } from '../dev-checks-settings.ts'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 
 export type { DevChecksSectionInjected, DevChecksSectionProps } from './DevChecksSection.tsx'
 export type { DevChecksKey } from './locales.ts'

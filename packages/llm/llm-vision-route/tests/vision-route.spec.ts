@@ -2,7 +2,7 @@
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import LlmRuntime, { CallId, createUserMessage, LlmAdapter } from '@deepseek-ai/dsh-llm'
+import LlmRuntime, { ToolCallId, createUserMessage, LlmAdapter } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions, LlmModelInfo, StreamChunk } from '@deepseek-ai/dsh-llm'
 import { AttachmentId } from '@deepseek-ai/dsh-attachment'
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
@@ -12,6 +12,7 @@ import ToolRuntime, { defineContentToolFixture } from '@deepseek-ai/dsh-tools'
 import AgentRegistry from '@deepseek-ai/dsh-agent'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import AgentLoop from '@deepseek-ai/dsh-agent-loop'
+import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import VisionRouteConfig, { VISION_MODEL_SETTINGS_NAMESPACE } from '../src/index.ts'
@@ -72,8 +73,8 @@ function textResponse(text: string): StreamChunk[] {
 function toolCallResponse(id: string, name: string, args: string): StreamChunk[] {
   return [
     { type: 'block-start', index: 0, blockType: 'tool-call' },
-    { type: 'tool-call-delta', index: 0, id: CallId(id), name, argumentsDelta: args },
-    { type: 'block-end', index: 0, block: { type: 'tool-call', id: CallId(id), name, arguments: args } },
+    { type: 'tool-call-delta', index: 0, id: ToolCallId(id), name, argumentsDelta: args },
+    { type: 'block-end', index: 0, block: { type: 'tool-call', id: ToolCallId(id), name, arguments: args } },
     { type: 'finish', reason: { kind: 'stop' } },
   ]
 }
@@ -100,6 +101,7 @@ async function harness(adapter: ScriptedAdapter): Promise<{ ctx: Context; dispos
   await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(AgentRegistry)
+  await ctx.plugin(SessionProjectionRegistry)
   await ctx.plugin(MemorySettings)
   await ctx.plugin(VisionRouteConfig)
   await ctx.plugin(AgentLoop, { agents: [] })

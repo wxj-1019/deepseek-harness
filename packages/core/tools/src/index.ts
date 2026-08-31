@@ -634,7 +634,17 @@ function materializePresentation<T>(candidate: T): T {
 /** Structured `{ name, code }` for a thrown HarnessError, else undefined. */
 function errorInfo(error: unknown): ToolErrorInfo | undefined {
   try {
-    return error instanceof HarnessError ? { name: error.name, code: error.code } : undefined
+    if (error instanceof HarnessError) return { name: error.name, code: error.code }
+    // Bundled copies of the error hierarchy (tsdown inlines dsh-llm per package)
+    // break instanceof across package boundaries; a string `code` field is the
+    // same machine-routable contract, so fall back to it structurally.
+    if (typeof error === 'object' && error !== null) {
+      const code = (error as { code?: unknown }).code
+      if (typeof code === 'string' && code.length > 0) {
+        return { name: (error as Error).name ?? 'Error', code }
+      }
+    }
+    return undefined
   } catch {
     return undefined
   }

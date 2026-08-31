@@ -7,6 +7,7 @@
 
 import type {
   LspDiagnostic,
+  LspCallRow,
   LspFileEdits,
   LspHover,
   LspLocation,
@@ -479,6 +480,9 @@ function toCallIdentity(item: Record<string, unknown>): {
   container?: string
 } {
   const selection = item.selectionRange
+  if (typeof item.name !== 'string' || typeof item.kind !== 'number' || typeof item.uri !== 'string') {
+    throw malformedResponse('LSP call hierarchy item lacked symbol identity fields')
+  }
   return {
     name: item.name,
     kind: item.kind,

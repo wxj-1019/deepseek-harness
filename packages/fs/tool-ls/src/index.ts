@@ -230,7 +230,10 @@ export function apply(ctx: Context, config: Config): void {
       const listDir = async (relativeDir: string): Promise<readonly { name: string; type: string; size?: number }[]> => {
         const listed = relativeDir === ''
           ? await ctx.fs.listDir(target, exec.signal)
-          : await ctx.fs.listDir(await ctx.fs.resolve(relativeDir, { cwd, signal: exec.signal }), exec.signal)
+          : await ctx.fs.listDir(await ctx.fs.resolve(relativeDir, {
+            ...(cwd !== undefined ? { cwd } : {}),
+            signal: exec.signal,
+          }), exec.signal)
         return input.all ? listed : listed.filter(entry => !entry.name.startsWith('.'))
       }
       if (input.depth > 0) {

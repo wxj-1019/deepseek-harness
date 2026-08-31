@@ -34,18 +34,18 @@ describe('multi_edit helpers', () => {
   })
 
   test('applyOne replaces exactly once by default and refuses ambiguity', () => {
-    expect(applyOne('a one b c', 'one', 'ONE', false)).toBe('a ONE b c')
-    expect(() => applyOne('a one b one c', 'one', 'ONE', false)).toThrow('occurs 2 times')
-    expect(applyOne('a one b one c', 'one', 'ONE', true)).toBe('a ONE b ONE c')
-    expect(() => applyOne('nothing here', 'one', 'ONE', false)).toThrow('not found')
+    expect(applyOne('a one b c', 'one', 'ONE', false, false)).toBe('a ONE b c')
+    expect(() => applyOne('a one b one c', 'one', 'ONE', false, false)).toThrow('occurs 2 times')
+    expect(applyOne('a one b one c', 'one', 'ONE', true, false)).toBe('a ONE b ONE c')
+    expect(() => applyOne('nothing here', 'one', 'ONE', false, false)).toThrow('not found')
   })
 
   test('same-file edits apply sequentially on the evolving content', () => {
     let content = 'const a = 1;\nconst b = 2;'
-    content = applyOne(content, 'const a = 1;', 'const a = 10;', false)
-    content = applyOne(content, 'const b = 2;', 'const b = 20;', false)
+    content = applyOne(content, 'const a = 1;', 'const a = 10;', false, false)
+    content = applyOne(content, 'const b = 2;', 'const b = 20;', false, false)
     expect(content).toBe('const a = 10;\nconst b = 20;')
-    expect(occurrenceCount(content, 'const')).toBe(2)
+    expect(occurrenceCount(content, 'const', false)).toBe(2)
   })
 })
 

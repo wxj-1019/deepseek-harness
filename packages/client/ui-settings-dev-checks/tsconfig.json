@@ -12,8 +12,8 @@
     "src"
   ],
   "references": [
+    { "path": "../ui-renderer" },
     { "path": "../locale" },
-    { "path": "../runtime" },
     { "path": "../ui-slots" },
     { "path": "../ui-settings" },
     { "path": "../../settings/settings" },

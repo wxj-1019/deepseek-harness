@@ -29,6 +29,8 @@ export interface UiWorkspace {
    * @param sessionId - Session to archive.
    */
   archiveSession(sessionId: SessionId): Promise<void>
+  /** Return one archived Session to the grouping surfaces. */
+  unarchiveSession(sessionId: SessionId): Promise<void>
   /**
    * Open the Host-native directory picker.
    * @returns the selected directory, or null when cancelled.
@@ -134,6 +136,10 @@ class UiWorkspaceService extends Service implements UiWorkspace {
 
   async archiveSession(sessionId: SessionId): Promise<void> {
     await this.workspaces.archiveSession(sessionId)
+  }
+
+  async unarchiveSession(sessionId: SessionId): Promise<void> {
+    await this.workspaces.unarchiveSession(sessionId)
   }
 
   async pickDirectory(): Promise<string | null> {

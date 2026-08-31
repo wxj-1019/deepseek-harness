@@ -8,15 +8,15 @@
     "src"
   ],
   "references": [
+    { "path": "../../api/session-controller/tsconfig.client.json" },
+    { "path": "../ui-renderer" },
     {
       "path": "../../../vendor/cordis"
     },
     {
       "path": "../locale"
     },
-    {
-      "path": "../runtime"
-    },
+      { "path": "../store" },
     {
       "path": "../ui-primitives"
     },

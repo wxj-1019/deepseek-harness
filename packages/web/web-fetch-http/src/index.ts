@@ -40,8 +40,6 @@ export interface Config {
   maxRedirects?: number
   /** `User-Agent` header sent on every request. */
   userAgent?: string
-  /** Whether hostnames may resolve into private/link-local ranges. Defaults to false. */
-  allowPrivateNetwork?: boolean
 }
 
 export const Config: z<Config> = z.object({
@@ -50,7 +48,6 @@ export const Config: z<Config> = z.object({
   timeoutMs: z.number().default(30_000),
   maxRedirects: z.number().default(5),
   userAgent: z.string().default(DEFAULT_USER_AGENT),
-  allowPrivateNetwork: z.boolean().default(false),
 })
 
 /** Complete config after schemastery applies every field default. */
@@ -92,7 +89,6 @@ export function apply(ctx: Context, config: Config): void {
     timeoutMs: resolved.timeoutMs,
     maxRedirects: resolved.maxRedirects,
     userAgent: resolved.userAgent,
-    allowPrivateNetwork: resolved.allowPrivateNetwork,
   }
   ctx.web.registerFetchProvider(new HttpFetchProvider(limits))
 }

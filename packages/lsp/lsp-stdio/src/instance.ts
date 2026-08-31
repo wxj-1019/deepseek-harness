@@ -267,11 +267,14 @@ export class LspInstance {
       if (request.position === undefined) throw new Error('call hierarchy requires a cursor position')
       const positionParams = { textDocument: { uri }, position: request.position }
       const prepareId = this.connection.peekNextId()
-      const prepared = await this.raceAbort(this.connection.request('textDocument/prepareCallHierarchy', positionParams), prepareId, signal)
+      const prepareSend = this.connection.request('textDocument/prepareCallHierarchy', positionParams)
+      // A signal-less caller cannot cancel; see the base branch below.
+      const prepared = await (signal === undefined ? prepareSend : this.raceAbort(prepareSend, prepareId, signal))
       const items = Array.isArray(prepared) ? prepared : []
       if (items.length === 0) return []
       const callId = this.connection.peekNextId()
-      return this.raceAbort(this.connection.request(requestMethod(operation), { item: items[0] }), callId, signal)
+      const callSend = this.connection.request(requestMethod(operation), { item: items[0] })
+      return signal === undefined ? callSend : this.raceAbort(callSend, callId, signal)
     }
     // Per-operation params: cursor operations take a position; outline and
     // diagnostics read the whole document; rename carries the new identifier;

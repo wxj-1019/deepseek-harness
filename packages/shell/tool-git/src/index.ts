@@ -285,8 +285,8 @@ export function apply(ctx: Context, config: Config): void {
               additionalProperties: false,
               properties: {
                 path: { type: 'string', required: true },
-                additions: { type: ['number', 'null'] },
-                deletions: { type: ['number', 'null'] },
+                additions: { oneOf: [{ type: 'number' }, { type: 'null' }] },
+                deletions: { oneOf: [{ type: 'number' }, { type: 'null' }] },
               },
             },
           },
@@ -318,13 +318,19 @@ export function apply(ctx: Context, config: Config): void {
         signal: exec.signal,
       }))
       const output = [result.stdout.text, result.stderr.text].filter(part => part.length > 0).join('\n')
-      const structured = action === 'status'
-        ? { entries: parseStatusPorcelain(result.stdout.text) }
-        : action === 'log'
-          ? { commits: parseLogOneline(result.stdout.text) }
-          : action === 'diff'
-            ? { files: parseNumstat(result.stdout.text) }
-            : {}
+      // Annotation keeps the conditional spread free of `prop?: never` union
+      // members, which exactOptionalPropertyTypes rejects against the output type.
+      // The parsed rows are copied into mutable arrays: the output type's
+      // inferred element objects are mutable while the parsed interfaces are readonly.
+      const structured: {
+        entries: StatusEntry[]
+        commits: CommitEntry[]
+        files: NumstatEntry[]
+      } = {
+        entries: action === 'status' ? [...parseStatusPorcelain(result.stdout.text)] : [],
+        commits: action === 'log' ? [...parseLogOneline(result.stdout.text)] : [],
+        files: action === 'diff' ? [...parseNumstat(result.stdout.text)] : [],
+      }
       return { action, exitCode: result.exitCode ?? -1, output, ...structured }
     },
   })

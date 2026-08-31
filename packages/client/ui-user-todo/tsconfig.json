@@ -8,6 +8,12 @@
     "src"
   ],
   "references": [
+    { "path": "../ui-conversation" },
+    { "path": "../ui-renderer" },
+    { "path": "../ui-session" },
+    { "path": "../ui-slots" },
+    { "path": "../locale" },
+    { "path": "../../api/session-controller/tsconfig.client.json" },
     {
       "path": "../../../vendor/cordis"
     },
@@ -15,7 +21,7 @@
       "path": "../locale"
     },
     {
-      "path": "../runtime"
+      "path": "../store"
     },
     {
       "path": "../ui-primitives"

@@ -11,7 +11,7 @@
  * One click on the master switch returns the stock UI (every layer is an
  * effect, disposed on flip).
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: pulls the `settings.plugin.item` SlotMap merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings-plugins/client'
@@ -29,6 +29,7 @@ import { AQUA_SETTINGS_NAMESPACE, type AquaSection } from '../aqua-settings.ts'
 // and the self-hosted Space Grotesk @font-face (no shell dependency).
 import './aqua.module.css'
 import './fonts.module.css'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 
 export type { AquaSnapshot } from './runtime.ts'
 export { AquaRuntime } from './runtime.ts'

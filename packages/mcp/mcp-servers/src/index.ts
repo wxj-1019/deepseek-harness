@@ -23,12 +23,11 @@ import type { EntryOptions } from '@deepseek-ai/cordis-plugin-loader'
 import z from '@deepseek-ai/schemastery'
 import { SERVER_NAME_PATTERN, ServerEntryConfig } from '@deepseek-ai/dsh-mcp-client'
 import type { ServerEntry } from '@deepseek-ai/dsh-mcp-client'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 // Side-effect type import: declaration-merges `ctx.settings` onto Context.
 import type {} from '@deepseek-ai/dsh-settings'
 
 /** Settings namespace this manager owns. */
-const SETTINGS_NAMESPACE = settingsNamespace('mcp')
+const SETTINGS_NAMESPACE = 'mcp'
 
 /** Loader name of the bridge plugin each composed row mounts. */
 const MCP_CLIENT_PLUGIN = '@deepseek-ai/dsh-mcp-client'
@@ -139,7 +138,9 @@ export default class McpServers extends EntryGroup {
   static inject = ['settings']
 
   constructor(ctx: Context) {
-    super(ctx, ctx.fiber.entry!.parent.tree)
+    const entry = ctx.fiber.entry
+    if (entry === undefined) throw new Error('mcp-servers requires an owning loader entry')
+    super(ctx, entry.parent.tree)
   }
 
   async* [Service.init](): AsyncGenerator<() => void, void, void> {
@@ -148,9 +149,9 @@ export default class McpServers extends EntryGroup {
     yield () => { void this.stop() }
     const scope = this.ctx.settings.register(SETTINGS_NAMESPACE, McpSettings)
     const unwatch = scope.watch((next) => {
-      void this.update(composeRows(next, (message) => this.ctx.logger.error(message)))
+      void this.update(composeRows(next, message => this.ctx.logger.error(message)))
     })
     yield () => { unwatch() }
-    await this.update(composeRows(scope.get(), (message) => this.ctx.logger.error(message)))
+    await this.update(composeRows(scope.get(), message => this.ctx.logger.error(message)))
   }
 }

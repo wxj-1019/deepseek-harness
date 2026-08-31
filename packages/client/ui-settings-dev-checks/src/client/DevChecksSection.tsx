@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useSyncExternalStore } from 'react'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { DEV_CHECKS_SETTINGS_DEFAULTS, type DevChecksSettings } from '../dev-checks-settings.ts'
 import type { en } from './locales.ts'
 import styles from './DevChecksSection.module.css'

@@ -7,8 +7,14 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import { useSyncExternalStore } from 'react'
-import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-test-runtime'
-import { createSnapshotStore, type SessionListState, type WorkspaceListState } from '@deepseek-ai/dsh-client-runtime/client'
+import { bindSnapshotSelector, workspaceSnapshot } from '@deepseek-ai/dsh-client-test-runtime'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
+import type { WorkspaceSnapshot } from '@deepseek-ai/dsh-api-workspace-controller/client'
+// Local stand-in for the workspaces-service list state; the service module has
+// not landed yet, so the mock types the literal this test feeds the store.
+// The row reads the workspace standard kit as a bare WorkspaceSnapshot.
+type WorkspacesKit = WorkspaceSnapshot
 import { AquaAppearanceRow } from '../src/client/AquaAppearanceRow.tsx'
 import type { AquaAppearanceRowComponentProps, AquaAppearanceRowInjected } from '../src/client/AquaAppearanceRow.tsx'
 import { createAquaRowStore } from '../src/client/settings-store.ts'
@@ -51,10 +57,7 @@ function emptySessions() {
   return bindSnapshotSelector(store)
 }
 function emptyWorkspaces() {
-  const store = createSnapshotStore<WorkspaceListState>({
-    items: [], archivedSessionIds: [], state: 'idle', phase: 'ready', error: null,
-    baselinesReady: true, recentWorkspaceId: undefined,
-  })
+  const store = createSnapshotStore<WorkspacesKit>(workspaceSnapshot())
   return bindSnapshotSelector(store)
 }
 
@@ -93,6 +96,7 @@ function mountRow(section: AquaSection, dark = false, configure?: (face: FaceMoc
   const props: AquaAppearanceRowComponentProps = {
     useSessions: emptySessions(),
     useWorkspaces: emptyWorkspaces(),
+    useSessionPendingInteraction: (() => { throw new Error('unused by the aqua row') }) as AquaAppearanceRowComponentProps['useSessionPendingInteraction'],
     useStore,
     actions: store.actions,
     t: (key: string) => COPY[key] ?? key,

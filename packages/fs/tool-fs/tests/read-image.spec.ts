@@ -375,6 +375,10 @@ describe('extension-less paths', () => {
       readImage(_ref: ImageAttachmentRef): Promise<StoredImageAttachment> {
         throw new Error('unreachable in this test')
       }
+
+      readonly videoLimits = { maxVideoBytes: 50 * 1024 * 1024, mediaTypes: ['video/mp4'] as const }
+      saveVideo(): Promise<never> { return Promise.reject(new Error('unreachable in this test')) }
+      readVideo(): Promise<never> { return Promise.reject(new Error('unreachable in this test')) }
     }
     await writeFile(join(dir, 'avatar'), PNG_1X1)
     const ctx = await setup({ attachments: false })
@@ -407,6 +411,10 @@ describe('extension-less paths', () => {
       readImage(_ref: ImageAttachmentRef): Promise<StoredImageAttachment> {
         throw new Error('unreachable in this test')
       }
+
+      readonly videoLimits = { maxVideoBytes: 50 * 1024 * 1024, mediaTypes: ['video/mp4'] as const }
+      saveVideo(): Promise<never> { return Promise.reject(new Error('unreachable in this test')) }
+      readVideo(): Promise<never> { return Promise.reject(new Error('unreachable in this test')) }
     }
     await writeFile(join(dir, 'sniffed'), PNG_1X1)
     const ctx = await setup({ attachments: false })

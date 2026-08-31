@@ -8,7 +8,7 @@
 
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UserTodoId } from '@deepseek-ai/dsh-user-todo/types'
-import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { UserTodoState } from './controller.ts'
 
 /** Full injected share handed to the slot entry's component. */

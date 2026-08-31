@@ -212,7 +212,7 @@ async function persistObject(root: string, data: Uint8Array, writeFailure: strin
   await ensureDurableDirectory(bucket, boundary)
   await ensureDurableDirectory(staging, boundary)
   const temporary = join(staging, randomUUID())
-  const target = normalizedImagePath(root, prepared.ref)
+  const target = objectPath(root, sha256)
   let handle
   try {
     handle = await open(temporary, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY, 0o600)

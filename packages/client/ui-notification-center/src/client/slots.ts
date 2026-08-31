@@ -8,7 +8,7 @@
 
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { NotificationId } from '@deepseek-ai/dsh-notification-center/types'
-import type { SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { NotificationsState } from './controller.ts'
 
 /** Full injected share handed to the bell and the panel. */

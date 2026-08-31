@@ -5,7 +5,8 @@
  * events and reconnects converge a loaded list.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 // Type-only: pulls the generated Remote API and ctx.remote merge through the Client assembly boundary.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
@@ -20,6 +21,10 @@ import { NotificationBell } from './NotificationBell.tsx'
 import { NotificationPanel } from './NotificationPanel.tsx'
 import type { NotificationCenterInjected } from './slots.ts'
 import { en, zh, type NotificationCenterKey } from './locales.ts'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 
 export type { NotificationsController, NotificationsRemoteFace } from './controller.ts'
 export type { NotificationBellProps, BellGlyph } from './NotificationBell.tsx'

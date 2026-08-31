@@ -4,7 +4,7 @@
  * apply-world change listener is the only writer; the row component reads via
  * props.useStore.
  */
-import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client'
+import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
 import { AQUA_DEFAULTS, type AquaSection } from '../aqua-settings.ts'
 
 /** The full payload the runtime pushes into the row store on every change. */

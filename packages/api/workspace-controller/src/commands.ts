@@ -160,6 +160,21 @@ export class WorkspaceCommands {
     return { archivedSessionIds: [...this.ctx.workspaceRegistry.archivedSessionIds] }
   }
 
+  /**
+   * Remove one known Session from the registry-global archive set.
+   * @param request - Session identity to unarchive.
+   * @returns the complete resulting archive set.
+   */
+  async unarchiveSession(request: WorkspaceArchiveSessionRequest): Promise<WorkspaceArchiveValue> {
+    try {
+      await this.ctx.workspaceRegistry.unarchiveSession(request.sessionId)
+    } catch (error) {
+      if (!(error instanceof WorkspaceUnknownSessionError)) throw error
+      throw new RemoteError('session/not-found', error.message, { sessionId: request.sessionId }, { cause: error })
+    }
+    return { archivedSessionIds: [...this.ctx.workspaceRegistry.archivedSessionIds] }
+  }
+
   private requireWorkspace(workspaceId: WorkspaceId): Workspace {
     const workspace = this.ctx.workspaceRegistry.get(WorkspaceId(workspaceId))
     if (workspace === undefined) throw workspaceNotFound(workspaceId)

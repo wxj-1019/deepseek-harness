@@ -4,10 +4,13 @@
  * served card keys.
  * @module @deepseek-ai/dsh-client-ui-settings-mcp/client
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
-import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: pulls the ctx.remote Context merge (the typed RPC client).
+import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import { MCP_SETTINGS_NS, McpCardController } from './mcp-card-controller.ts'
 import type { McpServerEntryView } from './mcp-card-controller.ts'
 import { McpCard } from './McpCard.tsx'
@@ -32,10 +35,9 @@ export function apply(ctx: ClientContext): void {
   const t = ctx.locale.bind(LOCALE_NS)
   ctx.effect(() => ctx.locale.register(LOCALE_NS, { zh, en }), 'ui-settings-mcp: card dictionaries')
 
-  const { api } = ctx.get('connection') as ConnectionHandle
   const controller = new McpCardController(
     ctx.settingsScope.bind({ namespace: MCP_SETTINGS_NS }),
-    api,
+    ctx.remote,
     { conflict: t('mcpCard.conflict'), unavailable: t('mcpCard.unavailable') },
   )
 

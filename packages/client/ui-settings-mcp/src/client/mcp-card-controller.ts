@@ -6,9 +6,9 @@
  * the card's conflict message rather than a silent overwrite.
  */
 
-import type { IApiClient, SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientRemote, SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 
 /**
  * Namespace of the MCP server composition. Spelled here rather than imported:
@@ -88,7 +88,7 @@ export class McpCardController {
    */
   constructor(
     private readonly scope: SettingsScope<McpSettingsView>,
-    private readonly api: Pick<IApiClient, 'settings'>,
+    private readonly api: Pick<ClientRemote, 'settings'>,
     private readonly messages: { conflict: string; unavailable: string },
   ) {
     this.store = createSnapshotStore<McpCardState>(this.project())
@@ -118,7 +118,7 @@ export class McpCardController {
 
   /** Add or replace one server entry under its dictionary key. */
   async save(name: string, entry: McpServerEntryView): Promise<void> {
-    await this.apply([{ op: 'set', path: ['servers', name], value: entry }])
+    await this.apply([{ op: 'set', path: ['servers', name], value: entry as never }])
   }
 
   /** One revision-fenced mutation; a failure lands on the card as its message. */
@@ -129,14 +129,12 @@ export class McpCardController {
     this.errorMessage = undefined
     this.store.set(this.project())
     try {
-      const response = await this.api.settings.mutate({ ns: MCP_SETTINGS_NS, ops, expectedRevision: revision })
-      if (!response.result.ok) {
-        this.errorMessage = response.result.error.code === 'settings-conflict'
-          ? this.messages.conflict
-          : this.messages.unavailable
-      }
+      await this.api.settings.mutate(MCP_SETTINGS_NS, ops, revision)
     } catch (error) {
-      this.errorMessage = `${this.messages.unavailable}: ${String(error)}`
+      const code = (error as { code?: string }).code
+      this.errorMessage = code === 'settings/conflict'
+        ? this.messages.conflict
+        : this.messages.unavailable
     } finally {
       this.busy = false
       this.store.set(this.project())

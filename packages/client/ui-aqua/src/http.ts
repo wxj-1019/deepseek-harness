@@ -3,13 +3,12 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { AttachmentError, type AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import type { SettingsProvider } from '@deepseek-ai/dsh-settings'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
 import {
   AQUA_SETTINGS_NAMESPACE, WALLPAPER_IMAGE_MEDIA_TYPES, WALLPAPER_VIDEO_MEDIA_TYPES,
   type AquaSection, type WallpaperImageRef, type WallpaperVideoRef,
 } from './aqua-settings.ts'
 
-const NAMESPACE = settingsNamespace(AQUA_SETTINGS_NAMESPACE)
+const NAMESPACE = AQUA_SETTINGS_NAMESPACE
 type WallpaperImageMediaType = WallpaperImageRef['mediaType']
 type WallpaperVideoMediaType = WallpaperVideoRef['mediaType']
 

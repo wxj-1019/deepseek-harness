@@ -5,7 +5,7 @@
  * `session-pins/changed` events and reconnects converge a loaded set.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // Type-only: pulls the generated Remote API and ctx.remote merge through the Client assembly boundary.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
@@ -20,6 +20,10 @@ import { PinStar } from './PinStar.tsx'
 import { PinnedSection } from './PinnedSection.tsx'
 import type { SessionPinsInjected } from './slots.ts'
 import { en, zh, type SessionPinsKey } from './locales.ts'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 
 export type { SessionPinsController, SessionPinsRemoteFace } from './controller.ts'
 export type { PinStarProps, StarGlyph } from './PinStar.tsx'

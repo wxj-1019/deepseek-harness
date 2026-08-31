@@ -9,6 +9,7 @@
 import { join, relative, resolve, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
+import type { FsVersion } from '@deepseek-ai/dsh-fs'
 import type { LspFileEdits } from '@deepseek-ai/dsh-lsp'
 
 /** One edit inside a plan: zero-based UTF-16 half-open range plus replacement. */
@@ -36,7 +37,9 @@ export function applyTextEdits(content: string, edits: readonly PlanEdit[]): str
   const offsetOf = (line: number, character: number): number => {
     if (line < 0 || line >= lineStarts.length) throw new Error(`edit line ${line} is outside the file`)
     const start = lineStarts[line]
-    const lineEnd = line + 1 < lineStarts.length ? lineStarts[line + 1] - 1 : content.length
+    if (start === undefined) throw new Error(`edit line ${line} is outside the file`)
+    const next = lineStarts[line + 1]
+    const lineEnd = next === undefined ? content.length : next - 1
     const offset = start + character
     if (character < 0 || offset > lineEnd) throw new Error(`edit character ${character} is outside line ${line}`)
     return offset
@@ -102,7 +105,7 @@ export async function applyRenamePlan(
   workspaceRoot: string,
   signal: AbortSignal | undefined,
 ): Promise<{ readonly files: string[] }> {
-  const prepared: { path: string; target: Awaited<ReturnType<Context['fs']['resolve']>>; version: unknown; next: string; original: string }[] = []
+  const prepared: { path: string; target: Awaited<ReturnType<Context['fs']['resolve']>>; version: FsVersion; next: string; original: string }[] = []
   for (const file of plan) {
     const path = planUriToPath(file.uri, workspaceRoot)
     const target = await fs.resolve(path, signal ? { signal } : {})

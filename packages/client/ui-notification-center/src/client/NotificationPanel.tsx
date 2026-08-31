@@ -17,6 +17,8 @@ import type { NotificationCenterInjected } from './slots.ts'
 import type { NotificationsState } from './controller.ts'
 import { NS } from './locales.ts'
 import css from './NotificationPanel.module.css'
+// Type-only: pulls the session standard kit merge (useSessions).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 
 /** Full props for the overlay panel. */
 export type NotificationPanelProps =

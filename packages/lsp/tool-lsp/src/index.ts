@@ -313,7 +313,7 @@ export function apply(ctx: Context, config: Config): void {
           case 'diagnostics':
             return [{ type: 'text', text: formatDiagnostics(value.diagnostics, '', resolved.maxLocations, resolved.maxResultChars) }]
           case 'calls':
-            return [{ type: 'text', text: formatCalls(value.calls, resolved.maxLocations, resolved.maxResultChars) }]
+            return [{ type: 'text', text: formatCalls(value.calls, '', resolved.maxLocations, resolved.maxResultChars) }]
           case 'rename-applied':
             return [{ type: 'text', text: `Applied rename across ${value.files.length} file(s): ${value.files.join(', ')}` }]
           case 'workspaceEdit':

@@ -212,9 +212,12 @@ describe('session.history projections block', () => {
     }
     await ctx.plugin(class extends AttachmentStore {
       readonly imageLimits = limits
+      readonly videoLimits = { maxVideoBytes: 50 * 1024 * 1024, mediaTypes: ['video/mp4'] as const }
       validateImage(): Promise<void> { return Promise.resolve() }
       saveImage(): Promise<never> { return Promise.reject(new Error('unused')) }
       readImage(): Promise<never> { return Promise.reject(new Error('unused')) }
+      saveVideo(): Promise<never> { return Promise.reject(new Error('unused')) }
+      readVideo(): Promise<never> { return Promise.reject(new Error('unused')) }
     })
     const gateway = remote(ctx)
     await new Promise(resolve => setTimeout(resolve, 0))

@@ -4,8 +4,12 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-slots'
+import type {} from '@deepseek-ai/dsh-settings'
 import { DESKTOP_NOTIFY_SETTINGS_NAMESPACE, DesktopNotifySettingsSchema } from './desktop-notify-settings.ts'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 
 export {
   DESKTOP_NOTIFY_SETTINGS_DEFAULTS,
@@ -14,7 +18,7 @@ export {
   type DesktopNotifySettings,
 } from './desktop-notify-settings.ts'
 
-const NAMESPACE = settingsNamespace(DESKTOP_NOTIFY_SETTINGS_NAMESPACE)
+const NAMESPACE = DESKTOP_NOTIFY_SETTINGS_NAMESPACE
 
 /**
  * Register the durable desktop-notify namespace when the settings service is composed.

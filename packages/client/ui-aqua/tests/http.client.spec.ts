@@ -5,7 +5,7 @@ import { Context } from '@deepseek-ai/cordis'
 import { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import { AttachmentError } from '@deepseek-ai/dsh-attachment'
-import { SettingsProvider, settingsNamespace, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { afterAll, describe, expect, it } from 'vitest'
 import { AQUA_DEFAULTS, type WallpaperRef } from '../src/aqua-settings.ts'
 
@@ -75,7 +75,7 @@ async function boot(attachments: AttachmentStore): Promise<Context> {
   return ctx
 }
 
-const NS = settingsNamespace('ui-aqua')
+const NS = 'ui-aqua' as SettingsNamespace
 
 describe('ui-aqua host', () => {
   it('registers and validates the durable namespace', async () => {

@@ -6,7 +6,7 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
+import type {} from '@deepseek-ai/dsh-settings'
 import { DEV_CHECKS_SETTINGS_NAMESPACE, DevChecksSettingsSchema } from './dev-checks-settings.ts'
 
 export {
@@ -16,13 +16,14 @@ export {
   type DevChecksSettings,
 } from './dev-checks-settings.ts'
 
-const NAMESPACE = settingsNamespace(DEV_CHECKS_SETTINGS_NAMESPACE)
+const NAMESPACE = DEV_CHECKS_SETTINGS_NAMESPACE
 
 /**
  * Register the durable dev-checks namespace when the settings service is composed.
  * @param ctx - Host context that may acquire the settings service.
  */
 export function apply(ctx: Context): void {
+  // Type-only: pulls the settings service Context merge.
   ctx.inject(['settings'], (settingsCtx) => {
     settingsCtx.settings.register(NAMESPACE, DevChecksSettingsSchema)
   })

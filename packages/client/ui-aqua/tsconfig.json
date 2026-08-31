@@ -12,8 +12,9 @@
     "src"
   ],
   "references": [
+    { "path": "../../api/session-controller/tsconfig.client.json" },
     { "path": "../locale" },
-    { "path": "../runtime" },
+    { "path": "../store" },
     { "path": "../ui-slots" },
     { "path": "../ui-settings" },
     { "path": "../ui-settings-plugins" },

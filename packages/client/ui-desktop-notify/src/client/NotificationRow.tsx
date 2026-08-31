@@ -1,5 +1,5 @@
 /** General Settings row: the completion-notification opt-in and its permission flow. */
-import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PermissionState } from './desktop-notify.ts'
 import css from './NotificationRow.module.css'

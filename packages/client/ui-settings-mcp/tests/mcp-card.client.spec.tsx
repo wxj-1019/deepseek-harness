@@ -6,8 +6,11 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import type { SettingsScope, SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
-import type { IApiClient, RpcResponse, SettingsNamespaceView } from '@deepseek-ai/dsh-api-remotes/client'
+import type { SettingsScope, SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only: pulls the session standard-kit merge (useSessionPendingInteraction).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+import type { RemoteResult } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ClientRemote, SettingsNamespaceView } from '@deepseek-ai/dsh-api-remotes/client'
 import { McpCardController, type McpSettingsView } from '../src/client/mcp-card-controller.ts'
 import { McpCard } from '../src/client/McpCard.tsx'
 import { en } from '../src/client/locales.ts'
@@ -37,6 +40,7 @@ function fakeScope(initial: Partial<SettingsScopeSnapshot<McpSettingsView>>): Se
     },
     set: vi.fn(async () => {}),
     unset: vi.fn(async () => {}),
+    mutate: vi.fn(async () => {}),
     publish(next) {
       snapshot = { ...snapshot, ...next }
       for (const listener of listeners) listener()
@@ -44,26 +48,26 @@ function fakeScope(initial: Partial<SettingsScopeSnapshot<McpSettingsView>>): Se
   }
 }
 
-function fakeApi(): { api: Pick<IApiClient, 'settings'>; mutate: ReturnType<typeof vi.fn> } {
-  const mutate = vi.fn(async (): Promise<RpcResponse<SettingsNamespaceView>> => ({
-    result: {
-      ok: true as const,
-      value: {
-        value: { servers: {}, disabled: [] },
-        base: {},
-        user: {},
-        revision: 4,
-        writable: true,
-        mode: 'host' as const,
-        status: 'ready' as const,
-      } as unknown as SettingsNamespaceView,
-    },
-  }) as unknown as RpcResponse<SettingsNamespaceView>)
+function fakeApi(): { api: Pick<ClientRemote, 'settings'>; mutate: ReturnType<typeof vi.fn> } {
+  const mutate = vi.fn(async (): Promise<RemoteResult<SettingsNamespaceView>> => ({
+    ok: true,
+    value: {
+      value: { servers: {}, disabled: [] },
+      base: {},
+      user: {},
+      revision: 4,
+      writable: true,
+      mode: 'host',
+      status: 'ready',
+    } as unknown as SettingsNamespaceView,
+  }))
   const settings = {
     describe: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
-    openDocument: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
     update: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
     replace: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
+    canOpenAgentPresetDirectory: vi.fn(async (): Promise<RemoteResult<boolean>> => ({ ok: true, value: false })),
+    openAgentPresetDirectory: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
+    openSettingsDocument: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }),
     mutate,
   }
   return { api: { settings }, mutate }
@@ -84,6 +88,7 @@ function mountCard(controller: McpCardController): void {
       save={(name, entry) => { void controller.save(name, entry) }}
       useSessions={unusedHook}
       useWorkspaces={unusedHook}
+      useSessionPendingInteraction={unusedHook}
     />,
   )
 }
@@ -110,18 +115,10 @@ describe('McpCardController', () => {
     const { api, mutate } = fakeApi()
     const controller = new McpCardController(scope, api, MESSAGES)
     await controller.setEnabled('gh', false)
-    expect(mutate).toHaveBeenCalledWith({
-      ns: 'mcp',
-      ops: [{ op: 'set', path: ['disabled'], value: ['gh'] }],
-      expectedRevision: 3,
-    })
+    expect(mutate).toHaveBeenCalledWith('mcp', [{ op: 'set', path: ['disabled'], value: ['gh'] }], 3)
     scope.publish({ value: { servers: { gh: { transport: 'stdio', command: 'npx' } }, disabled: ['gh'] } })
     await controller.setEnabled('gh', true)
-    expect(mutate).toHaveBeenLastCalledWith({
-      ns: 'mcp',
-      ops: [{ op: 'set', path: ['disabled'], value: [] }],
-      expectedRevision: 3,
-    })
+    expect(mutate).toHaveBeenLastCalledWith('mcp', [{ op: 'set', path: ['disabled'], value: [] }], 3)
   })
 
   it('removes one entry and its parked reference together', async () => {
@@ -134,23 +131,17 @@ describe('McpCardController', () => {
     const { api, mutate } = fakeApi()
     const controller = new McpCardController(scope, api, MESSAGES)
     await controller.remove('gh')
-    expect(mutate).toHaveBeenCalledWith({
-      ns: 'mcp',
-      ops: [
-        { op: 'unset', path: ['servers', 'gh'] },
-        { op: 'set', path: ['disabled'], value: [] },
-      ],
-      expectedRevision: 3,
-    })
+    expect(mutate).toHaveBeenCalledWith('mcp', [
+      { op: 'unset', path: ['servers', 'gh'] },
+      { op: 'set', path: ['disabled'], value: [] },
+    ], 3)
   })
 
   it('reports a revision conflict through the card state', async () => {
     const scope = fakeScope({ value: { servers: {}, disabled: [] } })
-    const mutate = vi.fn(async (): Promise<RpcResponse<SettingsNamespaceView>> => ({
-      result: { ok: false as const, error: { code: 'settings-conflict' as const, message: 'conflict' } },
-    }) as unknown as RpcResponse<SettingsNamespaceView>)
+    const mutate = vi.fn(async () => { throw Object.assign(new Error('conflict'), { code: 'settings/conflict' }) })
     const controller = new McpCardController(scope, {
-      settings: { describe: vi.fn(), openDocument: vi.fn(), update: vi.fn(), replace: vi.fn(), mutate },
+      settings: { describe: vi.fn(), update: vi.fn(async (): Promise<never> => { throw new Error('x') }), replace: vi.fn(async (): Promise<never> => { throw new Error('x') }), canOpenAgentPresetDirectory: vi.fn(async (): Promise<RemoteResult<boolean>> => ({ ok: true, value: false })), openAgentPresetDirectory: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }), openSettingsDocument: vi.fn(async (): Promise<never> => { throw new Error('not used in this test') }), mutate },
     }, MESSAGES)
     await controller.save('gh', { transport: 'stdio', command: 'npx' })
     expect(controller.store.getSnapshot().error).toBe('conflict-copy')
@@ -190,15 +181,11 @@ describe('McpCard', () => {
     fireEvent.change(screen.getByLabelText(en['mcpCard.env']), { target: { value: 'GITHUB_TOKEN=${GITHUB_TOKEN}' } })
     fireEvent.click(screen.getByText(en['mcpCard.save']))
     await vi.waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate).toHaveBeenCalledWith({
-      ns: 'mcp',
-      ops: [{
-        op: 'set',
-        path: ['servers', 'github'],
-        value: { transport: 'stdio', command: 'npx', args: ['-y', 'server-github'], env: { GITHUB_TOKEN: '${GITHUB_TOKEN}' } },
-      }],
-      expectedRevision: 3,
-    })
+    expect(mutate).toHaveBeenCalledWith('mcp', [{
+      op: 'set',
+      path: ['servers', 'github'],
+      value: { transport: 'stdio', command: 'npx', args: ['-y', 'server-github'], env: { GITHUB_TOKEN: '${GITHUB_TOKEN}' } },
+    }], 3)
   })
 
   it('refuses an invalid server name and a duplicate', () => {
@@ -221,10 +208,6 @@ describe('McpCard', () => {
     mountCard(new McpCardController(scope, api, MESSAGES))
     fireEvent.click(screen.getByText(en['mcpCard.disable']))
     await vi.waitFor(() => { expect(mutate).toHaveBeenCalledTimes(1) })
-    expect(mutate).toHaveBeenCalledWith({
-      ns: 'mcp',
-      ops: [{ op: 'set', path: ['disabled'], value: ['gh'] }],
-      expectedRevision: 3,
-    })
+    expect(mutate).toHaveBeenCalledWith('mcp', [{ op: 'set', path: ['disabled'], value: ['gh'] }], 3)
   })
 })

@@ -7,7 +7,7 @@
  * {@link AquaLayer} is a pure applier this runtime drives.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
 import {
   AQUA_DEFAULTS, WALLPAPER_UPLOAD_PATH, isVideoRef,
   type AquaSection, type WallpaperRef,

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { CallId } from '@deepseek-ai/dsh-llm'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { Session, SessionId } from '@deepseek-ai/dsh-session'
 import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -78,7 +78,7 @@ function agent(ctx: Context, cwd: string): Agent {
 function call(ctx: Context, owner: Agent, args: unknown) {
   return ctx.tools.execute({
     signal: new AbortController().signal,
-    callId: CallId(`multi-edit-${++callNumber}`),
+    callId: ToolCallId(`multi-edit-${++callNumber}`),
     name: 'multi_edit',
     arguments: args,
     agent: owner,
@@ -146,6 +146,7 @@ describe('multi_edit execute', () => {
     await failureMessage(ctx, owner, { edits: crossFileEdits })
     expect(fs.writes).toHaveLength(2)
     const [batchWrite, restoreWrite] = fs.writes
+    if (batchWrite === undefined || restoreWrite === undefined) throw new Error('expected two writes')
     expect(restoreWrite.content).toBe('alpha one\n')
     expect(restoreWrite.expected).toEqual({ kind: 'replaceIfVersion', version: batchWrite.producedVersion })
     // The batch write rides the call's signal; the restore is bounded cleanup and rides none.

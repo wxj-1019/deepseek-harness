@@ -1,11 +1,8 @@
 /**
  * Shared spec fixtures: a minimal session list snapshot factory.
  */
-import type {
-  SessionId,
-  SessionListState,
-  SessionSummary,
-} from '@deepseek-ai/dsh-client-runtime/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { SessionListState, SessionSummary } from '@deepseek-ai/dsh-api-session-controller/client'
 
 /** One summary with every required field and caller-chosen running/title. */
 export function summary(id: string, running: boolean, displayTitle = id): SessionSummary {

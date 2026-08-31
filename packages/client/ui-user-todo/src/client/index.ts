@@ -5,11 +5,17 @@
  * `user-todo/changed` events and reconnects converge an already-loaded list.
  * Export discipline: packages/client/AGENTS.md.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+// Type-only: pulls the ctx.slots declaration merge (the slot registry service).
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
+// Type-only: pulls the session standard kit merge (useSessions/useWorkspaces).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 // Type-only: pulls the generated Remote API and ctx.remote merge through the Client assembly boundary.
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 // Type-only: pulls ui-layout's SlotMap merge (the shell.overlay seat).
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import { UserTodoController } from './controller.ts'
