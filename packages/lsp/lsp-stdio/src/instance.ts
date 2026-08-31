@@ -25,6 +25,7 @@ import {
   normalizeDocumentSymbols,
   normalizeHover,
   normalizeLocations,
+  normalizeCalls,
   normalizeFormattingEdits,
   normalizePublishDiagnostics,
   normalizeWorkspaceEdit,
@@ -260,6 +261,18 @@ export class LspInstance {
 
   private async sendRequest(request: LspProviderQuery, uri: string, signal?: AbortSignal): Promise<unknown> {
     const operation = request.operation
+    if (operation === 'incomingCalls' || operation === 'outgoingCalls') {
+      // Call hierarchy chains two requests: prepare the symbol at the cursor,
+      // then ask for the direction. Each leg races abort under its own id.
+      if (request.position === undefined) throw new Error('call hierarchy requires a cursor position')
+      const positionParams = { textDocument: { uri }, position: request.position }
+      const prepareId = this.connection.peekNextId()
+      const prepared = await this.raceAbort(this.connection.request('textDocument/prepareCallHierarchy', positionParams), prepareId, signal)
+      const items = Array.isArray(prepared) ? prepared : []
+      if (items.length === 0) return []
+      const callId = this.connection.peekNextId()
+      return this.raceAbort(this.connection.request(requestMethod(operation), { item: items[0] }), callId, signal)
+    }
     // Per-operation params: cursor operations take a position; outline and
     // diagnostics read the whole document; rename carries the new identifier;
     // a workspace symbol search is text-free.
@@ -335,6 +348,9 @@ export class LspInstance {
     }
     if (operation === 'formatting') {
       return { kind: 'workspaceEdit', edits: normalizeFormattingEdits(payload, uri) }
+    }
+    if (operation === 'incomingCalls' || operation === 'outgoingCalls') {
+      return { kind: 'calls', calls: normalizeCalls(payload, operation === 'incomingCalls' ? 'from' : 'to') }
     }
     // The filesystem provider owns URI syntax for the execution platform, which may differ from the
     // harness host. Preserve that coordinate through rendering instead of reparsing `spec.cwd` there.

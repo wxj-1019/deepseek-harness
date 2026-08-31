@@ -43,6 +43,8 @@ export function requestMethod(operation: LspOperation): string {
     case 'diagnostics': return 'textDocument/diagnostic'
     case 'rename': return 'textDocument/rename'
     case 'formatting': return 'textDocument/formatting'
+    case 'incomingCalls': return 'callHierarchy/incomingCalls'
+    case 'outgoingCalls': return 'callHierarchy/outgoingCalls'
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'requestMethod')
   }
@@ -60,6 +62,8 @@ function capabilityValue(capabilities: WireServerCapabilities, operation: LspOpe
     case 'diagnostics': return capabilities.diagnosticProvider
     case 'rename': return capabilities.renameProvider
     case 'formatting': return capabilities.documentFormattingProvider
+    case 'incomingCalls': return capabilities.callHierarchyProvider
+    case 'outgoingCalls': return capabilities.callHierarchyProvider
     /* v8 ignore next -- exhaustive over the closed LspOperation union; unreachable. */
     default: return assertNever(operation, 'capabilityValue')
   }
@@ -457,4 +461,57 @@ export function normalizeFormattingEdits(payload: unknown, uri: string): readonl
 /** Create the stable structured error used for malformed server result payloads. */
 function malformedResponse(message: string): LspError {
   return new LspError(message, 'LSP_MALFORMED_RESPONSE')
+}
+
+/** Whether a record is a plausible `CallHierarchyItem`. */
+function isCallItem(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object') return false
+  const item = value as Record<string, unknown>
+  return typeof item.name === 'string' && typeof item.kind === 'number' && typeof item.uri === 'string' && isRange(item.range)
+}
+
+/** Fold one `CallHierarchyItem` into the row's identity fields. */
+function toCallIdentity(item: Record<string, unknown>): {
+  name: string
+  kind: number
+  uri: string
+  range: LspRange
+  container?: string
+} {
+  const selection = item.selectionRange
+  return {
+    name: item.name,
+    kind: item.kind,
+    uri: item.uri,
+    range: isRange(selection) ? toRange(selection) : toRange(item.range as WireRange),
+    ...(typeof item.containerName === 'string' && item.containerName !== '' ? { container: item.containerName } : {}),
+  }
+}
+
+/**
+ * Normalize an incoming/outgoing calls result. Each row pairs the far-end
+ * symbol (`from` for incoming, `to` for outgoing) with its call-site ranges.
+ * @param payload - the raw calls array, or `null` for no calls.
+ * @param farField - `from` (incoming) or `to` (outgoing).
+ * @returns one row per call.
+ * @throws Error for a non-array payload or a malformed row.
+ */
+export function normalizeCalls(payload: unknown, farField: 'from' | 'to'): readonly LspCallRow[] {
+  if (payload === null) return []
+  if (!Array.isArray(payload)) throw malformedResponse('LSP call hierarchy result was not an array')
+  return payload.map((entry) => {
+    if (entry === null || typeof entry !== 'object') throw malformedResponse('LSP call hierarchy contained a malformed row')
+    const row = entry as Record<string, unknown>
+    const far = row[farField]
+    if (!isCallItem(far)) throw malformedResponse('LSP call hierarchy row carried no far-end symbol')
+    const spans = row[farField === 'from' ? 'fromRanges' : 'fromSpans']
+    if (!Array.isArray(spans)) throw malformedResponse('LSP call hierarchy row carried no call-site ranges')
+    return {
+      ...toCallIdentity(far),
+      callSites: spans.map((span) => {
+        if (!isRange(span)) throw malformedResponse('LSP call hierarchy contained a malformed call-site range')
+        return toRange(span)
+      }),
+    }
+  })
 }

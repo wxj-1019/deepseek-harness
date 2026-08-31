@@ -15,11 +15,13 @@ import type { LspProviderId } from './brand.ts'
  * (`goToDefinition`, `findReferences`, `goToImplementation`, `hover`) require a position;
  * `documentSymbol` and `diagnostics` read a whole file; `workspaceSymbol` searches by query text;
  * `rename` returns a normalized workspace-edit plan the model applies with its file-edit tools;
- * `formatting` returns the same plan shape for one document.
+ * `formatting` returns the same plan shape for one document; the call-hierarchy operations chain
+ * a prepare request with their direction request and normalize to one shared call-row shape.
  */
 export type LspOperation =
   | 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
   | 'documentSymbol' | 'workspaceSymbol' | 'diagnostics' | 'rename' | 'formatting'
+  | 'incomingCalls' | 'outgoingCalls'
 
 /** A zero-based UTF-16 cursor coordinate, matching the LSP wire convention. */
 export interface LspPosition {
@@ -107,6 +109,23 @@ export type LspQueryResult =
   | { readonly kind: 'symbols'; readonly symbols: readonly LspSymbolInfo[] }
   | { readonly kind: 'diagnostics'; readonly diagnostics: readonly LspDiagnostic[] }
   | { readonly kind: 'workspaceEdit'; readonly edits: readonly LspFileEdits[] }
+  | { readonly kind: 'calls'; readonly calls: readonly LspCallRow[] }
+
+/** One call-hierarchy row: the caller (incoming) or callee (outgoing) plus its call-site spans. */
+export interface LspCallRow {
+  /** Symbol display name. */
+  readonly name: string
+  /** LSP `SymbolKind` number. */
+  readonly kind: number
+  /** Document URI the symbol lives in. */
+  readonly uri: string
+  /** The symbol's full range. */
+  readonly range: LspRange
+  /** Immediate container name, when known. */
+  readonly container?: string
+  /** Zero-based ranges of the call sites (incoming: within the caller; outgoing: within the callee). */
+  readonly callSites: readonly LspRange[]
+}
 
 /** One text edit within a renamed document. */
 export interface LspTextEdit {

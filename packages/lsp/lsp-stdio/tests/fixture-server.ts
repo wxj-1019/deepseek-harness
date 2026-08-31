@@ -60,6 +60,9 @@ function resultFor(method: string): unknown {
     case 'textDocument/references': return envJson('LSP_FAKE_REFS', null)
     case 'textDocument/implementation': return envJson('LSP_FAKE_IMPL', null)
     case 'textDocument/formatting': return envJson('LSP_FAKE_FORMATTING', null)
+    case 'textDocument/prepareCallHierarchy': return envJson('LSP_FAKE_PREPARE', null)
+    case 'callHierarchy/incomingCalls': return envJson('LSP_FAKE_INCOMING', null)
+    case 'callHierarchy/outgoingCalls': return envJson('LSP_FAKE_OUTGOING', null)
     case 'textDocument/hover': {
       // LSP_FAKE_ECHO_ENV names a variable whose VALUE becomes the hover
       // contents — a test can assert exactly what env reached this process.
@@ -174,6 +177,10 @@ function handle(message: { id?: number; method?: string; params?: unknown; resul
     }
     if (replyDelayMs > 0) setTimeout(reply, replyDelayMs)
     else reply()
+    return
+  }
+  if (method?.startsWith('callHierarchy/')) {
+    send({ id, result: resultFor(method) })
     return
   }
   // Unknown request with an id: answer null so the client never stalls.

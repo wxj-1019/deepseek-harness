@@ -7,6 +7,7 @@ import {
   normalizeDiagnostics,
   normalizeDocumentSymbols,
   normalizeFormattingEdits,
+  normalizeCalls,
   normalizePublishDiagnostics,
   normalizeWorkspaceEdit,
   normalizeWorkspaceSymbols,
@@ -303,5 +304,20 @@ describe('normalizePublishDiagnostics', () => {
     expect(() => normalizePublishDiagnostics(null)).toThrowError(/were not an object/)
     expect(() => normalizePublishDiagnostics({})).toThrowError(/no document URI/)
     expect(() => normalizePublishDiagnostics({ uri: 'file:///ws/a.ts', diagnostics: [{ message: 'no range' }] })).toThrowError(/malformed entry/)
+  })
+})
+
+describe('normalizeCalls', () => {
+  const item = { name: 'handler', kind: 12, uri: 'file:///ws/a.ts', range: { 'start':{ 'line':1,'character':2 },'end':{ 'line':1,'character':5 } }, selectionRange: { 'start':{ 'line':1,'character':2 },'end':{ 'line':1,'character':5 } } }
+  it('pairs each far-end symbol with its call-site spans', () => {
+    expect(normalizeCalls([{ from: item, fromRanges: [{ 'start':{ 'line':1,'character':2 },'end':{ 'line':1,'character':5 } }] }], 'from')).toEqual([
+      { name: 'handler', kind: 12, uri: 'file:///ws/a.ts', range: RANGE, callSites: [RANGE] },
+    ])
+    expect(normalizeCalls(null, 'to')).toEqual([])
+  })
+  it('rejects non-array payloads, missing far symbols, and missing spans', () => {
+    expect(() => normalizeCalls({}, 'from')).toThrowError(/was not an array/)
+    expect(() => normalizeCalls([{ to: item }], 'from')).toThrowError(/no far-end symbol/)
+    expect(() => normalizeCalls([{ from: item }], 'from')).toThrowError(/no call-site ranges/)
   })
 })

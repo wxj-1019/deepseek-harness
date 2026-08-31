@@ -8,7 +8,7 @@
 
 import type { GenericCallView } from '@deepseek-ai/dsh-tools'
 import type { LspDiagnostic, LspHover, LspLocation, LspOperation, LspPosition } from '@deepseek-ai/dsh-lsp'
-import type { LspFileEdits, LspSymbolInfo } from '@deepseek-ai/dsh-lsp'
+import type { LspCallRow, LspFileEdits, LspSymbolInfo } from '@deepseek-ai/dsh-lsp'
 import { posix, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url'
 export const LSP_OPERATIONS: readonly LspOperation[] = [
   'goToDefinition', 'findReferences', 'goToImplementation', 'hover',
   'documentSymbol', 'workspaceSymbol', 'diagnostics', 'rename', 'formatting',
+  'incomingCalls', 'outgoingCalls',
 ]
 
 /** Operations anchored to a cursor position. */
@@ -57,6 +58,7 @@ type CursorOperation = Extract<LspOperation, 'goToDefinition' | 'findReferences'
 export type LspToolInput =
   | { readonly operation: CursorOperation; readonly filePath: string; readonly position: LspPosition }
   | { readonly operation: 'documentSymbol' | 'diagnostics' | 'formatting'; readonly filePath: string }
+  | { readonly operation: 'incomingCalls' | 'outgoingCalls'; readonly filePath: string; readonly position: LspPosition }
   | { readonly operation: 'workspaceSymbol'; readonly query: string }
   | { readonly operation: 'rename'; readonly filePath: string; readonly position: LspPosition; readonly newName: string; readonly apply: boolean }
 
@@ -342,4 +344,34 @@ export function formatWorkspaceEdit(plan: readonly LspFileEdits[], workspaceUri:
     }
   }
   return boundResult(lines.join('\n'), maxResultChars, 'rename')
+}
+
+/**
+ * Render call-hierarchy rows: one line per call with its first call site and
+ * the total site count, bounded like every other renderer.
+ * @param calls - the normalized call rows.
+ * @param workspaceUri - the provider's canonical workspace URI for relativizing.
+ * @param maxLocations - largest number of rows before an omission marker.
+ * @param maxResultChars - largest rendered result in characters.
+ * @returns the rendered call list.
+ */
+export function formatCalls(
+  calls: readonly LspCallRow[],
+  workspaceUri: string,
+  maxLocations: number,
+  maxResultChars: number,
+): string {
+  if (calls.length === 0) return boundResult('No calls found.', maxResultChars, 'calls')
+  const shown = calls.slice(0, maxLocations)
+  const omitted = calls.length - shown.length
+  const lines = shown.map((call) => {
+    const first = call.callSites[0]
+    const where = first === undefined
+      ? renderUri(call.uri, workspaceUri)
+      : `${renderUri(call.uri, workspaceUri)}:${first.start.line + 1}:${first.start.character + 1}`
+    const container = call.container !== undefined ? `${call.container}.` : ''
+    return `${where} ${container}${call.name} — ${call.callSites.length} call site(s)`
+  })
+  if (omitted > 0) lines.push(`(+${omitted} more calls omitted)`)
+  return boundResult(lines.join('\n'), maxResultChars, 'calls')
 }

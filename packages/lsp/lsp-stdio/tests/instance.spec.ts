@@ -410,3 +410,17 @@ describe('LspInstance push diagnostics fallback', () => {
     })
   })
 })
+
+describe('LspInstance call hierarchy', () => {
+  it('chains prepare into incoming calls and normalizes the rows', async () => {
+    const instance = makeInstance({
+      LSP_FAKE_CAPS: JSON.stringify({ callHierarchyProvider: true }),
+      LSP_FAKE_PREPARE: JSON.stringify([{ name: 'handler', kind: 12, uri: 'file:///ws/a.ts', range: { start: { line: 0, character: 0 }, end: { line: 0, character: 7 } }, selectionRange: { start: { line: 0, character: 6 }, end: { line: 0, character: 13 } } }]),
+      LSP_FAKE_INCOMING: JSON.stringify([{ from: { name: 'caller', kind: 12, uri: 'file:///ws/b.ts', range: { start: { line: 3, character: 0 }, end: { line: 3, character: 9 } }, selectionRange: { start: { line: 3, character: 0 }, end: { line: 3, character: 6 } } }, fromRanges: [{ start: { line: 4, character: 2 }, end: { line: 4, character: 9 } }] }]),
+    })
+    await expect(run(instance, 'incomingCalls')).resolves.toEqual({
+      kind: 'calls',
+      calls: [{ name: 'caller', kind: 12, uri: 'file:///ws/b.ts', range: { start: { line: 3, character: 0 }, end: { line: 3, character: 6 } }, callSites: [{ start: { line: 4, character: 2 }, end: { line: 4, character: 9 } }] }],
+    })
+  })
+})

@@ -22,6 +22,7 @@ import {
   DEFAULT_MAX_LOCATIONS,
   DEFAULT_MAX_RESULT_CHARS,
   formatDiagnostics,
+  formatCalls,
   formatHover,
   formatLocations,
   formatSymbols,
@@ -127,7 +128,7 @@ export function apply(ctx: Context, config: Config): void {
         enum: [...LSP_OPERATIONS],
         description: 'goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); '
           + 'documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); '
-          + 'workspaceSymbol (query required); rename (file_path, line, character, new_name); formatting (file_path only).',
+          + 'workspaceSymbol (query required); rename (file_path, line, character, new_name); formatting (file_path only); incomingCalls/outgoingCalls (file_path, line, character — the host prepares the symbol at the cursor and returns its callers or callees).',
       },
       file_path: { type: 'string', description: 'The source file to query, relative to the workspace or absolute.' },
       line: { type: 'number', description: 'One-based line of the cursor (cursor operations and rename).' },
@@ -227,6 +228,40 @@ export function apply(ctx: Context, config: Config): void {
             type: 'object',
             additionalProperties: false,
             properties: {
+              kind: { type: 'string', required: true, const: 'calls' },
+              calls: {
+                type: 'array',
+                required: true,
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    name: { type: 'string', required: true },
+                    kind: { type: 'number', required: true },
+                    uri: { type: 'string', required: true },
+                    range: { ...LSP_RANGE_OUTPUT_SCHEMA, required: true },
+                    container: { type: 'string' },
+                    callSites: {
+                      type: 'array',
+                      required: true,
+                      items: {
+                        type: 'object',
+                        additionalProperties: false,
+                        properties: {
+                          start: { ...LSP_POSITION_OUTPUT_SCHEMA, required: true },
+                          end: { ...LSP_POSITION_OUTPUT_SCHEMA, required: true },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
               kind: { type: 'string', required: true, const: 'rename-applied' },
               applied: { type: 'number', required: true },
               files: { type: 'array', required: true, items: { type: 'string' } },
@@ -274,6 +309,8 @@ export function apply(ctx: Context, config: Config): void {
             return [{ type: 'text', text: formatSymbols(value.symbols, '', resolved.maxLocations, resolved.maxResultChars) }]
           case 'diagnostics':
             return [{ type: 'text', text: formatDiagnostics(value.diagnostics, '', resolved.maxLocations, resolved.maxResultChars) }]
+          case 'calls':
+            return [{ type: 'text', text: formatCalls(value.calls, resolved.maxLocations, resolved.maxResultChars) }]
           case 'rename-applied':
             return [{ type: 'text', text: `Applied rename across ${value.files.length} file(s): ${value.files.join(', ')}` }]
           case 'workspaceEdit':
@@ -357,6 +394,24 @@ export function apply(ctx: Context, config: Config): void {
               message: diagnostic.message,
               ...(diagnostic.severity !== undefined ? { severity: diagnostic.severity } : {}),
               ...(diagnostic.source !== undefined ? { source: diagnostic.source } : {}),
+            })),
+          }
+        case 'calls':
+          return {
+            kind: 'calls' as const,
+            calls: result.calls.map(call => ({
+              name: call.name,
+              kind: call.kind,
+              uri: call.uri,
+              range: {
+                start: { line: call.range.start.line, character: call.range.start.character },
+                end: { line: call.range.end.line, character: call.range.end.character },
+              },
+              ...(call.container !== undefined ? { container: call.container } : {}),
+              callSites: call.callSites.map(span => ({
+                start: { line: span.start.line, character: span.start.character },
+                end: { line: span.end.line, character: span.end.character },
+              })),
             })),
           }
         case 'workspaceEdit':
