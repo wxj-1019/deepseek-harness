@@ -70,6 +70,10 @@
     # session event feed (client row `ui-usage` renders the dashboard).
     - id: usage-ledger
       name: '@deepseek-ai/dsh-usage-ledger'
+    # Git commit-rail history: parent-aware log rows for the web UI over the
+    # shell seam (client row 'ui-git-graph' renders the conversation view).
+    - id: git-graph
+      name: '@deepseek-ai/dsh-git-graph'
 
     # In-app notification center: durable entries from completions,
     # approvals, jobs, and schedule dispatches (client row
@@ -257,6 +261,10 @@
     # domain (host row `usage-ledger`).
     - id: ui-usage
       name: '@deepseek-ai/dsh-client-ui-usage'
+    # Git commit-rail conversation view: the session workspace's history with
+    # branch topology (host row 'git-graph').
+    - id: ui-git-graph
+      name: '@deepseek-ai/dsh-client-ui-git-graph'
 
     # Notification center: the bell at the sidebar foot plus the overlay
     # panel (shell.overlay's first occupant) over the notifications domain.

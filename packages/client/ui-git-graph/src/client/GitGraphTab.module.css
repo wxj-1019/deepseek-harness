@@ -1,0 +1,144 @@
+/* The Git commit-rail conversation view. Theme tokens only: colors and type
+   roles come from the alias/font tokens so both color schemes stay correct. */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.branchSelect {
+  flex: 1;
+  min-width: 0;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  padding: 4px 8px;
+
+}
+
+.refresh {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.refresh:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.placeholder,
+.error {
+  padding: 12px;
+  color: var(--dsw-alias-label-tertiary);
+
+}
+
+.error {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+/* One history row: rail column (spanning both lines) plus the text body. */
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 6px;
+  row-gap: 2px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: default;
+}
+
+.row:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.rail {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  height: 100%;
+  min-width: 0;
+  overflow: visible;
+}
+
+.body {
+  grid-column: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.line1 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hash {
+  flex: none;
+  font: var(--dsw-font-markdown-code-block-small);
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.subject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsw-alias-label-primary);
+
+}
+
+.line2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.ref {
+  flex: none;
+  font: var(--dsw-font-markdown-code-block-small);
+  color: var(--dsw-alias-brand-primary);
+  background: var(--dsw-alias-bg-layer-1);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.meta {
+  color: var(--dsw-alias-label-tertiary);
+
+}
+
+.more {
+  margin: 6px 12px;
+  padding: 4px 8px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+
+  cursor: pointer;
+}
+
+.more:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
