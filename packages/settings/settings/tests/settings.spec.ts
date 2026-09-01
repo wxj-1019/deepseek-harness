@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { SettingsProvider, SettingsConflictError, type SettingsNamespace, type SettingsScope, type SettingsUpdateSource } from '../src/index.ts'
+import { SettingsProvider, SettingsConflictError, settingsNamespace, type SettingsNamespace, type SettingsScope, type SettingsUpdateSource } from '../src/index.ts'
 import { deepEqualJson } from '@deepseek-ai/dsh-util-values'
 import { MemorySettings } from './memory.ts'
 
@@ -80,6 +80,16 @@ describe('settings namespace validation', () => {
   it.each(['', 'UI', '9lives', 'a_b', '-lead'])('rejects %j at the service', async (value) => {
     const { ctx } = await boot()
     expect(() => ctx.settings.register(value, ThemeSchema)).toThrow(TypeError)
+  })
+})
+
+describe('settingsNamespace compat helper', () => {
+  it('validates and brands a namespace string', () => {
+    expect(settingsNamespace('ui-theme')).toBe('ui-theme')
+  })
+
+  it.each(['', 'UI', '9lives', 'a_b', '-lead'])('rejects %j', (value) => {
+    expect(() => settingsNamespace(value)).toThrow(TypeError)
   })
 })
 

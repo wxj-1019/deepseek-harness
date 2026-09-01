@@ -42,6 +42,18 @@ function parseSettingsNamespace(value: string): SettingsNamespace {
   return value as SettingsNamespace
 }
 
+/**
+ * Validates a namespace string and returns it as the branded
+ * `SettingsNamespace`. Kept exported for third-party plugins that predate the
+ * plain-string namespace API; new code passes namespace strings straight to
+ * the seam.
+ * @param value the namespace string to validate
+ * @returns the branded namespace
+ */
+export function settingsNamespace(value: string): SettingsNamespace {
+  return parseSettingsNamespace(value)
+}
+
 /** When a namespace's changes take effect for its owner. */
 export type SettingsApplies = 'live' | 'restart'
 
