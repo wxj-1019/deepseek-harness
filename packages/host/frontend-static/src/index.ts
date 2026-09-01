@@ -84,11 +84,16 @@ export async function serveStatic(
   }
   let body: string | Buffer
   let type: string
+  let cacheControl: string | undefined
   try {
     if (target === distRoot || target === distIndex) {
       if (!authorizeIndex()) return
       body = await renderIndex()
       type = HTML_MIME
+      // The rendered index embeds the current client-bundle revs; a cached
+      // index keeps serving a stale roster after a rebuild, so it must be
+      // re-fetched on every navigation. Hashed static assets stay cacheable.
+      cacheControl = 'no-store'
     } else {
       body = await readFile(target)
       type = MIME[extname(target)] ?? 'application/octet-stream'
@@ -101,7 +106,7 @@ export async function serveStatic(
     res.end()
     return
   }
-  res.writeHead(200, { 'content-type': type })
+  res.writeHead(200, { 'content-type': type, ...(cacheControl === undefined ? {} : { 'cache-control': cacheControl }) })
   res.end(body)
 }
 
