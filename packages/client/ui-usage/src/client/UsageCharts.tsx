@@ -34,6 +34,13 @@ export function seriesColor(index: number): string {
  * @param props - day cells ascending, and the window's maximum total.
  * @returns the heatmap grid with month labels.
  */
+// CSS-module classes are hashed per name, so the level class must be picked
+// from the map — concatenating `css.heatmapLevel` with the digit produces the
+// literal `undefined<digit>` and every cell renders transparent.
+const LEVEL_CLASSES = [
+  css.heatmapLevel0, css.heatmapLevel1, css.heatmapLevel2, css.heatmapLevel3, css.heatmapLevel4,
+] as const
+
 export function UsageHeatmap(props: { readonly cells: readonly HeatmapCell[]; readonly max: number }): ReactNode {
   const { cells, max } = props
   // Level 0..4: zero is empty; the rest split the range up to the max.
@@ -66,7 +73,7 @@ export function UsageHeatmap(props: { readonly cells: readonly HeatmapCell[]; re
                 : (
                   <span
                     key={dayIndex}
-                    className={`${css.heatmapCell} ${css.heatmapLevel}${level(cell.total)}`}
+                    className={`${css.heatmapCell} ${LEVEL_CLASSES[level(cell.total)] ?? ''}`}
                     title={`${cell.day} · ${fmtTokens(cell.total)}`}
                   />
                 ))}
