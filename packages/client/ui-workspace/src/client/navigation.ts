@@ -170,9 +170,15 @@ class UiWorkspaceService extends Service implements UiWorkspace {
       const workspace = this.workspaces.list.getSnapshot()
       const sessions = this.sessions.list.getSnapshot()
       if (workspace.phase !== 'ready' || sessions.phase !== 'ready') return
+      // A persisted BLANK selection is a recycled new-session shell, not a
+      // conversation to resume: fall through to the recent-workspace path so
+      // boot lands on the last real session instead of an empty hero.
       if (sessions.current !== undefined) {
-        initial = 'done'
-        return
+        const summary = sessions.byId[sessions.current]
+        if (summary === undefined || !summary.blank) {
+          initial = 'done'
+          return
+        }
       }
       const target = recentWorkspace(workspace.items, sessions.byId)
       if (target === undefined) {
@@ -183,8 +189,12 @@ class UiWorkspaceService extends Service implements UiWorkspace {
       void this.connectWorkspace(target).then(
         (sessionId) => {
           if (disposed) return
-          if (this.sessions.list.getSnapshot().current === undefined) {
-            this.sessions.open(sessionId)
+          const list = this.sessions.list.getSnapshot()
+          const current = list.current
+          const currentSummary = current === undefined ? undefined : list.byId[current]
+          if (currentSummary === undefined || currentSummary.blank) {
+            const resume = recentSessionOf(target, workspace, list)
+            this.sessions.open(resume ?? sessionId)
           }
           initial = 'done'
         },
@@ -233,6 +243,35 @@ function recentWorkspace(
     if (selected === undefined || latest > selectedTime) {
       selected = workspace.workspaceId
       selectedTime = latest
+    }
+  }
+  return selected
+}
+
+/**
+ * The workspace's most recently updated non-blank session, or undefined when
+ * it has none. Boot prefers this over a blank shell so the last real
+ * conversation (with its header chrome) comes back instead of an empty hero.
+ * @param workspaceId - target workspace.
+ * @param workspaces - workspace list snapshot.
+ * @param sessions - session list snapshot.
+ * @returns the session id to resume, or undefined.
+ */
+function recentSessionOf(
+  workspaceId: WorkspaceId,
+  workspaces: { readonly items: readonly WorkspaceView[] },
+  sessions: SessionListState,
+): SessionId | undefined {
+  const workspace = workspaces.items.find(item => item.workspaceId === workspaceId)
+  if (workspace === undefined) return undefined
+  let selected: SessionId | undefined
+  let selectedTime = Number.NEGATIVE_INFINITY
+  for (const sessionId of workspace.sessionIds) {
+    const session = sessions.byId[sessionId]
+    if (session === undefined || session.blank) continue
+    if (selected === undefined || session.updatedAt > selectedTime) {
+      selected = sessionId
+      selectedTime = session.updatedAt
     }
   }
   return selected
