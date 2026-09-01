@@ -20,7 +20,7 @@ import { NS, en, zh } from './locales.ts'
 const LOCALE_NS = NS
 
 /** Required services (cordis fiber inject). */
-export const inject = ['slots', 'locale', 'connection', 'settingsScope']
+export const inject = ['slots', 'locale', 'connection', 'settingsScope', 'remote', 'remote.settings']
 
 export { MCP_SETTINGS_NS, McpCardController } from './mcp-card-controller.ts'
 export { McpCard } from './McpCard.tsx'
