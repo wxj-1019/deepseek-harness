@@ -5,7 +5,7 @@
  * read-only — no checkout, no mutation. Lazy paging appends older commits
  * and recomputes the rail over the whole loaded window.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
@@ -75,14 +75,19 @@ export function GitGraphTab(props: GitGraphTabProps) {
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  /** Monotonic load sequence: only the newest load may commit state (a stale
+   *  session switch must not overwrite the current conversation's data). */
+  const loadSeqRef = useRef(0)
 
   /** (Re)load the branch list and the first history page for `target`. */
   const load = useCallback(async (target: string | null, skip: number): Promise<void> => {
+    const seq = ++loadSeqRef.current
     setLoading(true)
     setError(null)
     try {
       if (target === null) {
         const names = await gitGraphBranches(sessionId)
+        if (seq !== loadSeqRef.current) return
         setBranches(names)
         const current = names[0] ?? null
         setBranch(current)
@@ -94,12 +99,14 @@ export function GitGraphTab(props: GitGraphTabProps) {
         return
       }
       const page = await gitGraphLog(sessionId, LOG_BATCH, skip)
+      if (seq !== loadSeqRef.current) return
       setEntries(previous => skip === 0 ? page.entries : [...previous, ...page.entries])
       setHasMore(page.hasMore)
     } catch (reason) {
+      if (seq !== loadSeqRef.current) return
       setError(reason instanceof GitGraphApiError ? reason.message : reason instanceof Error ? reason.message : String(reason))
     } finally {
-      setLoading(false)
+      if (seq === loadSeqRef.current) setLoading(false)
     }
   }, [sessionId])
 
