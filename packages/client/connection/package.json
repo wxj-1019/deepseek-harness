@@ -47,7 +47,9 @@
     "zod": "^4.4.3"
   },
   "files": [
-    "lib/*.js",
+    "lib/index.js",
+    "lib/invariant.js",
+    "lib/client.js",
     "lib/types/**/*.d.ts"
   ],
   "peerDependencies": {

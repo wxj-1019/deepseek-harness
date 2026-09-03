@@ -3,28 +3,62 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib/types",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "jsx": "react-jsx",
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2024",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "noUncheckedIndexedAccess": false
   },
   "include": [
     "src"
   ],
   "references": [
-    { "path": "../../api/session-controller/tsconfig.client.json" },
-    { "path": "../locale" },
-    { "path": "../store" },
-    { "path": "../ui-slots" },
-    { "path": "../ui-settings" },
-    { "path": "../ui-settings-plugins" },
-    { "path": "../ui-theme" },
-    { "path": "../ui-primitives" },
-    { "path": "../connection/tsconfig.host.json" },
-    { "path": "../../attachment/attachment" },
-    { "path": "../../host/webserver" },
-    { "path": "../../settings/settings" },
-    { "path": "../../runtime-diagnostics/invariants" },
-    { "path": "../../../vendor/cordis" }
+    {
+      "path": "../../api/session-controller/tsconfig.host.json"
+    },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../store"
+    },
+    {
+      "path": "../ui-slots"
+    },
+    {
+      "path": "../ui-settings"
+    },
+    {
+      "path": "../ui-settings-plugins"
+    },
+    {
+      "path": "../ui-theme"
+    },
+    {
+      "path": "../ui-primitives"
+    },
+    {
+      "path": "../connection/tsconfig.host.json"
+    },
+    {
+      "path": "../../attachment/attachment"
+    },
+    {
+      "path": "../../host/webserver"
+    },
+    {
+      "path": "../../settings/settings"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    }
   ]
 }

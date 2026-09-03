@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-tool-multi-edit",
   "description": "Model-facing multi_edit tool: validate-then-apply batches of literal string edits across files over the filesystem seam",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.2-alpha.3",
   "publishConfig": {
     "access": "public"
   },
@@ -28,7 +28,6 @@
   "files": [
     "lib/index.js",
     "lib/invariant.js",
-    "lib/types/**/*.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
@@ -38,6 +37,7 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "workspace:^",
     "@deepseek-ai/dsh-fs": "workspace:^",
+    "@deepseek-ai/dsh-invariants": "workspace:^",
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@deepseek-ai/dsh-tools": "workspace:^"
   },
@@ -45,6 +45,7 @@
     "@deepseek-ai/cordis": "workspace:^",
     "@deepseek-ai/dsh-fs": "workspace:^",
     "@deepseek-ai/dsh-fs-local": "workspace:^",
+    "@deepseek-ai/dsh-invariants": "workspace:^",
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@deepseek-ai/dsh-tools": "workspace:^"
   }

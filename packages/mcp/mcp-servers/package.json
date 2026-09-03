@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-mcp-servers",
   "description": "MCP server composition manager: mounts one dsh-mcp-client group row per settings-declared server",
-  "version": "0.1.0-rc.8",
+  "version": "0.1.2-alpha.3",
   "publishConfig": {
     "access": "public"
   },

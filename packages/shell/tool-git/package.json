@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-tool-git",
   "description": "Model-facing structured git tool: porcelain-parsed status/diff/log plus guarded add/commit/branch and network-gated push/pull",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.2-alpha.3",
   "publishConfig": {
     "access": "public"
   },
@@ -12,7 +12,7 @@
   },
   "type": "module",
   "main": "lib/index.js",
-  "types": "./lib/types/index.d.ts",
+  "types": "lib/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib/types/index.d.ts",
@@ -28,7 +28,6 @@
   "files": [
     "lib/index.js",
     "lib/invariant.js",
-    "lib/types/**/*.js",
     "lib/types/**/*.d.ts"
   ],
   "license": "MIT",
@@ -37,12 +36,14 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "workspace:^",
+    "@deepseek-ai/dsh-invariants": "workspace:^",
     "@deepseek-ai/dsh-shell": "workspace:^",
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@deepseek-ai/dsh-tools": "workspace:^"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "workspace:^",
+    "@deepseek-ai/dsh-invariants": "workspace:^",
     "@deepseek-ai/dsh-shell": "workspace:^",
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@deepseek-ai/dsh-tools": "workspace:^"

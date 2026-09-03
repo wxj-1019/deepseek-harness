@@ -159,8 +159,8 @@ function ServerForm(props: {
         <span>{props.t('mcpCard.transport')}</span>
         <select value={draft.transport} aria-label={props.t('mcpCard.transport')} disabled={props.busy}
           onChange={(event) => { set({ transport: event.target.value as ServerDraft['transport'] }) }}>
-          <option value="stdio">stdio</option>
-          <option value="streamable-http">streamable-http</option>
+          <option value="stdio">{props.t('mcpCard.transportStdio')}</option>
+          <option value="streamable-http">{props.t('mcpCard.transportHttp')}</option>
         </select>
       </label>
       {draft.transport === 'stdio' ? (

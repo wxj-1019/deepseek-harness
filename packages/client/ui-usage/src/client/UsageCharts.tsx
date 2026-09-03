@@ -104,7 +104,7 @@ function monthLabelsOf(cells: readonly HeatmapCell[]): readonly { label: string;
     const month = cell.day.slice(0, 7)
     if (month !== lastMonth) {
       lastMonth = month
-      labels.push({ label: `${Number(cell.day.slice(5, 7))}月`, percent: (index / Math.max(1, cells.length)) * 100 })
+      labels.push({ label: String(Number(cell.day.slice(5, 7))), percent: (index / Math.max(1, cells.length)) * 100 })
     }
   })
   return labels.filter(label => label.percent < 100)
