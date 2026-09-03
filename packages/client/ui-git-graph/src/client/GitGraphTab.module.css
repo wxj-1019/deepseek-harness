@@ -31,23 +31,24 @@
   background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-primary);
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 6px;
-  padding: 4px 8px;
-
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-weight: 500;
 }
 
 .refresh {
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
+  font-size: 15px;
 }
 
 .refresh:hover {
@@ -65,15 +66,18 @@
   color: var(--dsw-alias-state-error-primary);
 }
 
-/* One history row: rail column (spanning both lines) plus the text body. */
+/* One history row: rail column (spanning both lines) plus the text body.
+   Vertical padding lives on .body, NOT here: the rail svg stretches over the
+   row's full height, so any row-level vertical padding would open a line gap
+   at every row boundary. Zero vertical padding = continuous rails. */
 .row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 6px;
-  row-gap: 2px;
-  padding: 5px 12px;
-  border-radius: 8px;
+  column-gap: 8px;
+  padding: 0 14px;
+  border-radius: 10px;
   cursor: default;
+  transition: background var(--ds-transition-duration-fast, 120ms) ease;
 }
 
 .row:hover {
@@ -93,7 +97,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  padding: 7px 0 6px;
 }
 
 .line1 {
@@ -107,6 +112,10 @@
   flex: none;
   font: var(--dsw-font-markdown-code-block-small);
   color: var(--dsw-alias-label-secondary);
+  background: var(--dsw-alias-bg-layer-1);
+  border-radius: 4px;
+  padding: 0 5px;
+  line-height: 18px;
 }
 
 .subject {
@@ -114,7 +123,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--dsw-alias-label-primary);
-
+  font-weight: 500;
 }
 
 .line2 {
@@ -132,8 +141,8 @@
   background: var(--dsw-alias-bg-layer-1);
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 999px;
-  padding: 0 7px;
-  line-height: 18px;
+  padding: 1px 9px;
+  line-height: 17px;
 }
 
 /* The branch HEAD points at: filled with the accent so the checked-out
