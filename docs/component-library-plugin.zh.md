@@ -1,0 +1,141 @@
+# 组件库插件设计
+
+[English](component-library-plugin.md) | 中文
+
+一个一等公民插件：学习仓库中的 UI 组件，沉淀为组件库，并让 AI 在生成 UI 代码时复用。插件是标准能力接缝——宿主扫描与存储、面向模型的工具、技能通道、客户端面板。每一层都落在既有接缝上，不改动 agent loop。
+
+## 1. 目标与范围
+
+本插件闭合的循环：从代码库发现组件或样式模式 → 持久化进可查询的库 → 模型在写 UI 时检索 → 代码库变化时持续学习。
+
+范围：先做组件级学习（React 组件 + props），样式 token 清单作为生成约束，生成前模型检索，文件变化时持续刷新。第一迭代不做：视觉截图 diff、运行时组件渲染沙箱、组件库本身的上游分发（npm 发布）。
+
+## 2. 架构总览
+
+四层，各走一条既有接缝：
+
+```
+Learn (Host)         Persist (Storage)          Consume (Model + UI)
+─────────────        ────────────────          ──────────────────────
+scanner.ts        →  storage-domain           →  component.query / component.record tools
+chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
+                     (JSON backend)               settings.plugin.item panel
+```
+
+- **学习**：宿主扫描器从 `packages/client/*/src/client` 提取组件记录，并用借自 `skill-filesystem` 的 chokidar 管线监听变化。
+- **沉淀**：名为 `component_library` 的 `storage-domain` 域保存组件记录；持久化写触发 `domain/changed` 事件让面板重取。
+- **消费**：两个模型工具（`component.query`、`component.record`）加一个 `SkillProvider` 摘要文档，以及一个供人工审查的 `settings.plugin.item` 卡片。
+
+## 3. 包划分
+
+两个包，按宿主/客户端配对惯例：
+
+| 包 | 职责 | 关键接缝 |
+| --- | --- | --- |
+| `packages/storage/component-library` | 宿主：扫描器、监听器、存储域、模型工具、技能 Provider | `storage-domain`、`tools`、`skills` |
+| `packages/client/ui-component-library` | 客户端：设置卡片（之后可升级为浏览视图） | `settings.plugin.item`、`storage-domain` 远端读取 |
+
+宿主包拥有域 schema 与学习管线。客户端包只负责呈现，经域的远端面读取。
+
+## 4. 数据模型
+
+### 组件记录（每个学到的组件一条）
+
+```json
+{
+  "id": "ui-usage/UsageSection",
+  "pkg": "@deepseek-ai/dsh-client-ui-usage",
+  "name": "UsageSection",
+  "path": "packages/client/ui-usage/src/client/UsageSection.tsx",
+  "props": [
+    { "name": "useSessions", "type": "SnapshotSelectorHook<SessionListState>", "required": true }
+  ],
+  "tokens": ["--dsw-alias-label-primary", "--dsw-alias-bg-layer-1"],
+  "jsdoc": "The Usage view body: per-session token accounting dashboard.",
+  "example": "…a short usage snippet extracted from the first host spec…",
+  "updatedAt": 1787767305030
+}
+```
+
+- `props` 从组件的 props 类型提取，不从调用点推断。
+- `tokens` 是该组件自身 CSS module 引用的 `--dsw-*` 变量集合。
+- `example` 可选：存在时取自最近的测试文件挂载调用，否则取 JSDoc 的 `@example` 块。
+
+### 样式 token 清单（生成约束语料）
+
+扫描器同时解析 `packages/client/ui-theme/src/styles/design-platform.css` 为 token 列表：`{ name, value, tier: 'static' | 'alias' | 'role' }`。产出为参考文档而非数据表。
+
+## 5. 学习管线
+
+### 5.1 静态扫描（冷启动）
+
+用受限 glob 遍历 `packages/client/*/src/client`；逐 `.tsx` 文件：
+
+1. 用 TypeScript 编译器 API（`ts.createSourceFile` + `ts.forEachChild`）解析 `export function Name` 与 `export const Name =`（首字母大写）声明。
+2. 对每个组件解析 props 类型引用（`NameProps`/`XxxInjected` 交集），收集成员名、required 标记与渲染类型串。
+3. 读同基名的 `*.module.css`，收集 `--dsw-*` 引用。
+4. 每个组件产出一条记录；解析失败的文件记日志跳过，绝不中断。
+
+扫描器是纯静态分析——不执行组件，CSS 导入与 JSX 都不求值。
+
+### 5.2 持续学习（监听）
+
+镜像 `skill-filesystem` 的 `SkillWatchManager`：对 `packages/client` 起一个 chokidar 监听，200ms 稳定性阈值、项目根 LRU 驱逐、变更后经 `invalidate()` 回调重提受影响文件。只有 `.tsx` 与 `*.module.css` 事件生效。
+
+一次写入落组件记录到存储域并发出 `domain/changed`，客户端面板据此重取。
+
+### 5.3 模型驱动的学习
+
+`component.record` 让模型在创建组件后回写记录（通常在会话任务中）。记录形状相同；`origin: 'model'` 标记供审查。面板的人工审查环节把幻觉条目挡在持久集外。
+
+## 6. 面向模型的工具
+
+### `component.query`
+
+检索匹配的组件记录。参数：`query`（自由文本：名称、包名或用途关键词）、`pkg`（可选过滤）、`limit`（默认 10）。输出 schema：`{ matches: [{ name, pkg, path, props, tokens, example }] }`。`render` 在转录卡片上呈现精简的排名表。
+
+### `component.record`
+
+写入模型贡献的记录。参数：`name`、`pkg`、`path`、`props`（`{name, type, required}` 数组）、`tokens`、`jsdoc`、`example`。写入经域 schema 校验并打上 `origin: 'model'`。
+
+两个工具都在宿主包插件里 `ctx.tools.register(defineTool(...))` 注册，随后自动进入所有可用模型的系统提示，无需额外上架。
+
+## 7. 技能通道
+
+注册名为 `component-library` 的 `SkillProvider`，物化单个技能 `component-library`，其 `SKILL.md` 正文由域生成：一段简介、token 分层约定、高频组件清单。Provider 的 `list()` 返回摘要条目；`get()` 按需生成正文。偏好长文档指引的模型经既有技能工具加载，不必反复调用 `component.query`。
+
+## 8. 客户端面板
+
+一个 keyed 的 `settings.plugin.item` 卡片（`key: 'component-library'`）渲染库摘要：组件数、最近更新行、搜索框。照 AquaPluginCard / McpCard 模式（以 `store`、`locale`、`inject` 注册；订阅域的 `changed` 事件做实时刷新）。后续迭代可升级为仿 Git 提交轨道视图的 `conversation.view` 标签。
+
+## 9. 实施计划
+
+1. **骨架**：两个包的 manifest、tsconfig、tsdown、invariant 伴生与双语 README。`pnpm run gen-tsconfig-paths` 自动补别名。
+2. **存储 + 静态扫描**：域、TypeScript-API 提取器、`packages/client` 冷启动播种。
+3. **模型工具**：`component.query` 与 `component.record`，带 wire schema 与转录渲染。
+4. **客户端面板**：keyed 设置卡片与实时刷新。
+5. **监听器 + 技能 Provider**：持续学习与技能通道。
+6. **打磨**：检索评分、从 spec 提取示例、面板的审查控件。
+
+每阶段随单测与 Agent Note 落地；工具稳定后,keyless 快照套件补一条 `component_library` 遍历录制。
+
+## 10. 测试策略
+
+- 扫描器：包内 `tests/` 下的 fixture 目录放构造的 `.tsx` + `.module.css` 对；断言每文件记录。
+- 存储：以 scratch `DSH_HOME` 开域；put/get/update 往返与 `domain/changed` 发出。
+- 工具：在 cordis 上下文里用脚本化存储后端跑宿主插件；调两个工具并断言 wire 形状。
+- 面板：jsdom 用桩远端 scope 渲染；断言卡片列条目且搜索过滤生效。
+
+## 11. 风险与缓解
+
+- **提取保真度**：静态 props 提取读不对条件/判别联合；props 类型太动态时记录保留原始类型文本，模型仍有契约可查。此类记录标 `propsInferred: false`，检索结果中降权。
+- **示例质量**：测试挂载片段是最佳示例但会漂移；记录带 `updatedAt`，陈旧示例可见并可刷新。
+- **模型幻觉记录**：`origin: 'model'` 记录先隔离，待人工在面板确认；查询结果把它们排在扫描记录之下。
+- **监听成本**：chokidar 在 `packages/client` 上受 200ms 稳定性阈值与按文件重提约束，闲置时零成本。
+
+## 12. 验收标准
+
+- `component.query` 在 scratch profile 的 `packages/client` 播种扫描后返回匹配记录。
+- 设置卡片列出播种的组件并在 `domain/changed` 时刷新。
+- 生成的技能正文经技能工具加载无格式错误。
+- 录制的 keyless 遍历可回放：扫描 → 查询 → 记录 → 面板刷新。
