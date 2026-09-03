@@ -10,6 +10,8 @@ The loop this plugin closes: discover a component or style pattern in the codeba
 
 In scope: component-level learning first (React components + props), style-token inventory as generation constraints, model retrieval before generation, and continuous refresh on file changes. Out of scope for the first iteration: visual screenshot diffing, runtime component rendering sandboxes, and any upstream distribution (npm publication) of the library itself.
 
+The library is project-local: it learns from this repository's `packages/client` tree and serves this repository's subsequent UI work. Cross-project sharing (learning in one repo, reusing in another) is out of scope for the first iteration.
+
 ## 2. Architecture overview
 
 Four layers, each on an existing seam:
@@ -124,6 +126,12 @@ Writes a model-contributed record. Parameters: `name`, `pkg`, `path`, `props` (a
 
 Both tools register with `ctx.tools.register(defineTool(...))` inside the Host package's plugin, so they appear in the system prompt for every capable model without further plumbing. On the Web side the transcript cards render through `ui-tool`'s `tool.call.toolview` slot like any other tool.
 
+### 6.3 Model guidance
+
+Tool registration alone does not make the model reach for the library. The plugin therefore also mounts a system-prompt section through `systemPrompt.section({ name, order, text })` — the same seam `app-boot` uses for the harness-source section — with a short directive: before writing UI code, call `component.query` for the target area and prefer the scanned components and token corpus over inventing new primitives. This makes reuse the default behavior rather than an opt-in.
+
+The skills channel (§7) remains the optional long-form alternative; the system-prompt section is the always-on baseline.
+
 ## 7. Skills channel
 
 Register a `SkillProvider` named `component-library` that materializes a single skill `component-library` whose `SKILL.md` body is generated from the domain: a short introduction, the token-tier conventions, and the top-used components list. The provider's `list()` returns the summary entry; `get()` generates the body on demand. Models that prefer long-form guidance load it through the existing skill tool instead of calling `component.query` repeatedly.
@@ -165,3 +173,4 @@ Each stage lands with its unit tests and an Agent Note; the keyless snapshot sui
 - The generated skill body loads through the skill tool without format errors.
 - A recorded walkthrough replays keylessly: scan → query → record → panel refresh.
 - `pnpm run hygiene` passes with both new packages in the tree.
+- In a recorded session whose user asks for UI work, the model calls `component.query` before writing component code (proven by the keyless snapshot's event log).

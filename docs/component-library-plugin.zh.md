@@ -10,6 +10,8 @@
 
 范围：先做组件级学习（React 组件 + props），样式 token 清单作为生成约束，生成前模型检索，文件变化时持续刷新。第一迭代不做：视觉截图 diff、运行时组件渲染沙箱、组件库本身的上游分发（npm 发布）。
 
+组件库是项目级的：从本仓库的 `packages/client` 树学习，服务本仓库的后续 UI 工作。跨项目共享（在 A 仓库学习、在 B 仓库复用）不在第一迭代范围内。
+
 ## 2. 架构总览
 
 四层，各走一条既有接缝：
@@ -124,6 +126,12 @@ const ComponentRecord = z.object({
 
 两个工具都在宿主包插件里 `ctx.tools.register(defineTool(...))` 注册，随后自动进入所有可用模型的系统提示，无需额外上架。Web 端转录卡片经 `ui-tool` 的 `tool.call.toolview` 槽渲染，与其他工具一致。
 
+### 6.3 模型引导
+
+仅注册工具并不能保证模型会去用组件库。因此插件还经 `systemPrompt.section({ name, order, text })` 挂一段系统提示（与 `app-boot` 的 harness 源码段同一条接缝）：一段简短指令——写 UI 代码前先为目标区域调用 `component.query`，优先复用已扫描组件与 token 语料而非新造原语。这使复用成为默认行为而非可选行为。
+
+技能通道（§7）仍是可选的长文方案；系统提示段是始终生效的基线。
+
 ## 7. 技能通道
 
 注册名为 `component-library` 的 `SkillProvider`，物化单个技能 `component-library`，其 `SKILL.md` 正文由域生成：一段简介、token 分层约定、高频组件清单。Provider 的 `list()` 返回摘要条目；`get()` 按需生成正文。偏好长文档指引的模型经既有技能工具加载，不必反复调用 `component.query`。
@@ -165,3 +173,4 @@ const ComponentRecord = z.object({
 - 生成的技能正文经技能工具加载无格式错误。
 - 录制的 keyless 遍历可回放：扫描 → 查询 → 记录 → 面板刷新。
 - `pnpm run hygiene` 在两个新包存在时通过。
+- 在用户请求 UI 工作的录制会话里，模型在写组件代码前调用 `component.query`（由 keyless 快照的事件日志证明）。

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/component-library-plugin.md
-component-library-plugin.md: 93b6f55cc112b35e4c59e82498a6e3d5c569ec7b
-component-library-plugin.zh.md: a534cf8e29e5d19085ca442fd7b4c8c1c944890b
+component-library-plugin.md: c0f200d6abaf4defb8b9586840bb48dd6eec14c5
+component-library-plugin.zh.md: 0bec8ed8ad63d3c8d81a5a976cde17751590e8eb
