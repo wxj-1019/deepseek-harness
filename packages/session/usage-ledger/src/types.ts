@@ -56,9 +56,13 @@ export interface UsageLedgerRecord {
 
 /** Per-model price in USD per 1M tokens, over the four bucket vocabulary. */
 export interface UsageLedgerPrice {
+  /** Price of one million non-cached prompt tokens. */
   readonly input: number
+  /** Price of one million completion tokens. */
   readonly output: number
+  /** Price of one million prompt tokens served from the provider's cache. */
   readonly cacheRead: number
+  /** Price of one million prompt tokens written into the provider's cache. */
   readonly cacheWrite: number
 }
 
