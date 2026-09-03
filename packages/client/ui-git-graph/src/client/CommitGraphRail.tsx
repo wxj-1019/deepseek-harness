@@ -20,7 +20,7 @@ import type { ReactNode } from 'react'
 import type { GraphLogEntry } from '@deepseek-ai/dsh-git-graph'
 
 /** Horizontal pixels one lane occupies (rows share the widest count, so rails never drift). */
-const LANE_PX = 13
+const LANE_PX = 16
 /** Maximum rendered lanes; deeper merges clamp to the rightmost lane. */
 const MAX_LANES = 8
 
@@ -165,7 +165,7 @@ export function CommitGraphCell(props: { row: GraphRow; className?: string | und
         focusable="false"
       >
         {row.rails.map(lane => (
-          <line key={`rail${lane}`} x1={x(lane)} x2={x(lane)} y1={0} y2={VB_H} stroke={color(lane)} strokeWidth="2" opacity="0.75" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <line key={`rail${lane}`} x1={x(lane)} x2={x(lane)} y1={0} y2={VB_H} stroke={color(lane)} strokeWidth="2.5" opacity="0.8" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         ))}
         {row.edges.map(({ from, to }, index) => (
           <path
@@ -173,12 +173,12 @@ export function CommitGraphCell(props: { row: GraphRow; className?: string | und
             d={`M ${x(from)} ${VB_H / 2} C ${x(from)} ${VB_H / 2 + CURVE_IN}, ${x(to)} ${VB_H - CURVE_OUT}, ${x(to)} ${VB_H}`}
             fill="none"
             stroke={color(from)}
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
           />
         ))}
-        <circle cx={x(row.node.lane)} cy={VB_H / 2} r="5.5" fill={row.node.color} stroke="var(--dsw-alias-bg-base)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <circle cx={x(row.node.lane)} cy={VB_H / 2} r="7" fill={row.node.color} stroke="var(--dsw-alias-bg-base)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
       </svg>
     </span>
   )
