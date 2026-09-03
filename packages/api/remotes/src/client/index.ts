@@ -13,6 +13,7 @@ import sessionReferencesRemote from '@deepseek-ai/dsh-session-reference/remote'
 import userTodosRemote from '@deepseek-ai/dsh-user-todo/remote'
 import sessionPinsRemote from '@deepseek-ai/dsh-session-pins/remote'
 import notificationsRemote from '@deepseek-ai/dsh-notification-center/remote'
+import componentLibraryRemote from '@deepseek-ai/dsh-component-library/remote'
 import usageLedgerRemote from '@deepseek-ai/dsh-usage-ledger/remote'
 import subagentsRemote from '@deepseek-ai/dsh-subagent/remote'
 import sessionRemote from '@deepseek-ai/dsh-api-session-controller/remote'
@@ -32,6 +33,8 @@ export type {} from '@deepseek-ai/dsh-session-reference/remote'
 export type {} from '@deepseek-ai/dsh-user-todo/remote'
 export type {} from '@deepseek-ai/dsh-session-pins/remote'
 export type {} from '@deepseek-ai/dsh-notification-center/remote'
+export type {} from '@deepseek-ai/dsh-component-library/remote'
+export type {} from '@deepseek-ai/dsh-component-library/types'
 export type {} from '@deepseek-ai/dsh-usage-ledger/remote'
 export type {} from '@deepseek-ai/dsh-user-todo/types'
 export type {} from '@deepseek-ai/dsh-session-pins/types'
@@ -158,7 +161,7 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
     for (const contribution of [
       agentPresetsRemote, commandsRemote, settingsControllerRemote, goalsRemote, llmRemote, dynamicRemote,
       pluginInventoryRemote, messageFeedbackRemote, sessionReferencesRemote,
-      userTodosRemote, sessionPinsRemote, notificationsRemote, usageLedgerRemote,
+      userTodosRemote, sessionPinsRemote, notificationsRemote, componentLibraryRemote, usageLedgerRemote,
       subagentsRemote, sessionRemote, workspaceRemote,
     ]) {
       disposers.push(await ctx.remote.$mount(contribution))

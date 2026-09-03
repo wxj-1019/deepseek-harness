@@ -7,7 +7,7 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
-import type { ComponentLibraryService } from './service.ts'
+import type { ComponentLibraryService } from './index.ts'
 import type { ComponentMatch } from './types.ts'
 
 /** Render one match list as the model-facing tool result text. */
@@ -88,14 +88,22 @@ export function registerComponentTools(ctx: Context, service: ComponentLibrarySe
     },
     isConcurrencySafe: () => true,
     execute(args) {
-      return Promise.resolve({ matches: service.rankMatches(args) })
+      // The wire schema infers mutable arrays; thaw the frozen rank view.
+      const matches = service.rankMatches(args).map(match => ({
+        ...match,
+        props: match.props.map(prop => ({ ...prop })),
+        tokens: [...match.tokens],
+      }))
+      return Promise.resolve({ matches })
     },
     presentCall: args => ({ card: 'generic', title: 'Query component library', kind: 'other', rawInput: args.query }),
     presentResult: (_args, result) => {
       if (result.isError) return undefined
       const meta = result.meta
       if (typeof meta !== 'object' || meta === null || !('matchCount' in meta)) return undefined
-      return { card: 'generic', title: `Component library: ${String(meta.matchCount)} match(es)`, kind: 'other' }
+      const count: unknown = meta.matchCount
+      if (typeof count !== 'number') return undefined
+      return { card: 'generic', title: `Component library: ${count} match(es)`, kind: 'other' }
     },
   }))
 

@@ -19,14 +19,14 @@
 ```
 Learn (Host)         Persist (Storage)          Consume (Model + UI)
 ─────────────        ────────────────          ──────────────────────
-scanner.ts        →  storage-domain           →  component.query / component.record tools
+scanner.ts        →  storage-domain           →  component_query / component_record tools
 chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
                      (JSON backend)               settings.plugin.item panel
 ```
 
 - **学习**：宿主扫描器从 `packages/client/*/src/client` 提取组件记录，并用借自 `skill-filesystem` 的 chokidar 管线监听变化。
 - **沉淀**：名为 `component_library` 的 `storage-domain` 域保存组件记录；持久化写触发 `domain/changed` 事件让面板重取。
-- **消费**：两个模型工具（`component.query`、`component.record`）加一个 `SkillProvider` 摘要文档，以及一个供人工审查的 `settings.plugin.item` 卡片。
+- **消费**：两个模型工具（`component_query`、`component_record`）加一个 `SkillProvider` 摘要文档，以及一个供人工审查的 `settings.plugin.item` 卡片。
 
 ## 3. 包划分
 
@@ -83,13 +83,15 @@ const ComponentRecord = z.object({
   example: z.string().default(''),
   origin: z.enum(['scanned', 'model']).default('scanned'),
   propsInferred: z.boolean().default(true),
+  rawProps: z.string().default(''),
+  reviewed: z.boolean().default(false),
   updatedAt: z.number().default(0),
 })
 ```
 
 ### 样式 token 清单（生成约束语料）
 
-扫描器同时解析 `packages/client/ui-theme/src/styles/design-platform.css` 为 token 列表：`{ name, value, tier: 'static' | 'alias' | 'role' }`。产出为参考文档而非数据表。
+扫描器同时解析 `packages/client/ui-theme/src/styles/design-platform.css` 为 token 列表：`{ name, value, tier: 'static' | 'alias' | 'specific' }`。产出为参考文档而非数据表。
 
 ## 5. 学习管线
 
@@ -112,15 +114,17 @@ const ComponentRecord = z.object({
 
 ### 5.3 模型驱动的学习
 
-`component.record` 让模型在创建组件后回写记录（通常在会话任务中）。记录形状相同；`origin: 'model'` 标记供审查。面板的人工审查环节把幻觉条目挡在持久集外。
+`component_record` 让模型在创建组件后回写记录（通常在会话任务中）。记录形状相同；`origin: 'model'` 标记供审查，且天生 `reviewed: false`。未审核的模型记录在 `component_query` 结果中被隔离，直到人工在面板上通过（`component-library` settings 命名空间的 `includeUnreviewed` 开关会把它们列入，排在最后）。这一审查环节把幻觉条目挡在持久集外。
 
 ## 6. 面向模型的工具
 
-### `component.query`
+工具名用 snake_case（`component_query`、`component_record`），而非本文档早期草稿中的点号写法：OpenAI 兼容的函数名不允许点号，且 harness 中所有工具都遵循 snake_case。
+
+### `component_query`
 
 检索匹配的组件记录。参数：`query`（自由文本：名称、包名或用途关键词）、`pkg`（可选过滤）、`limit`（默认 10）。第一迭代排名用纯字符串计分：名称精确匹配优于包名匹配，包名匹配优于 jsdoc 关键词，扫描记录优于模型贡献记录。输出 schema：`{ matches: [{ name, pkg, path, props, tokens, example }] }`。`render` 在转录卡片上呈现精简的排名表。
 
-### `component.record`
+### `component_record`
 
 写入模型贡献的记录。参数：`name`、`pkg`、`path`、`props`（`{name, type, required}` 数组）、`tokens`、`jsdoc`、`example`。写入经域 schema 校验并打上 `origin: 'model'`。
 
@@ -128,13 +132,13 @@ const ComponentRecord = z.object({
 
 ### 6.3 模型引导
 
-仅注册工具并不能保证模型会去用组件库。因此插件还经 `systemPrompt.section({ name, order, text })` 挂一段系统提示（与 `app-boot` 的 harness 源码段同一条接缝）：一段简短指令——写 UI 代码前先为目标区域调用 `component.query`，优先复用已扫描组件与 token 语料而非新造原语。这使复用成为默认行为而非可选行为。
+仅注册工具并不能保证模型会去用组件库。因此插件还经 `systemPrompt.section({ name, order, text })` 挂一段系统提示（与 `app-boot` 的 harness 源码段同一条接缝）：一段简短指令——写 UI 代码前先为目标区域调用 `component_query`，优先复用已扫描组件与 token 语料而非新造原语。这使复用成为默认行为而非可选行为。
 
 技能通道（§7）仍是可选的长文方案；系统提示段是始终生效的基线。
 
 ## 7. 技能通道
 
-注册名为 `component-library` 的 `SkillProvider`，物化单个技能 `component-library`，其 `SKILL.md` 正文由域生成：一段简介、token 分层约定、高频组件清单。Provider 的 `list()` 返回摘要条目；`get()` 按需生成正文。偏好长文档指引的模型经既有技能工具加载，不必反复调用 `component.query`。
+注册名为 `component-library` 的 `SkillProvider`，物化单个技能 `component-library`，其 `SKILL.md` 正文由域生成：一段简介、token 分层约定、高频组件清单。Provider 的 `list()` 返回摘要条目；`get()` 按需生成正文。偏好长文档指引的模型经既有技能工具加载，不必反复调用 `component_query`。
 
 ## 8. 客户端面板
 
@@ -144,7 +148,7 @@ const ComponentRecord = z.object({
 
 1. **骨架**：两个包的 manifest、tsconfig、tsdown、invariant 伴生与双语 README。`pnpm run gen-tsconfig-paths` 自动补别名；`web-app/package.json` 加两个依赖，`web-app/cordis.patch.yml` 加两条插入行。
 2. **存储 + 静态扫描**：域、TypeScript-API 提取器、`packages/client` 冷启动播种。
-3. **模型工具**：`component.query` 与 `component.record`，带 wire schema 与转录渲染。
+3. **模型工具**：`component_query` 与 `component_record`，带 wire schema 与转录渲染。
 4. **客户端面板**：keyed 设置卡片与实时刷新。
 5. **监听器 + 技能 Provider**：持续学习与技能通道。
 6. **打磨**：检索评分、从 spec 提取示例、面板的审查控件。
@@ -168,9 +172,9 @@ const ComponentRecord = z.object({
 
 ## 12. 验收标准
 
-- `component.query` 在 scratch profile 的 `packages/client` 播种扫描后返回匹配记录。
+- `component_query` 在 scratch profile 的 `packages/client` 播种扫描后返回匹配记录。
 - 设置卡片列出播种的组件并在 `domain/changed` 时刷新。
 - 生成的技能正文经技能工具加载无格式错误。
 - 录制的 keyless 遍历可回放：扫描 → 查询 → 记录 → 面板刷新。
 - `pnpm run hygiene` 在两个新包存在时通过。
-- 在用户请求 UI 工作的录制会话里，模型在写组件代码前调用 `component.query`（由 keyless 快照的事件日志证明）。
+- 在用户请求 UI 工作的录制会话里，模型在写组件代码前调用 `component_query`（由 keyless 快照的事件日志证明）。

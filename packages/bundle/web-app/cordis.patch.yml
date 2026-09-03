@@ -81,6 +81,12 @@
     - id: notification-center
       name: '@deepseek-ai/dsh-notification-center'
 
+    # Component library: learns this checkout's packages/client components
+    # into the component_library domain so the model reuses them (client row
+    # `ui-component-library` renders the settings card).
+    - id: component-library
+      name: '@deepseek-ai/dsh-component-library'
+
     # Durable reminders: the official web overlay rows (time-context feeds
     # the model the request-local zone; schedule owns the durable state).
     - id: time-context
@@ -270,6 +276,12 @@
     # panel (shell.overlay's first occupant) over the notifications domain.
     - id: ui-notification-center
       name: '@deepseek-ai/dsh-client-ui-notification-center'
+
+    # Component library card in the Plugins configurable tab: learned
+    # component count, search, and model-record review over the
+    # component_library domain (host row `component-library`).
+    - id: ui-component-library
+      name: '@deepseek-ai/dsh-client-ui-component-library'
 
     # Dev checks: per-machine switches narrowing the heavy routine quality
     # gates (e2e, coverage, snapshot, doc-sync, pre-push typecheck); the

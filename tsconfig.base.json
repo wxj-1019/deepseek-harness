@@ -239,6 +239,8 @@
       "@deepseek-ai/dsh-notification-center": ["./packages/interaction/notification-center/src"],
       "@deepseek-ai/dsh-notification-center/types": ["./packages/interaction/notification-center/src/types.ts"],
       "@deepseek-ai/dsh-client-ui-notification-center": ["./packages/client/ui-notification-center/src"],
+      "@deepseek-ai/dsh-component-library/types": ["./packages/storage/component-library/src/types.ts"],
+      "@deepseek-ai/dsh-client-ui-component-library": ["./packages/client/ui-component-library/src"],
       "@deepseek-ai/dsh-user-todo/types": ["./packages/todo/user-todo/src/types.ts"],
       "@deepseek-ai/dsh-client-ui-user-todo": ["./packages/client/ui-user-todo/src"],
       "@deepseek-ai/dsh-client-ui-session-pins": ["./packages/client/ui-session-pins/src"],

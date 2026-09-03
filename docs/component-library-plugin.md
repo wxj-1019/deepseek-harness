@@ -19,14 +19,14 @@ Four layers, each on an existing seam:
 ```
 Learn (Host)         Persist (Storage)          Consume (Model + UI)
 ─────────────        ────────────────          ──────────────────────
-scanner.ts        →  storage-domain           →  component.query / component.record tools
+scanner.ts        →  storage-domain           →  component_query / component_record tools
 chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
                      (JSON backend)               settings.plugin.item panel
 ```
 
 - **Learn**: a Host scanner extracts component records from `packages/client/*/src/client` and watches them with the chokidar pipeline borrowed from `skill-filesystem`.
 - **Persist**: a `storage-domain` domain named `component_library` holds component records; durable writes emit `domain/changed` so the panel refetches.
-- **Consume**: two model tools (`component.query`, `component.record`) plus a `SkillProvider` summary document, and a `settings.plugin.item` card for human review.
+- **Consume**: two model tools (`component_query`, `component_record`) plus a `SkillProvider` summary document, and a `settings.plugin.item` card for human review.
 
 ## 3. Packages
 
@@ -83,13 +83,15 @@ const ComponentRecord = z.object({
   example: z.string().default(''),
   origin: z.enum(['scanned', 'model']).default('scanned'),
   propsInferred: z.boolean().default(true),
+  rawProps: z.string().default(''),
+  reviewed: z.boolean().default(false),
   updatedAt: z.number().default(0),
 })
 ```
 
 ### Style-token inventory (generation constraint corpus)
 
-The scanner additionally parses `packages/client/ui-theme/src/styles/design-platform.css` into a token list: `{ name, value, tier: 'static' | 'alias' | 'role' }`. This is published as a reference document, not a database table.
+The scanner additionally parses `packages/client/ui-theme/src/styles/design-platform.css` into a token list: `{ name, value, tier: 'static' | 'alias' | 'specific' }`. This is published as a reference document, not a database table.
 
 ## 5. The learning pipeline
 
@@ -112,15 +114,17 @@ A write lands a record in the storage domain and emits `domain/changed`, which t
 
 ### 5.3 Model-driven learning
 
-`component.record` lets the model write a record after it creates a component (usually inside a conversation's task). The record is the same shape; `origin: 'model'` marks it for review. A human review step on the panel keeps hallucinated entries out of the durable set.
+`component_record` lets the model write a record after it creates a component (usually inside a conversation's task). The record is the same shape; `origin: 'model'` marks it for review, and it is born `reviewed: false`. Unreviewed model records are quarantined out of `component_query` results until a human approves them on the panel (the `component-library` settings namespace's `includeUnreviewed` knob lists them anyway, ranked last). This review step keeps hallucinated entries out of the durable set.
 
 ## 6. Model-facing tools
 
-### `component.query`
+Tool names use snake_case (`component_query`, `component_record`), not the dotted shorthands shown in earlier drafts of this document: OpenAI-compatible function names reject dots, and every tool in the harness follows snake_case.
+
+### `component_query`
 
 Retrieves matching component records. Parameters: `query` (free text: name, package, or purpose keyword), `pkg` (optional filter), `limit` (default 10). Ranking in the first iteration is plain string scoring: exact name match beats package match, package match beats keyword-in-jsdoc, scanned records rank above model-contributed ones. Output schema: `{ matches: [{ name, pkg, path, props, tokens, example }] }`. The `render` presents a compact ranked table for the transcript card.
 
-### `component.record`
+### `component_record`
 
 Writes a model-contributed record. Parameters: `name`, `pkg`, `path`, `props` (array of `{name, type, required}`), `tokens`, `jsdoc`, `example`. The write is validated against the domain schema and stamped `origin: 'model'`.
 
@@ -128,13 +132,13 @@ Both tools register with `ctx.tools.register(defineTool(...))` inside the Host p
 
 ### 6.3 Model guidance
 
-Tool registration alone does not make the model reach for the library. The plugin therefore also mounts a system-prompt section through `systemPrompt.section({ name, order, text })` — the same seam `app-boot` uses for the harness-source section — with a short directive: before writing UI code, call `component.query` for the target area and prefer the scanned components and token corpus over inventing new primitives. This makes reuse the default behavior rather than an opt-in.
+Tool registration alone does not make the model reach for the library. The plugin therefore also mounts a system-prompt section through `systemPrompt.section({ name, order, text })` — the same seam `app-boot` uses for the harness-source section — with a short directive: before writing UI code, call `component_query` for the target area and prefer the scanned components and token corpus over inventing new primitives. This makes reuse the default behavior rather than an opt-in.
 
 The skills channel (§7) remains the optional long-form alternative; the system-prompt section is the always-on baseline.
 
 ## 7. Skills channel
 
-Register a `SkillProvider` named `component-library` that materializes a single skill `component-library` whose `SKILL.md` body is generated from the domain: a short introduction, the token-tier conventions, and the top-used components list. The provider's `list()` returns the summary entry; `get()` generates the body on demand. Models that prefer long-form guidance load it through the existing skill tool instead of calling `component.query` repeatedly.
+Register a `SkillProvider` named `component-library` that materializes a single skill `component-library` whose `SKILL.md` body is generated from the domain: a short introduction, the token-tier conventions, and the top-used components list. The provider's `list()` returns the summary entry; `get()` generates the body on demand. Models that prefer long-form guidance load it through the existing skill tool instead of calling `component_query` repeatedly.
 
 ## 8. Client panel
 
@@ -144,7 +148,7 @@ A `settings.plugin.item` keyed card (`key: 'component-library'`) renders the lib
 
 1. **Scaffold**: the two packages with manifests, tsconfigs, tsdown configs, invariant companions, and bilingual READMEs. `pnpm run gen-tsconfig-paths` picks up the aliases; `web-app/package.json` gains both dependencies and `web-app/cordis.patch.yml` gains the two insert rows.
 2. **Storage + static scan**: the domain, the TypeScript-API extractor, and cold-start seeding of `packages/client`.
-3. **Model tools**: `component.query` and `component.record` with wire schemas and transcript rendering.
+3. **Model tools**: `component_query` and `component_record` with wire schemas and transcript rendering.
 4. **Client panel**: the keyed settings card with live refresh.
 5. **Watcher + skill provider**: continuous learning and the skills channel.
 6. **Polish**: ranked retrieval, example extraction from specs, and review controls on the panel.
@@ -168,9 +172,9 @@ Each stage lands with its unit tests and an Agent Note; the keyless snapshot sui
 
 ## 12. Acceptance criteria
 
-- `component.query` returns matching records for a seeded scan of `packages/client` in a scratch profile.
+- `component_query` returns matching records for a seeded scan of `packages/client` in a scratch profile.
 - The settings card lists the seeded components and refreshes on `domain/changed`.
 - The generated skill body loads through the skill tool without format errors.
 - A recorded walkthrough replays keylessly: scan → query → record → panel refresh.
 - `pnpm run hygiene` passes with both new packages in the tree.
-- In a recorded session whose user asks for UI work, the model calls `component.query` before writing component code (proven by the keyless snapshot's event log).
+- In a recorded session whose user asks for UI work, the model calls `component_query` before writing component code (proven by the keyless snapshot's event log).

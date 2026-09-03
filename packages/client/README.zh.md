@@ -77,6 +77,7 @@ kind: "package-group"
 | [`ui-session-pins/`](ui-session-pins/README.zh.md) | 会话头星标切换与侧边栏钉住区，基于 session-pins 存储域。 |
 | [`ui-settings-dev-checks/`](ui-settings-dev-checks/README.zh.md) | 注册「开发校验」设置页，提供每机器的质量门禁开关。 |
 | [`ui-settings-mcp/`](ui-settings-mcp/README.zh.md) | 在插件设置页中呈现 MCP 服务器列表与编辑表单。 |
+| [`ui-component-library/`](ui-component-library/README.zh.md) | 插件设置页中的组件库卡片：基于 component_library 存储域的已学习组件、搜索与模型记录审核。 |
 | [`ui-usage/`](ui-usage/README.zh.md) | 用量设置区：基于 usage-ledger 存储域的逐会话 token 记账。 |
 | [`ui-user-todo/`](ui-user-todo/README.zh.md) | 侧边栏底部的每日 todo 面板，基于 user-todo 存储域。 |
 

@@ -44,6 +44,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-jobs` | `job_kill`, `job_list`, `job_output` | `ctx.tools`, `ctx.jobs`, `ctx.systemPrompt` | `tool/call`, `tool/result`, `user/message via agent.inject() for background completion notices` | - | The kind-agnostic background-job controller: background bash commands, PTY sends, and subagents are read, listed, and killed through the same three tools. Loading the plugin attaches the controller that arms producers' `ctx.jobs.start()`. |
 | `@deepseek-ai/dsh-experimental-tool-agent-team` | `followup_task`, `interrupt_agent`, `list_agents`, `send_message`, `spawn_teammate`, `team_task_create`, `team_task_get`, `team_task_list`, `team_task_update`, `wait_agent` | `ctx.tools`, `ctx.systemPrompt`, `ctx.agentTeams`, `an exact live Team member Agent` | `tool/call`, `team/member`, `team/message/queued`, `team/message/delivered`, `team/task`, `tool/result` | - | All ten tools are scoped to implicit Team Leads and durable teammates. The shipped dsh-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names. |
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`, `owning Agent session` | `tool/call`, `todo/write`, `tool/result` | - | todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task. |
+| `@deepseek-ai/dsh-component-library` | `component_query`, `component_record` | `ctx.tools`, `ctx.systemPrompt`, `ctx.skills`, `ctx.settings`, `ctx.storageDomain` | `tool/call`, `tool/result`, `component_library domain writes`, `component-library/changed` | - | component_query ranks scanned records above model-contributed ones and quarantines unreviewed model records unless the component-library settings namespace opts in; component_record writes are quarantined for human review on the web settings card. |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
 
@@ -2350,6 +2351,110 @@ Record and update a structured task list for the current work. Send the ENTIRE l
 Source: [`packages/todo/tool-todo/src/index.ts`](../packages/todo/tool-todo/src/index.ts)
 
 todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.
+
+<a id="deepseek-aidsh-component-library"></a>
+
+## `@deepseek-ai/dsh-component-library`
+
+### `component_query`
+
+Search this checkout’s learned UI component library before writing UI code. Returns matching components with their props, `--dsw-*` design tokens, source path, and a usage example, ranked exact-name first. Prefer reusing a scanned match over inventing a new primitive.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Free text: a component name, package name, purpose keyword, or `--dsw-*` token."
+    },
+    "pkg": {
+      "type": "string",
+      "description": "Restrict matches to one npm package name."
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum matches to return (default 10)."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+Source: [`packages/storage/component-library/src/tools.ts`](../packages/storage/component-library/src/tools.ts)
+
+### `component_record`
+
+Record a UI component you just created into this checkout’s component library so later work can reuse it. The record is quarantined for human review before it ranks in component_query results. Only call this for genuinely reusable components, never for one-off markup.
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The exported PascalCase component name."
+    },
+    "pkg": {
+      "type": "string",
+      "description": "The npm package name owning the component."
+    },
+    "path": {
+      "type": "string",
+      "description": "Repository-relative source path, e.g. packages/client/ui-foo/src/client/Bar.tsx."
+    },
+    "props": {
+      "type": "array",
+      "description": "The component’s props.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      }
+    },
+    "tokens": {
+      "type": "array",
+      "description": "The `--dsw-*` design tokens the component’s styles reference.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "jsdoc": {
+      "type": "string",
+      "description": "One-line purpose summary."
+    },
+    "example": {
+      "type": "string",
+      "description": "A short usage snippet."
+    }
+  },
+  "required": [
+    "name",
+    "pkg",
+    "path"
+  ]
+}
+```
+
+Source: [`packages/storage/component-library/src/tools.ts`](../packages/storage/component-library/src/tools.ts)
+
+component_query ranks scanned records above model-contributed ones and quarantines unreviewed model records unless the component-library settings namespace opts in; component_record writes are quarantined for human review on the web settings card.
 
 <a id="deepseek-aidsh-tool-workflow"></a>
 

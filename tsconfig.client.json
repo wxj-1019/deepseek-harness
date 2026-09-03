@@ -104,6 +104,7 @@
     { "path": "./packages/client/ui-notification-center" },
     { "path": "./packages/web/git-graph" },
     { "path": "./packages/client/ui-usage" },
+    { "path": "./packages/client/ui-component-library" },
     { "path": "./packages/client/ui-git-graph" },
     { "path": "./packages/client/ui-settings-dev-checks" },
     { "path": "./packages/client/ui-settings-plugin-inventory" },

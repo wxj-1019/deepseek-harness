@@ -34,6 +34,7 @@ export const API_REMOTE_FORWARDED_EVENTS = [
   { event: 'user-questions/request', mode: 'waterfall' },
   { event: 'session-pins/changed', mode: 'emit' },
   { event: 'notifications/changed', mode: 'emit' },
+  { event: 'component-library/changed', mode: 'emit' },
   { event: 'usage-ledger/changed', mode: 'emit' },
   { event: 'user-todo/changed', mode: 'emit' },
 ] as const satisfies readonly TypertForwardableEventEntry[]

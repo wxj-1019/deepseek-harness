@@ -271,13 +271,13 @@ describe('model guidance', () => {
 
 describe('resolveComponentLibrarySpec', () => {
   it('rejects a root without a client tree', async () => {
-    const { resolveComponentLibrarySpec } = await import('../src/service.ts')
+    const { resolveComponentLibrarySpec } = await import('../src/index.ts')
     expect(() => resolveComponentLibrarySpec({ root: '/nonexistent/checkout' }))
       .toThrow(/does not contain packages\/client/)
   })
 
   it('walks up from the package to the harness checkout when root is absent', async () => {
-    const { resolveComponentLibrarySpec } = await import('../src/service.ts')
+    const { resolveComponentLibrarySpec } = await import('../src/index.ts')
     const spec = resolveComponentLibrarySpec({})
     // The URL-derived expected path carries a trailing separator; the walk does not.
     expect(spec.root).toBe(fileURLToPath(new URL('../../../..', import.meta.url)).replace(/[\\/]$/, ''))

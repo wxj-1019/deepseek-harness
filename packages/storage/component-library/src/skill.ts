@@ -13,7 +13,7 @@ import {
   type SkillDefinition,
   type SkillProvider,
 } from '@deepseek-ai/dsh-skill'
-import type { ComponentLibraryService } from './service.ts'
+import type { ComponentLibraryService } from './index.ts'
 
 const PROVIDER_NAME = 'component-library'
 const INVOCATION = { modelInvocable: true, userInvocable: true } as const

@@ -47,8 +47,8 @@ type PropsCandidate = ts.TypeNode | LocalTypeDeclaration
 
 /** Read the resolved summary and `@example` body off one declaration's JSDoc. */
 function readJsdoc(node: ts.Node, source: ts.SourceFile): { jsdoc: string; example: string } {
-  const jsdocNode = (node as ts.JSDocContainer).jsDoc?.at(-1)
-  if (jsdocNode === undefined || !ts.isJSDoc(jsdocNode)) return { jsdoc: '', example: '' }
+  const jsdocNode = ts.getJSDocCommentsAndTags(node).findLast(ts.isJSDoc)
+  if (jsdocNode === undefined) return { jsdoc: '', example: '' }
   const render = (comment: string | readonly ts.JSDocComment[] | undefined): string =>
     typeof comment === 'string'
       ? comment.trim()
@@ -149,8 +149,14 @@ function resolveProps(
     if (renderable) return { props, propsInferred: true, rawProps: '' }
   }
   // No annotated parameter and no named props type: the component takes none.
-  if (candidates.length === 0) return { props: [], propsInferred: true, rawProps: '' }
-  return { props: [], propsInferred: false, rawProps: rawTextOf(candidates[0], source) }
+  const first = candidates.at(0)
+  if (first === undefined) return { props: [], propsInferred: true, rawProps: '' }
+  return { props: [], propsInferred: false, rawProps: rawTextOf(first, source) }
+}
+
+/** True when one declaration statement carries the export keyword. */
+function hasExportModifier(statement: ts.FunctionDeclaration | ts.VariableStatement): boolean {
+  return ts.getModifiers(statement)?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword) === true
 }
 
 /**
@@ -160,7 +166,9 @@ function resolveProps(
  * @returns one entry per exported component declaration, in source order.
  */
 export function extractComponents(fileName: string, sourceText: string): ExtractedComponent[] {
-  const source = ts.createSourceFile(fileName, sourceText, ts.ScriptTarget.ESNext, false, ts.ScriptKind.TSX)
+  // setParentNodes: ts.getJSDocCommentsAndTags walks parents, so the public
+  // JSDoc API returns nothing without them.
+  const source = ts.createSourceFile(fileName, sourceText, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX)
   const types = new Map<string, LocalTypeDeclaration>()
   for (const statement of source.statements) {
     if (ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement)) {
@@ -182,12 +190,10 @@ export function extractComponents(fileName: string, sourceText: string): Extract
     })
   }
   for (const statement of source.statements) {
-    const exported = statement.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword) === true
-    if (!exported) continue
-    if (ts.isFunctionDeclaration(statement) && statement.name !== undefined) {
+    if (ts.isFunctionDeclaration(statement) && statement.name !== undefined && hasExportModifier(statement)) {
       visit(statement.name.getText(source), statement, statement)
     }
-    if (ts.isVariableStatement(statement)) {
+    if (ts.isVariableStatement(statement) && hasExportModifier(statement)) {
       for (const declaration of statement.declarationList.declarations) {
         if (!ts.isIdentifier(declaration.name)) continue
         const initializer = declaration.initializer

@@ -24,7 +24,7 @@ describe('component-library invariants', () => {
 
   it('rejects a change broadcast with no preceding library write', async () => {
     const ctx = await setup()
-    expect(() => ctx.emit('component-library/changed'))
+    expect(() => { ctx.emit('component-library/changed') })
       .toThrow(/without a preceding component_library domain write/)
   })
 })

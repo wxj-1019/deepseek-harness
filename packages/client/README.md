@@ -77,6 +77,7 @@ The kernel packages boot and serve the page; the UI feature packages present it.
 | [`ui-session-pins/`](ui-session-pins/README.md) | Header star toggle and sidebar pinned section over the session-pins storage domain. |
 | [`ui-settings-dev-checks/`](ui-settings-dev-checks/README.md) | Registers the Dev checks settings page with per-machine quality-gate toggles. |
 | [`ui-settings-mcp/`](ui-settings-mcp/README.md) | Renders the MCP servers list and edit forms in the Plugins settings tab. |
+| [`ui-component-library/`](ui-component-library/README.md) | Component library card in the Plugins settings tab: learned components, search, and model-record review over the component_library storage domain. |
 | [`ui-usage/`](ui-usage/README.md) | Usage settings section: per-session token accounting over the usage-ledger storage domain. |
 | [`ui-user-todo/`](ui-user-todo/README.md) | Sidebar-foot daily-todo panel over the user-todo storage domain. |
 

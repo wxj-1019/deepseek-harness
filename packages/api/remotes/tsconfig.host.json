@@ -64,6 +64,9 @@
       "path": "../../interaction/notification-center"
     },
     {
+      "path": "../../storage/component-library"
+    },
+    {
       "path": "../../session/usage-ledger"
     },
     {

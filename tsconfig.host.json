@@ -178,6 +178,7 @@
     { "path": "./packages/storage/storage-json" },
     { "path": "./packages/storage/storage-sqlite" },
     { "path": "./packages/storage/storage-domain" },
+    { "path": "./packages/storage/component-library" },
     { "path": "./packages/feedback/message-feedback" },
     { "path": "./packages/todo/user-todo" },
     { "path": "./packages/session/session-pins" },

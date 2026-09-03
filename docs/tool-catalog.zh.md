@@ -29,6 +29,11 @@
 | `@deepseek-ai/dsh-tool-pwsh-persistent` | `pwsh` | `ctx.tools`、`ctx.terminals`、`an owning Agent at execution time` | `tool/call`、`PTY shell state`、`tool/result` | - | 一个按所有者隔离的持久 pwsh 工具，持久 bash 工具的 Windows 对应物；部署组合提供 pwsh 方言的 PTY 后端，并可覆盖面向模型的环境描述。 |
 | `@deepseek-ai/dsh-tool-str-replace-editor` | `str_replace_editor` | `ctx.tools`、`ctx.fs` | `tool/call`、`fs/observed after view presence/absence, edit absence, or successful mutation`、`tool/result` | - | 基于文件系统 seam 的独立查看／创建／唯一字面量替换／按行插入工具；可与任何 shell 或终端接口组合。 |
 | `@deepseek-ai/dsh-tool-fs` | `edit`、`read`、`read_image`、`write` | `ctx.tools`、`ctx.fs`、`ctx.systemPrompt`、`ctx.attachments (image-tool registration)`、`ctx.llm + an image-capable route (image-tool execution)` | `tool/call`、`fs/write-intent or fs/edit-intent for mutations`、`fs/observed after read presence/absence or successful file operation`、`durable attachment (read_image)`、`tool/result` | - | 先读后写／编辑策略由 `@deepseek-ai/dsh-fs-observation-policy` 添加；它是一个 `fs/*` 事件门禁插件，不会改变 schema。加载这些工具的部署按预期也应加载该插件。没有 `ctx.attachments` 时图片工具不会注册；其 schema 与路由无关，执行时除非确切路由的模型声明图片输入，否则拒绝。 |
+| `@deepseek-ai/dsh-tool-ls` | `ls` | `ctx.tools`、`ctx.fs`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | 目录带尾部分隔符渲染，文件在后端报告时显示字节大小；点号前缀条目默认隐藏，除非设置 `all`；列表封顶 maxEntries（500）并附未显示条目说明。会话相对路径对调用 agent 的工作区解析，与 read/write/edit 工具一致。 |
+| `@deepseek-ai/dsh-tool-multi-edit` | `multi_edit` | `ctx.tools`、`ctx.fs`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | 任何写入前都会针对当前内容验证每个 oldString；同文件编辑按顺序作用于演进中的内容，写入带版本守卫（并发变更会响亮地失败该文件），批次中途失败会报告哪些文件已落盘。只编辑既有文件——创建用 write。 |
+| `@deepseek-ai/dsh-tool-tasks` | `task_list`、`task_run` | `ctx.tools`、`ctx.shell`、`ctx.fs`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | task_list 从会话工作区的 package.json 发现 npm 脚本；task_run 经配置的包管理器（默认 npm）执行其一，并报告退出码与受限的合并输出尾部。非零退出是正常报告，不是传输失败。 |
+| `@deepseek-ai/dsh-tool-git` | `git` | `ctx.tools`、`ctx.shell`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | 一个带 action 枚举的 git 工具：porcelain 状态、diff/log/show/branch 读取、add/commit/checkout/stash 本地写入，push/pull/fetch 仅在部署开启网络时可用。ref 与路径按 shell 元字符校验；提交消息经 -F - 走 stdin；restore/带路径 checkout 的丢弃需要 allowDiscard。 |
+| `@deepseek-ai/dsh-tool-compact` | `compact` | `ctx.tools`、`ctx.compaction`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | 面向模型的手动压缩路径，与人类的 /compact 命令对应：报告被压缩的历史范围，或把结构化失败（busy、changed、summary、commit、persistence、cancelled）作为错误结果返回。绝不静默劣化会话。 |
 | `@deepseek-ai/dsh-tool-fs-search` | `glob`、`grep` | `ctx.tools`、`ctx.subprocess`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | glob 和 grep 是无条件可用的发现工具，通过 ctx.subprocess spawn 随包提供的 ripgrep 二进制文件（`@vscode/ripgrep`），并作为普通前台调用运行，绝不作为后台任务；无需在宿主机安装 `rg`，也不经过 shell 层。本目录使用 `sampleOverCapGlobResults: true`；部署必须显式选择该行为。结果超过上限时，会通过可选的 ctx.spillStore 后端保存完整的格式化列表；在共置部署中，如果后端公开本地路径，返回的定位信息可供后续读取／搜索。 |
 | `@deepseek-ai/dsh-tool-terminal` | `terminal_close`、`terminal_list`、`terminal_open`、`terminal_read`、`terminal_send`、`terminal_signal` | `ctx.tools`、`ctx.terminals`、`ctx.systemPrompt`、`ctx.jobs at call time for run_in_background` | `tool/call`、`tool/result` | - | 这 6 个终端工具需要选择启用，用于补充一次性 bash／文件系统工具。`terminal_send(run_in_background: true)` 会注册到 `ctx.jobs`；schema 不包含 TUI、具名按键序列、BEL、调整尺寸、自动启动和跨 agent 共享。 |
 | `@deepseek-ai/dsh-tool-goal` | `create_goal`、`get_goal`、`update_goal` | `ctx.tools`、`ctx.agents`、`ctx.goals`、`ctx.systemPrompt`、`a calling Agent in an authorized open turn` | `tool/call`、`goal/change for mutations`、`tool/result` | - | create、edit、pause 和 resume 要求直接来自人类的根权限；complete 和 blocked 也接受确切的当前 Goal Round。blocked 的默认下限是 3 个获准的 Round。 |
@@ -43,6 +48,7 @@
 | `@deepseek-ai/dsh-tool-jobs` | `job_kill`、`job_list`、`job_output` | `ctx.tools`、`ctx.jobs`、`ctx.systemPrompt` | `tool/call`、`tool/result`、`user/message via agent.inject() for background completion notices` | - | 与任务种类无关的后台任务控制器：后台 bash 命令、PTY 发送和 subagent 都通过相同的 3 个工具读取、列出和终止。加载该插件会挂接控制器，从而启用生产方的 `ctx.jobs.start()`。 |
 | `@deepseek-ai/dsh-experimental-tool-agent-team` | `followup_task`、`interrupt_agent`、`list_agents`、`send_message`、`spawn_teammate`、`team_task_create`、`team_task_get`、`team_task_list`、`team_task_update`、`wait_agent` | `ctx.tools`、`ctx.systemPrompt`、`ctx.agentTeams`、`an exact live Team member Agent` | `tool/call`、`team/member`、`team/message/queued`、`team/message/delivered`、`team/task`、`tool/result` | - | 这 10 个工具限定于隐式 Team Lead 与持久 teammate 作用域。随产品发布的 dsh-base bundle 默认禁用该包；文档中的 Agent Teams profile patch 会启用它，并禁用旧 continuable child 的同名控制工具。 |
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`、`owning Agent session` | `tool/call`、`todo/write`、`tool/result` | - | todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为检查清单。`allowParallelInProgress` 是没有默认值的必填项，因此本目录明确选择 `true`，对应描述允许同时存在多个 `in_progress` 项。选择 `false` 的部署会获得同一工具，但描述会要求只能有 1 个活动任务。 |
+| `@deepseek-ai/dsh-component-library` | `component_query`、`component_record` | `ctx.tools`、`ctx.systemPrompt`、`ctx.skills`、`ctx.settings`、`ctx.storageDomain` | `tool/call`、`tool/result`、`component_library 领域写入`、`component-library/changed` | - | component_query 把扫描记录排在模型贡献记录之前，并隔离未审核的模型记录（除非 component-library 设置命名空间选择纳入）；component_record 的写入先隔离，待 Web 设置卡片人工审核。 |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`、`ctx.workflowEngine`、`ctx.systemPrompt`、`a calling Agent (exec.agent parents the script children)` | `tool/call`、`tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`、`web_search` | `ctx.tools`、`ctx.web`、`ctx.systemPrompt` | `tool/call`、`tool/result` | - | web_search 和 web_fetch 将提供方选择置于 ctx.web 之后，使模型可见 schema 在更换后端时保持稳定。 |
 
@@ -784,6 +790,204 @@ pwsh 工具是 Windows 组合中 bash 执行器 seam 的 PowerShell 方言消费
 
 先读后写／编辑策略由 `@deepseek-ai/dsh-fs-observation-policy` 添加；它是一个 `fs/*` 事件门禁插件，不会改变 schema。加载这些工具的部署按预期也应加载该插件。没有 `ctx.attachments` 时图片工具不会注册；其 schema 与路由无关，执行时除非确切路由的模型声明图片输入，否则拒绝。
 
+<a id="deepseek-aidsh-tool-ls"></a>
+
+## `@deepseek-ai/dsh-tool-ls`
+
+### `ls`
+
+列出一个目录的直接条目——子目录（带 "/" 后缀）与文件（有字节大小时附带）——按目录优先再按名称排序。最多返回 500 个条目；更大的目录会报告未显示的条目数。点号文件默认隐藏，除非设置 `all`。用它查看目录里有什么；要按模式在整棵树中找文件请用 glob。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Directory to list. Defaults to the session workspace; a relative path resolves against it."
+    },
+    "all": {
+      "type": "boolean",
+      "description": "Include dot-prefixed entries (e.g. \".git\", \".env\"). Defaults to false."
+    },
+    "depth": {
+      "type": "number",
+      "description": "Recurse this many levels below the listed directory (a tree); 0 or omitted lists only direct entries. Capped by the deployment maximum."
+    }
+  }
+}
+```
+
+来源：[`packages/fs/tool-ls/src/index.ts`](../packages/fs/tool-ls/src/index.ts)
+
+目录带尾部分隔符渲染，文件在后端报告时显示字节大小；点号前缀条目默认隐藏，除非设置 `all`；列表封顶 maxEntries（500）并附未显示条目说明。会话相对路径对调用 agent 的工作区解析，与 read/write/edit 工具一致。
+
+<a id="deepseek-aidsh-tool-multi-edit"></a>
+
+## `@deepseek-ai/dsh-tool-multi-edit`
+
+### `multi_edit`
+
+在一次调用中对一个或多个文件应用一批字面字符串编辑。任何内容落盘前都会针对当前文件内容验证每个编辑：每个 oldString 必须在其文件中恰好出现一次，除非 replaceAll 为 true；同文件编辑按顺序作用于演进中的内容。写入带版本守卫——文件的并发变更会响亮地失败该文件而不是覆盖；批次中途失败会回滚已写入的文件，不留下部分批次。每次调用最多 25 个编辑。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "File to edit; a relative path resolves against the session workspace."
+          },
+          "oldString": {
+            "type": "string",
+            "description": "The exact existing text to replace."
+          },
+          "newString": {
+            "type": "string",
+            "description": "The replacement text."
+          },
+          "replaceAll": {
+            "type": "boolean",
+            "description": "Replace every occurrence. Defaults to false (exactly one)."
+          },
+          "regex": {
+            "type": "boolean",
+            "description": "Treat oldString as a regular expression (ECMAScript syntax). Defaults to false (literal). $1..$9 capture groups in newString expand to their match."
+          }
+        },
+        "required": [
+          "path",
+          "oldString",
+          "newString"
+        ]
+      }
+    }
+  },
+  "required": [
+    "edits"
+  ]
+}
+```
+
+来源：[`packages/fs/tool-multi-edit/src/index.ts`](../packages/fs/tool-multi-edit/src/index.ts)
+
+任何写入前都会针对当前内容验证每个 oldString；同文件编辑按顺序作用于演进中的内容，写入带版本守卫（并发变更会响亮地失败该文件），批次中途失败会报告哪些文件已落盘。只编辑既有文件——创建用 write。
+
+<a id="deepseek-aidsh-tool-tasks"></a>
+
+## `@deepseek-ai/dsh-tool-tasks`
+
+### `task_list`
+
+列出会话工作区 package.json 中定义的 npm 脚本——task_run 可运行的任务名。
+
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+来源：[`packages/shell/tool-tasks/src/index.ts`](../packages/shell/tool-tasks/src/index.ts)
+
+### `task_run`
+
+通过 npm 运行会话工作区 package.json 中的一个 npm 脚本。报告退出码与受限的合并输出尾部（先 stdout 后 stderr）。非零退出作为正常结果报告——读输出尾部来诊断。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "script": {
+      "type": "string",
+      "description": "The npm script name to run (see task_list)."
+    },
+    "workspace": {
+      "type": "string",
+      "description": "Relative workspace path from task_list whose scripts to run; omitted runs in the session workspace root."
+    }
+  },
+  "required": [
+    "script"
+  ]
+}
+```
+
+来源：[`packages/shell/tool-tasks/src/index.ts`](../packages/shell/tool-tasks/src/index.ts)
+
+task_list 从会话工作区的 package.json 发现 npm 脚本；task_run 经配置的包管理器（默认 npm）执行其一，并报告退出码与受限的合并输出尾部。非零退出是正常报告，不是传输失败。
+
+<a id="deepseek-aidsh-tool-git"></a>
+
+## `@deepseek-ai/dsh-tool-git`
+
+### `git`
+
+在会话工作区运行一个结构化 git 操作。动作：status（porcelain + branch）、diff（工作树，或配合 staged 的 --cached）、log（oneline，最新在前）、show（带 stat 的某个 ref）、branch（列表）、add（暂存路径）、commit（消息经 stdin）、checkout（某个 ref，或允许时丢弃路径）、restore（允许时丢弃已跟踪变更）、stash（push，或以 ref="pop" 弹出）。网络动作（push/pull/fetch）在此部署中禁用。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "The git operation. One of: status, diff, log, show, branch, add, commit, checkout, restore, stash."
+    },
+    "paths": {
+      "type": "array",
+      "description": "Paths for add / restore / checkout-with-paths / diff. No whitespace or shell metacharacters (quoting is unnecessary: values pass as plain arguments).",
+      "items": {
+        "type": "string"
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Commit message (commit only); rides stdin, never a shell quote."
+    },
+    "ref": {
+      "type": "string",
+      "description": "A ref for show / checkout / push / pull / fetch, or \"pop\" for stash."
+    },
+    "staged": {
+      "type": "boolean",
+      "description": "diff the staged index instead of the working tree. Defaults to false."
+    }
+  },
+  "required": [
+    "action"
+  ]
+}
+```
+
+来源：[`packages/shell/tool-git/src/index.ts`](../packages/shell/tool-git/src/index.ts)
+
+一个带 action 枚举的 git 工具：porcelain 状态、diff/log/show/branch 读取、add/commit/checkout/stash 本地写入，push/pull/fetch 仅在部署开启网络时可用。ref 与路径按 shell 元字符校验；提交消息经 -F - 走 stdin；restore/带路径 checkout 的丢弃需要 allowDiscard。
+
+<a id="deepseek-aidsh-tool-compact"></a>
+
+## `@deepseek-ai/dsh-tool-compact`
+
+### `compact`
+
+压缩本会话的历史：用摘要替换已被取代的细节以释放上下文。报告被压缩的范围（历史条目与 token 数），或报告压缩未发生的结构化原因（busy、changed、summary 失败、commit 或持久化故障）。会话绝不会被静默劣化。
+
+```json
+{
+  "type": "object",
+  "properties": {}
+}
+```
+
+来源：[`packages/compaction/tool-compact/src/index.ts`](../packages/compaction/tool-compact/src/index.ts)
+
+面向模型的手动压缩路径，与人类的 /compact 命令对应：报告被压缩的历史范围，或把结构化失败（busy、changed、summary、commit、persistence、cancelled）作为错误结果返回。绝不静默劣化会话。
+
 <a id="deepseek-aidsh-tool-fs-search"></a>
 
 ## `@deepseek-ai/dsh-tool-fs-search`
@@ -1214,12 +1418,19 @@ create、edit、pause 和 resume 要求直接来自人类的根权限；complete
   "properties": {
     "operation": {
       "type": "string",
-      "description": "goToDefinition, findReferences, goToImplementation, or hover.",
+      "description": "goToDefinition, findReferences, goToImplementation, hover (cursor operations — line/character required); documentSymbol, diagnostics (file outline / pulled diagnostics — file_path required); workspaceSymbol (query required); rename (file_path, line, character, new_name); formatting (file_path only); incomingCalls/outgoingCalls (file_path, line, character — the host prepares the symbol at the cursor and returns its callers or callees).",
       "enum": [
         "goToDefinition",
         "findReferences",
         "goToImplementation",
-        "hover"
+        "hover",
+        "documentSymbol",
+        "workspaceSymbol",
+        "diagnostics",
+        "rename",
+        "formatting",
+        "incomingCalls",
+        "outgoingCalls"
       ]
     },
     "file_path": {
@@ -1228,18 +1439,27 @@ create、edit、pause 和 resume 要求直接来自人类的根权限；complete
     },
     "line": {
       "type": "number",
-      "description": "One-based line of the cursor."
+      "description": "One-based line of the cursor (cursor operations and rename)."
     },
     "character": {
       "type": "number",
-      "description": "One-based UTF-16 column of the cursor."
+      "description": "One-based UTF-16 column of the cursor (cursor operations and rename)."
+    },
+    "query": {
+      "type": "string",
+      "description": "Symbol name fragment for workspaceSymbol."
+    },
+    "new_name": {
+      "type": "string",
+      "description": "The new identifier for rename."
+    },
+    "apply": {
+      "type": "boolean",
+      "description": "rename only: the host applies the plan itself with version guards and reports applied files; default false returns the plan for you to apply."
     }
   },
   "required": [
-    "operation",
-    "file_path",
-    "line",
-    "character"
+    "operation"
   ]
 }
 ```
@@ -2138,6 +2358,110 @@ lsp 工具将提供方选择和语言服务器子进程置于 ctx.lsp 之后，�
 来源：[`packages/todo/tool-todo/src/index.ts`](../packages/todo/tool-todo/src/index.ts)
 
 todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为检查清单。`allowParallelInProgress` 是没有默认值的必填项，因此本目录明确选择 `true`，对应描述允许同时存在多个 `in_progress` 项。选择 `false` 的部署会获得同一工具，但描述会要求只能有 1 个活动任务。
+
+<a id="deepseek-aidsh-component-library"></a>
+
+## `@deepseek-ai/dsh-component-library`
+
+### `component_query`
+
+在编写 UI 代码前检索本检出已学习的 UI 组件库。返回匹配组件及其 props、`--dsw-*` 设计令牌、源码路径与用法示例，精确名称优先。优先复用扫描命中的组件，而非新造原语。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Free text: a component name, package name, purpose keyword, or `--dsw-*` token."
+    },
+    "pkg": {
+      "type": "string",
+      "description": "Restrict matches to one npm package name."
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum matches to return (default 10)."
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+来源：[`packages/storage/component-library/src/tools.ts`](../packages/storage/component-library/src/tools.ts)
+
+### `component_record`
+
+把你刚创建的 UI 组件记录进本检出的组件库，让后续工作可以复用。记录先隔离接受人工审核，通过后才进入 component_query 结果排名。只对真正可复用的组件调用，绝不用于一次性标记。
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The exported PascalCase component name."
+    },
+    "pkg": {
+      "type": "string",
+      "description": "The npm package name owning the component."
+    },
+    "path": {
+      "type": "string",
+      "description": "Repository-relative source path, e.g. packages/client/ui-foo/src/client/Bar.tsx."
+    },
+    "props": {
+      "type": "array",
+      "description": "The component’s props.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      }
+    },
+    "tokens": {
+      "type": "array",
+      "description": "The `--dsw-*` design tokens the component’s styles reference.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "jsdoc": {
+      "type": "string",
+      "description": "One-line purpose summary."
+    },
+    "example": {
+      "type": "string",
+      "description": "A short usage snippet."
+    }
+  },
+  "required": [
+    "name",
+    "pkg",
+    "path"
+  ]
+}
+```
+
+来源：[`packages/storage/component-library/src/tools.ts`](../packages/storage/component-library/src/tools.ts)
+
+component_query 把扫描记录排在模型贡献记录之前，并隔离未审核的模型记录（除非 component-library 设置命名空间选择纳入）；component_record 的写入先隔离，待 Web 设置卡片人工审核。
 
 <a id="deepseek-aidsh-tool-workflow"></a>
 

@@ -40,6 +40,9 @@
       "path": "../../feedback/message-feedback"
     },
     {
+      "path": "../../storage/component-library"
+    },
+    {
       "path": "../../host/plugin-inventory"
     },
     {

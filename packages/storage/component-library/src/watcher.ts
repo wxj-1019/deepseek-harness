@@ -46,8 +46,8 @@ function sourceFileOf(file: string): string {
  * it exactly once.
  */
 export class ComponentLibraryWatcher {
-  private watcher?: FSWatcher
-  private opening?: Promise<void>
+  private watcher: FSWatcher | undefined
+  private opening: Promise<void> | undefined
 
   /**
    * @param root - checkout root containing {@link CLIENT_TREE}.
@@ -77,15 +77,17 @@ export class ComponentLibraryWatcher {
     })
     this.watcher = watcher
     this.opening = new Promise<void>((resolve, reject) => {
-      watcher.on('ready', () => resolve())
+      watcher.on('ready', () => {
+        resolve()
+      })
       watcher.on('error', (error) => {
         this.log(`component-library: watcher error: ${String(error)}`)
         if (this.opening !== undefined) reject(error instanceof Error ? error : new Error(String(error)))
       })
     })
-    watcher.on('add', file => this.settled(file))
-    watcher.on('change', file => this.settled(file))
-    watcher.on('unlink', file => this.removed(file))
+    watcher.on('add', (file) => { this.settled(file) })
+    watcher.on('change', (file) => { this.settled(file) })
+    watcher.on('unlink', (file) => { this.removed(file) })
     // A disposed-then-ready race rejects nobody; the close simply wins.
     this.opening.catch(() => {})
     await this.opening
