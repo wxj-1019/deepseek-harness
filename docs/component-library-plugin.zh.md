@@ -35,7 +35,7 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 | `packages/storage/component-library` | 宿主：扫描器、监听器、存储域、模型工具、技能 Provider | `storage-domain`、`tools`、`skills` |
 | `packages/client/ui-component-library` | 客户端：设置卡片（之后可升级为浏览视图） | `settings.plugin.item`、`storage-domain` 远端读取 |
 
-宿主包拥有域 schema 与学习管线。客户端包只负责呈现，经域的远端面读取。
+宿主包拥有域 schema 与学习管线。客户端包只负责呈现，经域的远端面读取。bundle 接线与每个 client 功能相同的两步：`web-app/package.json` 依赖加 `web-app/cordis.patch.yml` 插入行。
 
 ## 4. 数据模型
 
@@ -61,6 +61,30 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 - `tokens` 是该组件自身 CSS module 引用的 `--dsw-*` 变量集合。
 - `example` 可选：存在时取自最近的测试文件挂载调用，否则取 JSDoc 的 `@example` 块。
 
+### 存储域 schema
+
+域的 zod 组件记录表：
+
+```ts
+const ComponentRecord = z.object({
+  id: z.string().required(),
+  pkg: z.string().required(),
+  name: z.string().required(),
+  path: z.string().required(),
+  props: z.array(z.object({
+    name: z.string().required(),
+    type: z.string().required(),
+    required: z.boolean().default(false),
+  })).default([]),
+  tokens: z.array(z.string()).default([]),
+  jsdoc: z.string().default(''),
+  example: z.string().default(''),
+  origin: z.enum(['scanned', 'model']).default('scanned'),
+  propsInferred: z.boolean().default(true),
+  updatedAt: z.number().default(0),
+})
+```
+
 ### 样式 token 清单（生成约束语料）
 
 扫描器同时解析 `packages/client/ui-theme/src/styles/design-platform.css` 为 token 列表：`{ name, value, tier: 'static' | 'alias' | 'role' }`。产出为参考文档而非数据表。
@@ -72,7 +96,7 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 用受限 glob 遍历 `packages/client/*/src/client`；逐 `.tsx` 文件：
 
 1. 用 TypeScript 编译器 API（`ts.createSourceFile` + `ts.forEachChild`）解析 `export function Name` 与 `export const Name =`（首字母大写）声明。
-2. 对每个组件解析 props 类型引用（`NameProps`/`XxxInjected` 交集），收集成员名、required 标记与渲染类型串。
+2. 对每个组件按序解析 props 类型引用：存在 `NameProps` 接口则用，否则取 `props:` 参数的内联类型，再否则取同文件的 `Props` 导出。成员名、required 标记与渲染类型串取自解析结果的成员。
 3. 读同基名的 `*.module.css`，收集 `--dsw-*` 引用。
 4. 每个组件产出一条记录；解析失败的文件记日志跳过，绝不中断。
 
@@ -92,13 +116,13 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 
 ### `component.query`
 
-检索匹配的组件记录。参数：`query`（自由文本：名称、包名或用途关键词）、`pkg`（可选过滤）、`limit`（默认 10）。输出 schema：`{ matches: [{ name, pkg, path, props, tokens, example }] }`。`render` 在转录卡片上呈现精简的排名表。
+检索匹配的组件记录。参数：`query`（自由文本：名称、包名或用途关键词）、`pkg`（可选过滤）、`limit`（默认 10）。第一迭代排名用纯字符串计分：名称精确匹配优于包名匹配，包名匹配优于 jsdoc 关键词，扫描记录优于模型贡献记录。输出 schema：`{ matches: [{ name, pkg, path, props, tokens, example }] }`。`render` 在转录卡片上呈现精简的排名表。
 
 ### `component.record`
 
 写入模型贡献的记录。参数：`name`、`pkg`、`path`、`props`（`{name, type, required}` 数组）、`tokens`、`jsdoc`、`example`。写入经域 schema 校验并打上 `origin: 'model'`。
 
-两个工具都在宿主包插件里 `ctx.tools.register(defineTool(...))` 注册，随后自动进入所有可用模型的系统提示，无需额外上架。
+两个工具都在宿主包插件里 `ctx.tools.register(defineTool(...))` 注册，随后自动进入所有可用模型的系统提示，无需额外上架。Web 端转录卡片经 `ui-tool` 的 `tool.call.toolview` 槽渲染，与其他工具一致。
 
 ## 7. 技能通道
 
@@ -110,14 +134,14 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 
 ## 9. 实施计划
 
-1. **骨架**：两个包的 manifest、tsconfig、tsdown、invariant 伴生与双语 README。`pnpm run gen-tsconfig-paths` 自动补别名。
+1. **骨架**：两个包的 manifest、tsconfig、tsdown、invariant 伴生与双语 README。`pnpm run gen-tsconfig-paths` 自动补别名；`web-app/package.json` 加两个依赖，`web-app/cordis.patch.yml` 加两条插入行。
 2. **存储 + 静态扫描**：域、TypeScript-API 提取器、`packages/client` 冷启动播种。
 3. **模型工具**：`component.query` 与 `component.record`，带 wire schema 与转录渲染。
 4. **客户端面板**：keyed 设置卡片与实时刷新。
 5. **监听器 + 技能 Provider**：持续学习与技能通道。
 6. **打磨**：检索评分、从 spec 提取示例、面板的审查控件。
 
-每阶段随单测与 Agent Note 落地；工具稳定后,keyless 快照套件补一条 `component_library` 遍历录制。
+每阶段随单测与 Agent Note 落地；工具稳定后，keyless 快照套件补一条 `component_library` 遍历录制。
 
 ## 10. 测试策略
 
@@ -132,6 +156,7 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 - **示例质量**：测试挂载片段是最佳示例但会漂移；记录带 `updatedAt`，陈旧示例可见并可刷新。
 - **模型幻觉记录**：`origin: 'model'` 记录先隔离，待人工在面板确认；查询结果把它们排在扫描记录之下。
 - **监听成本**：chokidar 在 `packages/client` 上受 200ms 稳定性阈值与按文件重提约束，闲置时零成本。
+- **门禁债**：每个新包从第一天起就要满足 hygiene 门禁（invariant 伴生、manifest 版本/files、依赖分类）——合并收敛修复是模板。
 
 ## 12. 验收标准
 
@@ -139,3 +164,4 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 - 设置卡片列出播种的组件并在 `domain/changed` 时刷新。
 - 生成的技能正文经技能工具加载无格式错误。
 - 录制的 keyless 遍历可回放：扫描 → 查询 → 记录 → 面板刷新。
+- `pnpm run hygiene` 在两个新包存在时通过。

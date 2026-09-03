@@ -35,7 +35,7 @@ Two packages, following the host/client pairing convention:
 | `packages/storage/component-library` | Host: scanner, watcher, storage domain, model tools, skill provider | `storage-domain`, `tools`, `skills` |
 | `packages/client/ui-component-library` | Client: settings card (and later a browsing view) | `settings.plugin.item`, `storage-domain` remote read |
 
-The Host package owns the domain schema and the learning pipeline. The Client package owns presentation only and reads through the domain's remote surface.
+The Host package owns the domain schema and the learning pipeline. The Client package owns presentation only and reads through the domain's remote surface. Bundle wiring rides the same two steps as every client feature: a `web-app/package.json` dependency plus one insert row in `web-app/cordis.patch.yml`.
 
 ## 4. Data model
 
@@ -61,6 +61,30 @@ The Host package owns the domain schema and the learning pipeline. The Client pa
 - `tokens` is the set of `--dsw-*` variables referenced in the component's own CSS module.
 - `example` is optional; it comes from the nearest test file's mount call when one exists, else the JSDoc `@example` block.
 
+### Storage-domain schema
+
+The domain's zod table for component records:
+
+```ts
+const ComponentRecord = z.object({
+  id: z.string().required(),
+  pkg: z.string().required(),
+  name: z.string().required(),
+  path: z.string().required(),
+  props: z.array(z.object({
+    name: z.string().required(),
+    type: z.string().required(),
+    required: z.boolean().default(false),
+  })).default([]),
+  tokens: z.array(z.string()).default([]),
+  jsdoc: z.string().default(''),
+  example: z.string().default(''),
+  origin: z.enum(['scanned', 'model']).default('scanned'),
+  propsInferred: z.boolean().default(true),
+  updatedAt: z.number().default(0),
+})
+```
+
 ### Style-token inventory (generation constraint corpus)
 
 The scanner additionally parses `packages/client/ui-theme/src/styles/design-platform.css` into a token list: `{ name, value, tier: 'static' | 'alias' | 'role' }`. This is published as a reference document, not a database table.
@@ -72,7 +96,7 @@ The scanner additionally parses `packages/client/ui-theme/src/styles/design-plat
 Walk `packages/client/*/src/client` with a bounded glob; per `.tsx` file:
 
 1. Parse with the TypeScript compiler API (`ts.createSourceFile` + `ts.forEachChild`) for `export function Name` and `export const Name =` declarations whose first letter is uppercase.
-2. For each component, resolve the props type reference (`NameProps` / `XxxInjected` intersection) and collect its member names, required flags, and rendered type strings.
+2. For each component, resolve the props type reference in order: the `NameProps` interface if one exists, else the destructured `props:` parameter's inline type, else a `Props`-named export from the same file. Member names, required flags, and rendered type strings come from the resolved type's members.
 3. Read the sibling `*.module.css` (same basename) and collect `--dsw-*` references.
 4. Emit one record per component; unknown/unparseable files are skipped with a log line, never an abort.
 
@@ -92,13 +116,13 @@ A write lands a record in the storage domain and emits `domain/changed`, which t
 
 ### `component.query`
 
-Retrieves matching component records. Parameters: `query` (free text: name, package, or purpose keyword), `pkg` (optional filter), `limit` (default 10). Output schema: `{ matches: [{ name, pkg, path, props, tokens, example }] }`. The `render` presents a compact ranked table for the transcript card.
+Retrieves matching component records. Parameters: `query` (free text: name, package, or purpose keyword), `pkg` (optional filter), `limit` (default 10). Ranking in the first iteration is plain string scoring: exact name match beats package match, package match beats keyword-in-jsdoc, scanned records rank above model-contributed ones. Output schema: `{ matches: [{ name, pkg, path, props, tokens, example }] }`. The `render` presents a compact ranked table for the transcript card.
 
 ### `component.record`
 
 Writes a model-contributed record. Parameters: `name`, `pkg`, `path`, `props` (array of `{name, type, required}`), `tokens`, `jsdoc`, `example`. The write is validated against the domain schema and stamped `origin: 'model'`.
 
-Both tools register with `ctx.tools.register(defineTool(...))` inside the Host package's plugin, so they appear in the system prompt for every capable model without further plumbing.
+Both tools register with `ctx.tools.register(defineTool(...))` inside the Host package's plugin, so they appear in the system prompt for every capable model without further plumbing. On the Web side the transcript cards render through `ui-tool`'s `tool.call.toolview` slot like any other tool.
 
 ## 7. Skills channel
 
@@ -110,7 +134,7 @@ A `settings.plugin.item` keyed card (`key: 'component-library'`) renders the lib
 
 ## 9. Implementation plan
 
-1. **Scaffold**: the two packages with manifests, tsconfigs, tsdown configs, invariant companions, and bilingual READMEs. `pnpm run gen-tsconfig-paths` picks up the aliases.
+1. **Scaffold**: the two packages with manifests, tsconfigs, tsdown configs, invariant companions, and bilingual READMEs. `pnpm run gen-tsconfig-paths` picks up the aliases; `web-app/package.json` gains both dependencies and `web-app/cordis.patch.yml` gains the two insert rows.
 2. **Storage + static scan**: the domain, the TypeScript-API extractor, and cold-start seeding of `packages/client`.
 3. **Model tools**: `component.query` and `component.record` with wire schemas and transcript rendering.
 4. **Client panel**: the keyed settings card with live refresh.
@@ -132,6 +156,7 @@ Each stage lands with its unit tests and an Agent Note; the keyless snapshot sui
 - **Example quality**: test-mount snippets are the best examples but can drift; records keep `updatedAt` so stale examples are visible and refreshable.
 - **Hallucinated model records**: `origin: 'model'` records are quarantined until a human confirms them on the panel; query results rank them below scanned records.
 - **Watcher cost**: chokidar on `packages/client` is bounded by a 200 ms stability threshold and per-file re-extraction, so it stays idle-priced.
+- **Gate debt**: every new package must satisfy the hygiene gates (invariant companion, manifest version/files, dependency classification) from day one — the merge-convergence repair is the template.
 
 ## 12. Acceptance criteria
 
@@ -139,3 +164,4 @@ Each stage lands with its unit tests and an Agent Note; the keyless snapshot sui
 - The settings card lists the seeded components and refreshes on `domain/changed`.
 - The generated skill body loads through the skill tool without format errors.
 - A recorded walkthrough replays keylessly: scan → query → record → panel refresh.
+- `pnpm run hygiene` passes with both new packages in the tree.
