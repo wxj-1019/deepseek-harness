@@ -18,9 +18,10 @@ import { isAbsolute } from 'node:path'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 // Type-only: pulls the ctx.sessionController declaration merge into this program.
 import type {} from '@deepseek-ai/dsh-api-session-controller'
-import { GraphLogEntry, GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
+import { GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
 
-export { GraphLogEntry, GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
+export type { GraphLogEntry } from './parse.ts'
+export { GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
 
 export const name = 'git-graph'
 
