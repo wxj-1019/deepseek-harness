@@ -1,0 +1,8 @@
+.gauge {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-static-blue-500);
+}
+
+.gauge:hover {
+  color: var(--dsw-alias-label-primary);
+}
