@@ -1,29 +1,31 @@
 /**
  * Git commit-history reading for the web UI: a `/git-graph/api` prefix route
- * serving parent-aware log rows and branch names over the shell seam. The
- * route is read-only by construction — no command in this surface mutates a
- * repository — so a web client can render the commit rail without any model
- * tool involvement. Working directories are validated absolute paths, and
- * every invocation goes through {@link Shell.run} with the seam's own
- * timeout/output limits.
+ * serving parent-aware log rows and branch names. The route is read-only by
+ * construction — no command in this surface mutates a repository — so a web
+ * client can render the commit rail without any model tool involvement.
+ *
+ * Git runs through a direct `spawn('git', …)` rather than the shell seam: the
+ * seam wraps every command in an interactive shell (PowerShell on Windows),
+ * whose ~1–2 s cold start dominates a UI request that git itself serves in
+ * milliseconds. There is no injection surface — the argv is a fixed template
+ * plus a validated absolute `cwd` — and the spawn carries its own timeout and
+ * output caps.
  */
 import { Context } from '@deepseek-ai/cordis'
-import { isAbsolute } from 'node:path'
+import { spawn } from 'node:child_process'
 import type { IncomingMessage } from 'node:http'
+import { isAbsolute } from 'node:path'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-// Type-only: pulls the ctx.shell declaration merge into this program.
-import type {} from '@deepseek-ai/dsh-shell'
 // Type-only: pulls the ctx.sessionController declaration merge into this program.
 import type {} from '@deepseek-ai/dsh-api-session-controller'
 import { GraphLogEntry, GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
 
-export type { GraphLogEntry } from './parse.ts'
-export { GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
+export { GraphLogEntry, GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
 
 export const name = 'git-graph'
 
 /** Services required by this plugin. */
-export const inject = ['webServer', 'shell', 'sessionController', 'sessions']
+export const inject = ['webServer', 'sessionController']
 
 /** Default history page size (mirrors the web panel's lazy paging). */
 export const DEFAULT_LOG_COUNT = 30
@@ -31,9 +33,13 @@ export const DEFAULT_LOG_COUNT = 30
 /** Upper bound on one history page, so a request can never flood the UI. */
 export const MAX_LOG_COUNT = 200
 
+/** Per-request git timeout and captured-stdout budget. */
+const GIT_TIMEOUT_MS = 30_000
+const GIT_STDOUT_MAX_BYTES = 4 * 1024 * 1024
+
 /** Route method and body shape of one history/branch request. */
 interface GraphRequest {
-  /** Durable Session identity; the host resolves the session working directory when cwd is absent. */
+  /** Durable Session identity; the host resolves the session's working directory when cwd is absent. */
   sessionId?: string
   /** Absolute repository working directory (overrides the session resolution). */
   cwd?: string
@@ -69,23 +75,42 @@ class GraphError extends Error {
   }
 }
 
-/** Run one git read through the shell seam; rejects with GraphError on failure. */
-async function runGitRead(
-  ctx: Context,
-  cwd: string,
-  args: readonly string[],
-): Promise<string> {
-  const result = await ctx.shell.run(ctx.shell.resolve({
-    command: `git ${args.join(' ')}`,
-    workdir: cwd,
-    timeoutMs: 30_000,
-  }))
-  if (result.exitCode !== 0) {
-    throw new GraphError(
-      `git ${args[0] ?? ''} failed: ${result.stderr.text.trim() || `exit ${String(result.exitCode)}`}`,
-    )
-  }
-  return result.stdout.text
+/**
+ * Run one git read as a direct `git` subprocess (no shell layer), with a kill
+ * timeout and a captured-stdout budget; rejects with GraphError on failure.
+ */
+function runGitRead(cwd: string, args: readonly string[]): Promise<string> {
+  return new Promise<string>((resolvePromise, reject) => {
+    const child = spawn('git', ['-C', cwd, '--no-pager', '-c', 'color.ui=false', ...args], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' },
+    })
+    let stdout = ''
+    let stdoutBytes = 0
+    let stderr = ''
+    const timer = setTimeout(() => {
+      child.kill('SIGKILL')
+      reject(new GraphError(`git ${args[0] ?? ''} timed out after ${GIT_TIMEOUT_MS}ms`))
+    }, GIT_TIMEOUT_MS)
+    child.stdout.on('data', (chunk: Buffer) => {
+      stdoutBytes += chunk.length
+      stdout += chunk.toString('utf8')
+      if (stdoutBytes > GIT_STDOUT_MAX_BYTES) {
+        child.kill('SIGKILL')
+        reject(new GraphError(`git ${args[0] ?? ''} output exceeded ${GIT_STDOUT_MAX_BYTES} bytes`))
+      }
+    })
+    child.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString('utf8') })
+    child.on('error', (error) => {
+      clearTimeout(timer)
+      reject(new GraphError(`cannot run git: ${error.message}`))
+    })
+    child.on('close', (code) => {
+      clearTimeout(timer)
+      if (code === 0) resolvePromise(stdout)
+      else reject(new GraphError(`git ${args[0] ?? ''} failed: ${stderr.trim() || `exit ${String(code)}`}`))
+    })
+  })
 }
 
 /** One request's history page: rows plus whether an older page exists. */
@@ -96,26 +121,18 @@ export interface GraphLogPage {
 }
 
 /** Fetch one history page for a repository working directory. */
-async function logPage(
-  ctx: Context,
-  cwd: string,
-  count: number,
-  skip: number,
-): Promise<GraphLogPage> {
-  const raw = await runGitRead(ctx, cwd, [
+async function logPage(cwd: string, count: number, skip: number): Promise<GraphLogPage> {
+  const raw = await runGitRead(cwd, [
     'log', '-n', String(count), '--skip', String(skip), '--decorate=short',
     `--pretty=format:${GRAPH_LOG_FORMAT}`,
   ])
   const entries = parseGraphLogLines(raw)
-  // A page shorter than requested means the log ended; `hasMore` then only
-  // holds when the page is exactly full and a probe page found more.
-  const hasMore = entries.length === count && skip + count > 0
-  return { entries, hasMore }
+  return { entries, hasMore: entries.length === count }
 }
 
 /** List local branch names (current branch included). */
-async function branchList(ctx: Context, cwd: string): Promise<string[]> {
-  const raw = await runGitRead(ctx, cwd, ['branch', '--list', '--no-color'])
+async function branchList(cwd: string): Promise<string[]> {
+  const raw = await runGitRead(cwd, ['branch', '--list', '--no-color'])
   return parseBranchNames(raw)
 }
 
@@ -157,8 +174,9 @@ function readBody(req: IncomingMessage): Promise<unknown> {
 
 /**
  * Register the git-graph route. The handler is POST-only; the body carries
- * `{cwd, action?, count?, skip?}` and the response is the wire envelope.
- * @param ctx - Host context with webServer and shell services.
+ * `{sessionId | cwd, action?, count?, skip?}` and the response is the wire
+ * envelope.
+ * @param ctx - Host context with sessionController and webServer services.
  */
 export function apply(ctx: Context): void {
   const handler: WebRoute['handler'] = async (req, res) => {
@@ -175,23 +193,20 @@ export function apply(ctx: Context): void {
         if (typeof body.sessionId !== 'string' || body.sessionId === '') {
           throw new GraphError('git-graph: cwd or sessionId is required')
         }
-        // The attached SessionStore read is O(1); inspect() replays the whole
-        // event log and stalls on long conversations.
-        const attached = ctx.sessions.get(body.sessionId as never)
-        const header = attached?.header ?? (await ctx.sessionController.inspect(body.sessionId as never)).meta
-        if (header.cwd === undefined || header.cwd === '') {
+        const { meta } = await ctx.sessionController.inspect(body.sessionId as never)
+        if (meta.cwd === undefined || meta.cwd === '') {
           throw new GraphError('git-graph: the session has no working directory')
         }
-        cwd = header.cwd
+        cwd = meta.cwd
       }
       const resolvedCwd = requireGraphCwd(cwd)
       if (body.action === 'branch') {
-        writeOk(res, await branchList(ctx, resolvedCwd))
+        writeOk(res, await branchList(resolvedCwd))
         return
       }
       const count = Math.min(Math.max(Number(body.count) || DEFAULT_LOG_COUNT, 1), MAX_LOG_COUNT)
       const skip = Math.max(Number(body.skip) || 0, 0)
-      writeOk(res, await logPage(ctx, resolvedCwd, count, skip))
+      writeOk(res, await logPage(resolvedCwd, count, skip))
     } catch (error) {
       writeError(res, error instanceof GraphError ? 400 : 500, error)
     }
