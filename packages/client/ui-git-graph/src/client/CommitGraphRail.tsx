@@ -6,9 +6,11 @@
  *
  * Geometry contract (see {@link assignGraphRows} + the renderer): each row
  * owns a stretched SVG whose real pixel height is unknown at build time, so
- * ALL coordinates use percentages vertically (`y`/`cy` accept `%`) and lane
- * pixels horizontally — consecutive rows therefore connect exactly at their
- * shared border regardless of text wrap height.
+ * vertical coordinates live in a 0–100 viewBox space (stretched with
+ * `preserveAspectRatio="none"`) while lane coordinates are lane pixels —
+ * consecutive rows therefore connect exactly at their shared border, and
+ * `non-scaling-stroke` keeps every stroke at its screen width under the
+ * non-uniform stretch.
  *
  * Window limitation: assignment sees only the loaded page(s). Parents beyond
  * the loaded window (and children above it) show as rails entering/leaving
@@ -18,16 +20,19 @@ import type { ReactNode } from 'react'
 import type { GraphLogEntry } from '@deepseek-ai/dsh-git-graph'
 
 /** Horizontal pixels one lane occupies (rows share the widest count, so rails never drift). */
-const LANE_PX = 11
+const LANE_PX = 13
 /** Maximum rendered lanes; deeper merges clamp to the rightmost lane. */
 const MAX_LANES = 8
 
-/** Rail/dot palette: four alias tokens (theme-adaptive) cycled per lane. */
+/**
+ * Rail/dot palette: the app's chart series hues (same family as the usage
+ * charts, so the graph reads as one product). Distinct hues per lane —
+ * semantic state colors (error/warn) are deliberately avoided here because a
+ * red rail reads as a failure, not a branch.
+ */
 const PALETTE = [
-  'var(--dsw-alias-brand-primary)',
-  'var(--dsw-alias-state-success-primary)',
-  'var(--dsw-alias-state-warn-primary)',
-  'var(--dsw-alias-state-error-primary)',
+  '#4f8cff', '#22c55e', '#a855f7', '#f97316',
+  '#06b6d4', '#ec4899', '#eab308', '#14b8a6',
 ] as const
 
 /** One history row's rail geometry, laid out against the whole loaded window. */
@@ -116,7 +121,7 @@ export function assignGraphRows(entries: readonly Pick<GraphLogEntry, 'hashFull'
 
     rows.push({
       rails,
-      node: { lane: nodeLane, color: PALETTE[nodeLane % PALETTE.length] ?? PALETTE[0] ?? 'var(--dsw-alias-brand-primary)' },
+      node: { lane: nodeLane, color: PALETTE[nodeLane % PALETTE.length] ?? PALETTE[0] ?? '#4f8cff' },
       edges,
     })
   })
@@ -130,30 +135,50 @@ export function assignGraphRows(entries: readonly Pick<GraphLogEntry, 'hashFull'
   return rows.map(row => ({ ...row, laneCount: Math.min(Math.max(widest, 4), MAX_LANES) }))
 }
 
-const STROKE = 'non-scaling-stroke'
+/** Vertical viewBox height: y units 0–100 stretch with the row (percent-equivalent). */
+const VB_H = 100
+/** Bezier control points that shape the lane-change S-curve. */
+const CURVE_IN = 72
+const CURVE_OUT = 78
 
 /**
  * One history row's rail cell. The outer span is sized by the grid (the text
- * lines); the inner svg is absolutely stretched over it so its intrinsic
- * 150px default can never inflate the row height. Horizontal geometry comes
- * from `row.laneCount`, vertical positions are percentages so adjacent rows
- * connect seamlessly.
+ * lines); the inner svg is absolutely stretched over it with a
+ * `preserveAspectRatio="none"` viewBox so y units behave like percentages and
+ * `non-scaling-stroke` keeps every stroke at its screen width. Lane-change
+ * edges render as cubic S-curves (VSCode-style) instead of straight
+ * diagonals, and the commit dot carries a background ring so it reads as
+ * punched through the rails.
  * @param props - the row geometry and the caller's grid-cell class.
  */
 export function CommitGraphCell(props: { row: GraphRow; className?: string | undefined }): ReactNode {
   const { row, className } = props
   const width = row.laneCount * LANE_PX
-  const x = (lane: number): string => `${lane * LANE_PX + LANE_PX / 2}px`
+  const x = (lane: number): number => lane * LANE_PX + LANE_PX / 2
+  const color = (lane: number): string => PALETTE[lane % PALETTE.length] ?? '#4f8cff'
   return (
     <span className={className} style={{ width, position: 'relative', display: 'block' }} aria-hidden="true">
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }} focusable="false">
+      <svg
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}
+        viewBox={`0 0 ${width} ${VB_H}`}
+        preserveAspectRatio="none"
+        focusable="false"
+      >
         {row.rails.map(lane => (
-          <line key={`rail${lane}`} x1={x(lane)} x2={x(lane)} y1="0%" y2="100%" stroke={PALETTE[lane % PALETTE.length]} strokeWidth="1.5" vectorEffect={STROKE} />
+          <line key={`rail${lane}`} x1={x(lane)} x2={x(lane)} y1={0} y2={VB_H} stroke={color(lane)} strokeWidth="2" opacity="0.75" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         ))}
         {row.edges.map(({ from, to }, index) => (
-          <line key={`edge${index}`} x1={x(from)} x2={x(to)} y1="50%" y2="100%" stroke={PALETTE[from % PALETTE.length]} strokeWidth="1.5" vectorEffect={STROKE} />
+          <path
+            key={`edge${index}`}
+            d={`M ${x(from)} ${VB_H / 2} C ${x(from)} ${VB_H / 2 + CURVE_IN}, ${x(to)} ${VB_H - CURVE_OUT}, ${x(to)} ${VB_H}`}
+            fill="none"
+            stroke={color(from)}
+            strokeWidth="2"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
         ))}
-        <circle cx={x(row.node.lane)} cy="50%" r="3.5" fill={row.node.color} />
+        <circle cx={x(row.node.lane)} cy={VB_H / 2} r="5.5" fill={row.node.color} stroke="var(--dsw-alias-bg-base)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
     </span>
   )

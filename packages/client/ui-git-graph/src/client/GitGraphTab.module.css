@@ -4,7 +4,18 @@
 .root {
   display: flex;
   flex-direction: column;
+  width: 100%;
   min-height: 0;
+  /* A data-dense list needs contrast against the transparent aqua surface:
+     the wallpaper must never fight the graph lanes for attention. */
+  background: color-mix(in srgb, var(--dsw-alias-bg-base) 90%, transparent);
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  /* The aqua glass recipe's top highlight: one inset hairline so the panel
+     lifts off the wallpaper. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  margin: 0 12px 12px;
+  padding: 4px 0 8px;
 }
 
 .header {
@@ -95,7 +106,7 @@
 .hash {
   flex: none;
   font: var(--dsw-font-markdown-code-block-small);
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-secondary);
 }
 
 .subject {
@@ -117,10 +128,27 @@
 .ref {
   flex: none;
   font: var(--dsw-font-markdown-code-block-small);
-  color: var(--dsw-alias-brand-primary);
+  color: var(--dsw-alias-label-secondary);
   background: var(--dsw-alias-bg-layer-1);
-  border-radius: 4px;
-  padding: 0 4px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 999px;
+  padding: 0 7px;
+  line-height: 18px;
+}
+
+/* The branch HEAD points at: filled with the accent so the checked-out
+   branch reads at a glance among sibling pills. */
+.refHead {
+  color: var(--dsw-alias-contrast-primary, #fff);
+  background: color-mix(in srgb, var(--dsw-alias-brand-primary) 78%, transparent);
+  border-color: transparent;
+}
+
+/* An annotated or lightweight tag: warm outline, no fill. */
+.refTag {
+  color: var(--dsw-alias-state-warn-primary);
+  background: transparent;
+  border-color: color-mix(in srgb, var(--dsw-alias-state-warn-primary) 45%, transparent);
 }
 
 .meta {

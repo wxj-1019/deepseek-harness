@@ -6,6 +6,7 @@
  * and recomputes the rail over the whole loaded window.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import clsx from 'clsx'
 import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { GraphLogEntry } from '@deepseek-ai/dsh-git-graph'
@@ -20,16 +21,31 @@ const LOG_BATCH = 20
 /** Full props for the view body: the conversation-view runtime share plus the locale seat. */
 export type GitGraphTabProps = ConvViewProps & PropsLocale<typeof NS>
 
-/** The ref names of one log row's decorations (`HEAD -> main` → `main`), deduped. */
-function refNames(refs: string): string[] {
-  return [...new Set(
-    refs
-      .split(',')
-      .map(ref => ref.trim())
-      .filter(ref => ref !== '')
-      .map(ref => (ref.includes(' -> ') ? ref.slice(ref.indexOf(' -> ') + 4) : ref))
-      .map(ref => (ref.startsWith('tag: ') ? ref.slice(5) : ref)),
-  )]
+/** One decoration of a log row, classified for styling. */
+interface RowRef {
+  readonly name: string
+  /** The ref the HEAD arrow points at — rendered as the filled current-branch pill. */
+  readonly isHead: boolean
+  /** An annotated or lightweight tag. */
+  readonly isTag: boolean
+}
+
+/** The classified decorations of one log row (`HEAD -> main` → head `main`), deduped. */
+function rowRefs(refs: string): RowRef[] {
+  const out: RowRef[] = []
+  const seen = new Set<string>()
+  for (const raw of refs.split(',')) {
+    const ref = raw.trim()
+    if (ref === '') continue
+    const isHead = ref.includes(' -> ')
+    const name = isHead ? ref.slice(ref.indexOf(' -> ') + 4) : ref.startsWith('tag: ') ? ref.slice(5) : ref
+    const isTag = ref.startsWith('tag: ')
+    const dedupeKey = `${isHead}:${name}`
+    if (seen.has(dedupeKey)) continue
+    seen.add(dedupeKey)
+    out.push({ name, isHead, isTag })
+  }
+  return out
 }
 
 /** Relative human time for one ISO date (same style as the rest of the shell). */
@@ -135,8 +151,13 @@ export function GitGraphTab(props: GitGraphTabProps) {
               <span className={css.subject}>{entry.subject}</span>
             </div>
             <div className={css.line2}>
-              {refNames(entry.refs).map(ref => (
-                <span key={ref} className={css.ref}>{ref}</span>
+              {rowRefs(entry.refs).map(ref => (
+                <span
+                  key={`${ref.name}:${ref.isHead}`}
+                  className={clsx(css.ref, ref.isHead && css.refHead, ref.isTag && css.refTag)}
+                >
+                  {ref.name}
+                </span>
               ))}
               <span className={css.meta}>{entry.author} · {relativeTime(entry.date)}</span>
             </div>
