@@ -66,13 +66,15 @@
   color: var(--dsw-alias-state-error-primary);
 }
 
-/* One history row: rail column (spanning both lines) plus the text body. */
+/* One history row: rail column (spanning both lines) plus the text body.
+   Vertical padding lives on .body, NOT here: the rail svg stretches over the
+   row's full height, so any row-level vertical padding would open a line gap
+   at every row boundary. Zero vertical padding = continuous rails. */
 .row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   column-gap: 8px;
-  row-gap: 3px;
-  padding: 7px 14px 6px;
+  padding: 0 14px;
   border-radius: 10px;
   cursor: default;
   transition: background var(--ds-transition-duration-fast, 120ms) ease;
@@ -96,6 +98,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  padding: 7px 0 6px;
 }
 
 .line1 {
