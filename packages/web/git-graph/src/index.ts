@@ -18,6 +18,9 @@ import { isAbsolute } from 'node:path'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 // Type-only: pulls the ctx.sessionController declaration merge into this program.
 import type {} from '@deepseek-ai/dsh-api-session-controller'
+// The local import is required: the type-only re-export below does not create
+// a module-scope binding, and GraphLogPage's entries field names it locally.
+import type { GraphLogEntry } from './parse.ts'
 import { GRAPH_LOG_FORMAT, parseBranchNames, parseGraphLogLines } from './parse.ts'
 
 export type { GraphLogEntry } from './parse.ts'
