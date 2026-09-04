@@ -1422,7 +1422,30 @@ describe('DeepSeekAdapter against a mock server', () => {
     expect(httpErrorCode(413, { code: 'context_length_exceeded' })).toBe('INVALID_REQUEST')
   })
 
-  it('distinguishes terminal quota exhaustion from transient HTTP 429 throttling', () => {
+  it('classifies the DeepSeek flat exceed_context_size_error body as context overflow', async () => {
+    // The DeepSeek 400 body is flat (`type`/`message` at top level, `code` is
+    // the HTTP status), so the wrapped-shape parser sees neither field: the
+    // non-OK branch must still classify the overflow for compaction recovery.
+    const server = await mockServer([{
+      kind: 'http-error',
+      status: 400,
+      body: JSON.stringify({
+        code: 400,
+        type: 'exceed_context_size_error',
+        message: 'request (264029 tokens) exceeds the available context size (262144 tokens), try increasing it',
+        n_prompt_tokens: 264029,
+        n_ctx: 262144,
+      }),
+    }])
+    const ctx = await harness(server.url)
+    const result = await assemble(ctx, { model: 'deepseek-v4-flash', messages: [] })
+    expect(result.finish.kind).toBe('error')
+    if (result.finish.kind !== 'error') throw new Error('expected an error finish')
+    expect(result.finish.failure.code).toBe(CONTEXT_WINDOW_EXCEEDED_CODE)
+    expect(result.finish.failure.message).toContain('exceeds the available context size')
+  })
+
+  it('distinguishes terminal quota exhaustion from transient HTTP 429 throttling', async () => {
     expect(httpErrorCode(429, { code: 'insufficient_quota', message: 'account credits exhausted' }))
       .toBe(QUOTA_EXCEEDED_CODE)
     expect(httpErrorCode(429, { message: 'request rate limit exceeded' })).toBe('RATE_LIMIT')

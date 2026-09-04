@@ -658,17 +658,38 @@ export class DeepSeekAdapter extends LlmAdapter {
       if (!response.ok) {
         let message = `DeepSeek API error (HTTP ${response.status})`
         let providerError: WireError['error']
+        /** The body's own error type when the API uses the flat shape (`exceed_context_size_error`, …). */
+        let providerType: string | undefined
+        let flatMessage: string | undefined
         const rawResponse = await response.text()
         try {
-          const parsed = JSON.parse(rawResponse) as WireError
+          const parsed = JSON.parse(rawResponse) as WireError & { type?: string; message?: string }
           providerError = parsed.error
+          providerType = typeof parsed.type === 'string' ? parsed.type : providerError?.type
           if (providerError?.message) message = providerError.message
+          else if (typeof parsed.message === 'string' && parsed.message !== '') flatMessage = parsed.message
         } catch {
           // The HTTP status remains authoritative when a gateway returns malformed JSON.
         }
-        const detail = [providerError?.code, providerError?.type, providerError?.message]
+        if (flatMessage !== undefined && message === `DeepSeek API error (HTTP ${response.status})`) {
+          message = flatMessage
+        }
+        const detail = [
+          providerError?.code, providerError?.type, providerError?.message, providerType, flatMessage,
+        ]
           .filter((field): field is string => typeof field === 'string')
           .join(' ')
+        // A provider-confirmed context overflow routes to the compaction
+        // recovery (compaction-basic listens for CONTEXT_WINDOW_EXCEEDED):
+        // the run must condense and retry, not fail. The DeepSeek 400 body is
+        // flat (`type` at top level), and the shared classifier matches its
+        // "exceeds the available context size" wording.
+        if (providerType === 'exceed_context_size_error' || isContextWindowExceededError(detail)) {
+          throw new LlmError(message, CONTEXT_WINDOW_EXCEEDED_CODE, {
+            cause: new Error(rawResponse.length > 0 ? rawResponse : `DeepSeek HTTP ${response.status}`),
+            status: response.status,
+          })
+        }
         const staleFile = usedFiles.length > 0 && providerRejectedFileId(detail)
         if (staleFile) {
           await Promise.all(staleMappings(usedFiles, detail).map(file => (
