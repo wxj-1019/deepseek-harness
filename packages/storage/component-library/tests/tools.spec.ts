@@ -51,6 +51,36 @@ describe('component_query presentation', () => {
     }
   })
 
+  it('renders unresolved props as the raw type text, not an empty list', async () => {
+    const harness = await setupLibrary()
+    try {
+      const definition = harness.ctx.tools.get('component_query')
+      expect(definition).toBeDefined()
+      if (definition === undefined) return
+
+      // The fixture's Panel props cross file boundaries, so the record keeps
+      // raw text instead of a member list.
+      const result = await harness.ctx.tools.execute({
+        signal: testToolSignal,
+        callId: ToolCallId(`presenter-${++callCounter}`),
+        name: 'component_query',
+        arguments: { query: 'Panel' },
+      })
+      expect(result.isError).toBe(false)
+      const value = result.value as { matches: { propsInferred: boolean; rawProps: string; props: unknown[] }[] }
+      expect(value.matches.at(0)).toMatchObject({
+        propsInferred: false,
+        rawProps: 'BaseProps & { title: string }',
+        props: [],
+      })
+
+      const rendered = definition.output.render({ query: 'Panel' }, result.value)
+      expect(textOf(rendered)).toContain('unresolved: BaseProps & { title: string }')
+    } finally {
+      await harness.dispose()
+    }
+  })
+
   it('renders the empty-library guidance', async () => {
     const harness = await setupLibrary()
     try {

@@ -88,6 +88,51 @@ describe('ComponentLibraryService', () => {
     }
   })
 
+  it('normalizes a contributed path into the scanner id space before the collision check', async () => {
+    const harness = await setupLibrary()
+    try {
+      const service = harness.ctx.componentLibrary
+      const written = await service.contribute({
+        name: 'BackslashCard',
+        pkg: '@deepseek-ai/dsh-client-ui-demo',
+        path: 'E:\\checkout\\packages\\client\\ui-demo\\src\\client\\BackslashCard.tsx',
+      })
+      expect(written).toEqual({ ok: true, value: { done: true, id: 'ui-demo/BackslashCard' } })
+      const record = service.snapshotAll().find(entry => entry.id === 'ui-demo/BackslashCard')
+      expect(record?.path).toBe('packages/client/ui-demo/src/client/BackslashCard.tsx')
+
+      // The same component reached through backslash separators lands on the
+      // scanned id too, so the scanner-collision rejection still fires.
+      const collision = await service.contribute({
+        name: 'Gauge',
+        pkg: '@deepseek-ai/dsh-client-ui-demo',
+        path: 'packages\\client\\ui-demo\\src\\client\\Gauge.tsx',
+      })
+      expect(collision).toMatchObject({ ok: false, error: { code: 'invalid-record' } })
+      expect(JSON.stringify(collision)).toContain('already covered by the scanner')
+    } finally {
+      await harness.dispose()
+    }
+  })
+
+  it('rejects a contributed path that does not name a file under the client tree', async () => {
+    const harness = await setupLibrary()
+    try {
+      const service = harness.ctx.componentLibrary
+      for (const path of [
+        'src/client/Oops.tsx',
+        'packages/storage/component-library/src/index.ts',
+        'packages/client/',
+      ]) {
+        const result = await service.contribute({ name: 'Oops', pkg: 'p', path })
+        expect(result, path).toMatchObject({ ok: false, error: { code: 'invalid-record' } })
+        expect(service.snapshotAll().map(record => record.id)).not.toContain('ui-demo/Oops')
+      }
+    } finally {
+      await harness.dispose()
+    }
+  })
+
   it('discards a model record on review', async () => {
     const harness = await setupLibrary()
     try {

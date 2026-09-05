@@ -10,13 +10,23 @@ import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { ComponentLibraryService } from './index.ts'
 import type { ComponentMatch } from './types.ts'
 
+/**
+ * Render one match's props text: the member list, or the raw props type text
+ * when the type was too dynamic to resolve — never a bare "(none)" for a
+ * component that really takes props.
+ */
+function propsText(match: ComponentMatch): string {
+  if (!match.propsInferred) return `unresolved: ${match.rawProps.replace(/\s+/g, ' ').trim()}`
+  return match.props.map(prop => `${prop.name}${prop.required ? '' : '?'}: ${prop.type}`).join(', ')
+}
+
 /** Render one match list as the model-facing tool result text. */
 function formatMatches(matches: readonly ComponentMatch[]): string {
   if (matches.length === 0) {
     return 'No library components match. Write the component from scratch, then call component_record.'
   }
   const lines = matches.map((match) => {
-    const props = match.props.map(prop => `${prop.name}${prop.required ? '' : '?'}: ${prop.type}`).join(', ')
+    const props = propsText(match)
     const tokens = match.tokens.length === 0 ? '' : `\n  tokens: ${match.tokens.join(', ')}`
     const example = match.example === '' ? '' : `\n  example: ${match.example}`
     return `- ${match.name} (${match.pkg}) [${match.origin}]\n  path: ${match.path}\n  props: ${props === '' ? '(none)' : props}${tokens}${example}`
@@ -45,6 +55,8 @@ const MATCH_SCHEMA = {
         },
       },
     },
+    propsInferred: { type: 'boolean', required: true },
+    rawProps: { type: 'string', required: true },
     tokens: { type: 'array', required: true, items: { type: 'string' } },
     example: { type: 'string', required: true },
     origin: { type: 'string', required: true, enum: ['scanned', 'model'] },

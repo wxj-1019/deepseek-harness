@@ -68,6 +68,10 @@ export interface ComponentMatch {
   readonly path: string
   /** Props resolved from the component's props type. */
   readonly props: readonly ComponentProp[]
+  /** False when the props type was too dynamic to resolve; {@link ComponentMatch.rawProps} carries the type text instead. */
+  readonly propsInferred: boolean
+  /** Raw props type text kept when {@link ComponentMatch.propsInferred} is false. */
+  readonly rawProps: string
   /** `--dsw-*` design tokens referenced by the sibling CSS module. */
   readonly tokens: readonly string[]
   /** Usage snippet, when known. */

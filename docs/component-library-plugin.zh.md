@@ -122,11 +122,11 @@ const ComponentRecord = z.object({
 
 ### `component_query`
 
-检索匹配的组件记录。参数：`query`（自由文本：名称、包名或用途关键词）、`pkg`（可选过滤）、`limit`（默认 10）。第一迭代排名用纯字符串计分：名称精确匹配优于包名匹配，包名匹配优于 jsdoc 关键词，扫描记录优于模型贡献记录。输出 schema：`{ matches: [{ name, pkg, path, props, tokens, example }] }`。`render` 在转录卡片上呈现精简的排名表。
+检索匹配的组件记录。参数：`query`（自由文本：名称、包名或用途关键词）、`pkg`（可选过滤）、`limit`（默认 10）。第一迭代排名用纯字符串计分：名称精确匹配优于包名匹配，包名匹配优于 jsdoc 关键词，扫描记录优于模型贡献记录。输出 schema：`{ matches: [{ name, pkg, path, props, propsInferred, rawProps, tokens, example }] }`；props 类型未解析的匹配携带 `propsInferred: false` 与 `rawProps` 中的原始类型文本，`render` 将该文本标记为 unresolved 呈现，而不是空 props 列表。
 
 ### `component_record`
 
-写入模型贡献的记录。参数：`name`、`pkg`、`path`、`props`（`{name, type, required}` 数组）、`tokens`、`jsdoc`、`example`。写入经域 schema 校验并打上 `origin: 'model'`。
+写入模型贡献的记录。参数：`name`、`pkg`、`path`、`props`（`{name, type, required}` 数组）、`tokens`、`jsdoc`、`example`。path 会被归一化为仓库相对的 POSIX 形式，未指向 `packages/client` 内文件的路径以 `invalid-record` 拒绝，因此派生的 id 始终落在扫描器的 id 空间内。写入经域 schema 校验并打上 `origin: 'model'`。
 
 两个工具都在宿主包插件里 `ctx.tools.register(defineTool(...))` 注册，随后自动进入所有可用模型的系统提示，无需额外上架。Web 端转录卡片经 `ui-tool` 的 `tool.call.toolview` 槽渲染，与其他工具一致。
 

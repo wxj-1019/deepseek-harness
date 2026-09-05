@@ -45,7 +45,7 @@ kind: "package-reference"
 
 ### 可观察行为
 
-插件加载时扫描 `packages/client/*/src/client` 中导出的 PascalCase 组件，按序解析每个组件的 props 类型（`<Name>Props`、首个参数标注、导出的 `Props` 类型），收集同基名 CSS module 的 `--dsw-*` 引用，并从组件的 spec 或 JSDoc `@example` 提取用法示例。记录落入 `component_library` domain；每次持久写入在 domain 提交后广播 `component-library/changed`。`watch` 开启时，一个稳定的 `.tsx` 或 `*.module.css` 变更只重新学习一个文件，`.tsx` 删除会移除其记录。来自 `component_record` 的模型贡献记录处于隔离状态（`reviewed: false`），直到在面板上通过审核；除非 `component-library` settings 命名空间设置 `includeUnreviewed`，查询不含它们。
+插件加载时扫描 `packages/client/*/src/client` 中导出的 PascalCase 组件，按序解析每个组件的 props 类型（`<Name>Props`、首个参数标注、导出的 `Props` 类型），收集同基名 CSS module 的 `--dsw-*` 引用，并从组件的 spec 或 JSDoc `@example` 提取用法示例。记录落入 `component_library` domain；每次持久写入在 domain 提交后广播 `component-library/changed`。`watch` 开启时，一个稳定的 `.tsx` 或 `*.module.css` 变更只重新学习一个文件，`.tsx` 删除会移除其记录。`component_record` 的 path 会被归一化为仓库相对的 POSIX 形式，未指向 `packages/client` 内文件时被拒绝，因此模型衍生的 id 始终落在扫描器的 id 空间内。来自 `component_record` 的模型贡献记录处于隔离状态（`reviewed: false`），直到在面板上通过审核；除非 `component-library` settings 命名空间设置 `includeUnreviewed`，查询不含它们。
 
 -----
 
@@ -132,7 +132,7 @@ kind: "package-reference"
 
 #### 模型看到什么
 
-`component_query` 成功时渲染紧凑的排名列表——每个匹配含名称、包、路径、props、令牌、示例——或空库指引。`component_record` 成功时确认被隔离的 id；失败会点名拒绝原因（例如扫描器已覆盖的 id）。
+`component_query` 成功时渲染紧凑的排名列表——每个匹配含名称、包、路径、props（类型未解析时为标记为 unresolved 的原始类型文本）、令牌、示例——或空库指引。`component_record` 成功时确认被隔离的 id；失败会点名拒绝原因（例如扫描器已覆盖的 id，或路径不在 client 树内）。
 
 #### Token 影响
 
@@ -162,7 +162,7 @@ kind: "package-reference"
 
 这些限制是当前的包约束，不是任务待办。
 
-- **无 checker 的 props 抽取**——跨文件或其他动态 props 类型保留原始文本而非成员列表，因此这类组件的查询结果没有结构化 props 列表。
+- **无 checker 的 props 抽取**——跨文件或其他动态 props 类型保留原始文本而非成员列表；查询结果呈现为标记 unresolved 的原始文本，而不是结构化 props 列表。
 - **设计上项目局部**——组件库只学习其运行的检出；跨项目共享不在范围内。
 - **加载时的冷启动扫描开销**——首次遍历会解析每个客户端组件文件，然后插件才完成加载。
 - **示例随其 spec 漂移**——提取的挂载片段在所属文件下一次扫描时刷新，而不是 spec 变更时。

@@ -139,6 +139,8 @@ function toMatch(record: ComponentRecord): ComponentMatch {
     pkg: record.pkg,
     path: record.path,
     props: record.props,
+    propsInferred: record.propsInferred,
+    rawProps: record.rawProps,
     tokens: record.tokens,
     example: record.example,
     origin: record.origin,
@@ -157,6 +159,28 @@ declare module '@deepseek-ai/cordis' {
 /** Copy and freeze one record before it crosses the service boundary. */
 function snapshotRecord(record: ComponentRecord): ComponentRecord {
   return Object.freeze({ ...record })
+}
+
+/** The POSIX prefix a contributed path must name, below the checkout root. */
+const CLIENT_TREE_PREFIX = `${CLIENT_TREE}/`
+
+/**
+ * Normalize one model-contributed source path into the scanner's
+ * repository-relative POSIX form plus its client-package directory, or
+ * `undefined` when the path does not name a file inside the client tree.
+ * Backslash separators and an absolute checkout prefix are tolerated, so the
+ * derived record id always lands in the scanner's id space and the
+ * scanner-collision rejection stays authoritative.
+ * @param path - the path as the model wrote it.
+ * @returns the normalized path and owning package directory.
+ */
+function normalizeContributedPath(path: string): { path: string; directory: string } | undefined {
+  const posix = path.replace(/\\/g, '/')
+  const start = posix.indexOf(CLIENT_TREE_PREFIX)
+  if (start < 0) return undefined
+  const directory = posix.slice(start + CLIENT_TREE_PREFIX.length).split('/', 1)[0] ?? ''
+  if (directory === '' || directory === '.' || directory === '..') return undefined
+  return { path: posix.slice(start), directory }
 }
 
 /**
@@ -364,14 +388,27 @@ export class ComponentLibraryService extends TypertRemoteService {
 
   /**
    * Validate and store one model-contributed record: quarantined
-   * (`reviewed: false`) until a human approves it on the panel. An id already
-   * covered by the scanner is a loud rejection, not an overwrite.
+   * (`reviewed: false`) until a human approves it on the panel. The path is
+   * normalized into the scanner's repository-relative POSIX form, and a path
+   * that does not name a file under the client tree is a loud rejection. An
+   * id already covered by the scanner is also a loud rejection, not an
+   * overwrite.
    * @param request - the model's claim about the component it created.
    * @returns the stored id, or `invalid-record`.
    */
   async contribute(request: ComponentLibraryRecordRequest): Promise<ComponentLibraryRecordResult> {
-    const directory = /packages\/client\/([^/]+)/.exec(request.path)?.[1]
-    const id = `${directory ?? request.pkg}/${request.name}`
+    const contributed = normalizeContributedPath(request.path)
+    if (contributed === undefined) {
+      return {
+        ok: false,
+        error: {
+          code: 'invalid-record',
+          detail: `path must name a source file under ${CLIENT_TREE}; got ${request.path}`,
+        },
+      }
+    }
+    const { path, directory } = contributed
+    const id = `${directory}/${request.name}`
     const table = this.requireTable()
     const current = table.get(id)
     if (current?.origin === 'scanned') {
@@ -381,7 +418,7 @@ export class ComponentLibraryService extends TypertRemoteService {
       id,
       pkg: request.pkg,
       name: request.name,
-      path: request.path,
+      path,
       props: request.props ?? [],
       tokens: request.tokens ?? [],
       jsdoc: request.jsdoc ?? '',

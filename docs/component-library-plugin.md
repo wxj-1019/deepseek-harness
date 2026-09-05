@@ -122,11 +122,11 @@ Tool names use snake_case (`component_query`, `component_record`), not the dotte
 
 ### `component_query`
 
-Retrieves matching component records. Parameters: `query` (free text: name, package, or purpose keyword), `pkg` (optional filter), `limit` (default 10). Ranking in the first iteration is plain string scoring: exact name match beats package match, package match beats keyword-in-jsdoc, scanned records rank above model-contributed ones. Output schema: `{ matches: [{ name, pkg, path, props, tokens, example }] }`. The `render` presents a compact ranked table for the transcript card.
+Retrieves matching component records. Parameters: `query` (free text: name, package, or purpose keyword), `pkg` (optional filter), `limit` (default 10). Ranking in the first iteration is plain string scoring: exact name match beats package match, package match beats keyword-in-jsdoc, scanned records rank above model-contributed ones. Output schema: `{ matches: [{ name, pkg, path, props, propsInferred, rawProps, tokens, example }] }`; a match whose props type did not resolve carries `propsInferred: false` and the raw type text in `rawProps`, and the `render` presents that text marked unresolved instead of an empty prop list.
 
 ### `component_record`
 
-Writes a model-contributed record. Parameters: `name`, `pkg`, `path`, `props` (array of `{name, type, required}`), `tokens`, `jsdoc`, `example`. The write is validated against the domain schema and stamped `origin: 'model'`.
+Writes a model-contributed record. Parameters: `name`, `pkg`, `path`, `props` (array of `{name, type, required}`), `tokens`, `jsdoc`, `example`. The path is normalized into the repository-relative POSIX form and a path that does not name a file under `packages/client` is rejected as `invalid-record`, so the derived id always stays inside the scanner's id space. The write is validated against the domain schema and stamped `origin: 'model'`.
 
 Both tools register with `ctx.tools.register(defineTool(...))` inside the Host package's plugin, so they appear in the system prompt for every capable model without further plumbing. On the Web side the transcript cards render through `ui-tool`'s `tool.call.toolview` slot like any other tool.
 

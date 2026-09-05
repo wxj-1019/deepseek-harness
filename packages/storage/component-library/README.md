@@ -45,7 +45,7 @@ Both fields are optional; the composition may omit `config` entirely.
 
 ### Observable behavior
 
-Loading the plugin scans `packages/client/*/src/client` for exported PascalCase components, resolves each component's props type (`<Name>Props`, then the first parameter's annotation, then an exported `Props` type), collects the sibling CSS module's `--dsw-*` references, and lifts a usage example from the component's specs or its JSDoc `@example`. Records land in the `component_library` domain; every durable write broadcasts `component-library/changed` after the domain commits. With `watch` on, a settled `.tsx` or `*.module.css` change re-learns exactly one file, and a `.tsx` removal drops its records. Model-contributed records from `component_record` are quarantined (`reviewed: false`) until approved on the panel; queries exclude them unless the `component-library` settings namespace sets `includeUnreviewed`.
+Loading the plugin scans `packages/client/*/src/client` for exported PascalCase components, resolves each component's props type (`<Name>Props`, then the first parameter's annotation, then an exported `Props` type), collects the sibling CSS module's `--dsw-*` references, and lifts a usage example from the component's specs or its JSDoc `@example`. Records land in the `component_library` domain; every durable write broadcasts `component-library/changed` after the domain commits. With `watch` on, a settled `.tsx` or `*.module.css` change re-learns exactly one file, and a `.tsx` removal drops its records. A `component_record` path is normalized into the repository-relative POSIX form and rejected unless it names a file under `packages/client`, so model-derived ids always stay inside the scanner's id space. Model-contributed records from `component_record` are quarantined (`reviewed: false`) until approved on the panel; queries exclude them unless the `component-library` settings namespace sets `includeUnreviewed`.
 
 -----
 
@@ -132,7 +132,7 @@ Prefix-stable while the definitions and visibility are unchanged.
 
 #### What the model sees
 
-A `component_query` success renders a compact ranked list — name, package, path, props, tokens, example per match — or the empty-library guidance. A `component_record` success confirms the quarantined id; failures name the rejection (for example a scanner-covered id).
+A `component_query` success renders a compact ranked list — name, package, path, props (or the raw props type text marked unresolved when the type did not resolve), tokens, example per match — or the empty-library guidance. A `component_record` success confirms the quarantined id; failures name the rejection (for example a scanner-covered id or a path outside the client tree).
 
 #### Token effect
 
@@ -162,7 +162,7 @@ The body regenerates as the library changes, so a loaded snapshot can age; skill
 
 These limits are current package constraints, not a task backlog.
 
-- **Checker-free props extraction** — cross-file or otherwise dynamic props types keep raw text instead of members, so query results for such components lack a structured prop list.
+- **Checker-free props extraction** — cross-file or otherwise dynamic props types keep raw text instead of members; query results present that text marked unresolved rather than a structured prop list.
 - **Project-local by design** — the library learns only the checkout it runs from; cross-project sharing is out of scope.
 - **Cold-start scan cost at load** — the initial walk parses every client component file before the plugin finishes loading.
 - **Examples drift with their specs** — lifted mount snippets are refreshed on the next scan of the owning file, not when the spec changes.
