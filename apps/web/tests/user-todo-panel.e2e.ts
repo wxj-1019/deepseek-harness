@@ -16,7 +16,7 @@ import {
 import { newEnglishPage, saveFailureShot } from './support.ts'
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/user-todo-panel', import.meta.url))
-const SEED = fileURLToPath(new URL('./snapshots/seeded-history/seed.jsonl', import.meta.url))
+const SEED = fileURLToPath(new URL('../../../snapshots/web/seeded-history/session.v2.jsonl', import.meta.url))
 const DRAWER_EXPECTED = join(SNAPSHOT_DIR, 'panel.expected.md')
 const MODE = webSnapshotMode()
 const SEED_ID = 'user-todo-panel-web-e2e'

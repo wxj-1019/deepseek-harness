@@ -20,7 +20,7 @@ import {
 import { newEnglishPage, saveFailureShot } from './support.ts'
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/session-pins', import.meta.url))
-const SEED = fileURLToPath(new URL('./snapshots/seeded-history/seed.jsonl', import.meta.url))
+const SEED = fileURLToPath(new URL('../../../snapshots/web/seeded-history/session.v2.jsonl', import.meta.url))
 const SECTION_EXPECTED = join(SNAPSHOT_DIR, 'pinned-section.expected.md')
 const MODE = webSnapshotMode()
 const SEED_ID = 'session-pins-web-e2e'
