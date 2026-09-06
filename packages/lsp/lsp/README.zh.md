@@ -47,7 +47,7 @@ seam 需要提供方与消费方才能发挥作用。最小组合挂载服务、
 
 ### 四种操作
 
-每个查询在源文件的某个光标位置提出四个语义问题之一；结果是被规范化的位置或悬停内容，绝不是原始协议载荷。
+每个查询在源文件的某个光标位置、整个文件或整个工作区上运行一个语义操作；结果是被规范化的位置、悬停内容、符号大纲、诊断行、调用行或编辑计划，绝不是原始协议载荷。
 
 | 操作 | agent 获得的内容 |
 |---|---|
@@ -55,6 +55,12 @@ seam 需要提供方与消费方才能发挥作用。最小组合挂载服务、
 | `findReferences` | 所有引用，始终包含声明 |
 | `goToImplementation` | 具体实现位置 |
 | `hover` | 该符号的规范化文档，或没有 |
+| `documentSymbol` | 该文件的符号大纲（含容器） |
+| `workspaceSymbol` | 工作区范围的符号匹配 |
+| `diagnostics` | 单文件的拉取（或推送回退）诊断 |
+| `rename` | 新标识符的规范化逐文件编辑计划 |
+| `formatting` | 整篇文档的编辑计划 |
+| `incomingCalls` / `outgoingCalls` | 在预备好的符号之后，返回带调用点区间的调用行 |
 
 `findReferences` 始终包含声明，因此影响分析绝不会遗漏定义位置。协议上的位置是从零开始的 UTF-16；面向模型的工具接受从 1 开始的光标坐标并自行转换。
 
@@ -87,7 +93,7 @@ seam 需要提供方与消费方才能发挥作用。最小组合挂载服务、
 | [`src/index.ts`](src/index.ts) | 插件入口：`Lsp` 服务、`registerProvider`／`query`、`finalExtension`、`LspError` code |
 | [`src/types.ts`](src/types.ts) | seam 词汇：请求、结果、提供方与服务约定 |
 | [`src/brand.ts`](src/brand.ts) | `LspProviderId` 品牌化 id 类型与工厂 |
-| [`src/invariant.ts`](src/invariant.ts) | 不变式伴生插件（无运行时不变式；路由是私有原子状态） |
+| — | 不发布运行时不变式伴生入口；路由是私有原子状态。 |
 
 ### 注册与选择生命周期
 

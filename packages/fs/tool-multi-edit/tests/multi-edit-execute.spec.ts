@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
-import { Session, SessionId } from '@deepseek-ai/dsh-session'
+import { Session, SessionId, SESSION_FORMAT_VERSION } from '@deepseek-ai/dsh-session'
 import AgentRegistry, { Inbox } from '@deepseek-ai/dsh-agent'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { FileSystem, type FsWriteIntent, type FsWriteOutcome } from '@deepseek-ai/dsh-fs'
@@ -55,7 +55,7 @@ class ScriptedFs extends LocalFileSystem {
 function agent(ctx: Context, cwd: string): Agent {
   const id = SessionId(`multi-edit-owner-${callNumber}`)
   const scope = ctx.plugin(() => {})
-  const session = Session.create(id, [], { version: 0, id, createdAt: 0, cwd })
+  const session = Session.create(id, [], { version: SESSION_FORMAT_VERSION, id, createdAt: 0, cwd, isSeeded: false })
   const value: Agent = {
     id,
     options: {},

@@ -29,7 +29,7 @@ function appendUsage(session: Session, turn: number, step: number, usage: {
     content: [{ type: 'text', text: `step ${step}` }],
     source: { provider: 'test', model },
   })
-  session.append('assistant/message', { turn, step, message, usage }, { surfaceOp: 'append' })
+  session.append('assistant/message', { turn, step, message, stream: [], usage }, { surfaceOp: 'append' })
 }
 
 /** Compose the service over the real storage stack plus a live session store. */
@@ -94,7 +94,7 @@ describe('usage ledger service', () => {
         content: [{ type: 'text', text: 'no usage' }],
         source: { provider: 'test', model: 'test' },
       })
-      ctx.sessions.get(s2)?.append('assistant/message', { turn: 1, step: 2, message }, { surfaceOp: 'append' })
+      ctx.sessions.get(s2)?.append('assistant/message', { turn: 1, step: 2, message, stream: [] }, { surfaceOp: 'append' })
       expect((await rows(ctx))[String(s2)]?.requests).toBe(1)
     } finally {
       await dispose()

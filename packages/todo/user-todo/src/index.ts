@@ -419,7 +419,7 @@ function todosMessage(messages: readonly UserMessage[]): UserMessage | undefined
  * assumptions across session implementations.
  */
 function todosCatalogHistory(agent: Agent): { visibleDigest?: string; published: boolean } {
-  const events = agent.session.events
+  const events = agent.session.snapshotEvents()
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const event = events[index]
     if (event === undefined || event.type !== 'user/message') continue

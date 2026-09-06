@@ -28,6 +28,7 @@ describe('component_query presentation', () => {
       // The canonical value crosses the boundary as JsonValue; presenters take it as-is.
       const value = result.value
       if (value === undefined) throw new Error('component_query returned no canonical value')
+      if (value === undefined) throw new Error('component_query returned no canonical value')
 
       // output.render: the model-facing text names the match, its props and tokens.
       const rendered = definition.output.render({ query: 'Gauge' }, value)

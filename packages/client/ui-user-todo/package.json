@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-user-todo",
   "description": "Sidebar-foot daily-todo surface for the DeepSeek Harness user over the user-todo storage domain",
-  "version": "0.1.2-alpha.3",
+  "version": "0.1.3-alpha.1",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",

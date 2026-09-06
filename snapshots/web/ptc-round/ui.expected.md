@@ -2,8 +2,7 @@
   - navigation "Session hierarchy":
     - 'button "Using ONE run_code program: run" [disabled]'
   - img
-  - text: Standard mode
-  - button "Pin"
+  - text: PTC mode
   - button "Session log":
     - text: Session log
     - img
@@ -28,10 +27,15 @@
   - img
   - img
   - text: "Think The user wants me to write a single `run_code` program that:"
-- text: Failed
-- 'button "Code Error: code run failed (exception): TypeError: tools.bash is not a function"':
+- button "Code Run bash echo and catch missing file read":
   - img
-  - text: "Code Error: code run failed (exception): TypeError: tools.bash is not a function"
+  - img
+  - text: Code Run bash echo and catch missing file read
+- img
+- text: Bash Echo CODE_ROUND_OK Failed
+- 'button "Read Error: cannot read \"{{cwd}}/workspace/missing.txt\": not found"':
+  - img
+  - text: "Read Error: cannot read \"{{cwd}}/workspace/missing.txt\": not found"
 - button "Think The program ran successfully. Let me now reply DONE as instructed.":
   - img
   - img
@@ -52,7 +56,8 @@
 - textbox "Message or run a task... / commands, @ files or sessions"
 - button "Commands":
   - img
-- button "Attach image"
+- button "Add attachment":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

@@ -5,7 +5,6 @@
     - 'button "Switch subagent: event-sourcing researcher"': event-sourcing researcher
   - img
   - text: Standard mode
-  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -16,7 +15,7 @@
   - img
   - img
   - text: System prompt
-- text: Explain event sourcing in one sentence. {{clock}}
+- text: "Explain event sourcing in one sentence.Your parent agent id is \"session-{{uuid}}\". Before you finish, send your result to that agent with send_message({ agent_id: \"session-{{uuid}}\", message: \"<self-contained result>\" }). The parent shares your workspace but does not automatically receive your transcript, tool output, or reasoning. Send earlier messages as well when a finding changes what the parent should do next; sending a message does not end your turn. {{clock}}"
 - button "Copy":
   - img
 - button "Context injection @deepseek-ai/dsh-system-prompt":
@@ -28,7 +27,8 @@
 - textbox "Parent session offline; sending is unavailable but you can still stop the run" [disabled]
 - button "Commands" [disabled]:
   - img
-- button "Attach image" [disabled]
+- button "Add attachment" [disabled]:
+  - img
 - 'button "Access mode, current: Custom" [disabled]': Custom
 - button "Stop generating"
 - button "Send message" [disabled]

@@ -6,7 +6,7 @@ Status: implemented
 
 ## Problem
 
-`session.history` 只按消息数分页：一页是覆盖最新 `maxMessages` 条追加来源消息（默认 50 条）的原始事件区间。页内的原始事件数没有上限，而逐字符增量输出的提供方——CJK 文本每个 chunk 只有一到两个字符——每条消息大约落一千个 chunk 事件。这类提供方上的长对话，一页 50 条消息可达 57,000+ 原始事件（12.5 MiB JSON）。Web 客户端同步吞下整页：`ConversationNodeAssembler.replaceWindow` 在主线程上对每个事件排序、索引并跑全部节点定义的匹配，再渲染。实测 57,000 事件的框架地板开销在 Node 中为 839 ms，浏览器里叠加真实定义与渲染还要放大数倍——对话区打开为空白，极端时渲染进程直接冻结。而会话数据在磁盘上始终完好，这让故障看起来像数据丢失。[2026-08-04-large-history-pagination-call-stack](2026-08-04-large-history-pagination-call-stack.zh.md) 修复了同一条回放路径上的服务端崩溃，并明确把页大小问题留作独立事项；本笔记补上它。
+`session.history` 只按消息数分页：一页是覆盖最新 `maxMessages` 条追加来源消息（默认 50 条）的原始事件区间。页内的原始事件数没有上限，而逐字符增量输出的提供方——CJK 文本每个 chunk 只有一到两个字符——每条消息大约落一千个 chunk 事件。这类提供方上的长对话，一页 50 条消息可达 57,000+ 原始事件（12.5 MiB JSON）。Web 客户端同步吞下整页：`ConversationNodeAssembler.replaceWindow` 在主线程上对每个事件排序、索引并跑全部节点定义的匹配，再渲染。实测 57,000 事件的框架地板开销在 Node 中为 839 ms，浏览器里叠加真实定义与渲染还要放大数倍——对话区打开为空白，极端时渲染进程直接冻结。而会话数据在磁盘上始终完好，这让故障看起来像数据丢失。`2026-08-04-large-history-pagination-call-stack` 修复了同一条回放路径上的服务端崩溃，并明确把页大小问题留作独立事项；本笔记补上它。
 
 ## Decision
 

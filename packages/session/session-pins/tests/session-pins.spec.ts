@@ -24,7 +24,7 @@ class TestPersistence extends Service {
     super(ctx, 'sessionPersistence')
   }
 
-  listSnapshots(): Promise<never[]> {
+  list(): Promise<never[]> {
     return Promise.resolve([])
   }
 }

@@ -5,10 +5,13 @@ import { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import type {
+  FileAttachmentRef,
   ImageAttachmentLimits,
   ImageAttachmentRef,
   ImageRequestPolicy,
   RequestImageAttachment,
+  SaveFileAttachment,
+  SaveFileStreamAttachment,
   SaveImageAttachment,
   SaveVideoAttachment,
   StoredImageAttachment,
@@ -18,8 +21,11 @@ import type {
 } from '@deepseek-ai/dsh-attachment'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
 import type { NormalizationPolicy } from './normalization.ts'
-import { CompressionLimiter } from './compression-limiter.ts'
+import { CompressionLimiter, compressionFailure } from './compression-limiter.ts'
 import { commitPreparedImageFile, normalizedImagePath, prepareImageFile, readImageFile, readVideoFile, saveVideoFile, validateImageFile } from './store.ts'
+import {
+  readFileStreamVerbatim, saveFileStreamVerbatim, saveFileVerbatim, storedFilePath,
+} from './file-store.ts'
 import { readRequestImageFile, requestImageVariantId } from './request-image.ts'
 
 export { detectImage } from './image.ts'
@@ -134,9 +140,7 @@ class SharedRequest<T> {
       }, (error: unknown) => {
         signal.removeEventListener('abort', abort)
         release(false)
-        // CompressionLimiter normalizes task rejections before this handler.
-        // oxlint-disable-next-line typescript/prefer-promise-reject-errors
-        reject(error)
+        reject(compressionFailure(error))
       })
     })
   }
@@ -244,6 +248,22 @@ export class LocalAttachmentStore extends AttachmentStore {
 
   override imageHostPath(ref: ImageAttachmentRef): string {
     return normalizedImagePath(this.root, ref)
+  }
+
+  override async saveFile(input: SaveFileAttachment): Promise<FileAttachmentRef> {
+    return saveFileVerbatim(this.root, input)
+  }
+
+  override async saveFileStream(input: SaveFileStreamAttachment): Promise<FileAttachmentRef> {
+    return saveFileStreamVerbatim(this.root, input)
+  }
+
+  override readFileStream(ref: FileAttachmentRef, signal?: AbortSignal): AsyncIterable<Uint8Array> {
+    return readFileStreamVerbatim(this.root, ref, signal)
+  }
+
+  override fileHostPath(ref: FileAttachmentRef): string {
+    return storedFilePath(this.root, ref)
   }
 
   override async readImageRequest(

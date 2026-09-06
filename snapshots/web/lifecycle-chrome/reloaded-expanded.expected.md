@@ -3,7 +3,6 @@
     - button "Reply with the single word" [disabled]
   - img
   - text: Standard mode
-  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -24,10 +23,6 @@
   - img
   - img
   - text: Context injection @deepseek-ai/dsh-system-prompt
-- button "Context injection time-context":
-  - img
-  - img
-  - text: Context injection time-context
 - button "Think The user wants me to reply with a single word. Let me comply.":
   - img
   - img
@@ -48,7 +43,8 @@
 - textbox "Message or run a task... / commands, @ files or sessions"
 - button "Commands":
   - img
-- button "Attach image"
+- button "Add attachment":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

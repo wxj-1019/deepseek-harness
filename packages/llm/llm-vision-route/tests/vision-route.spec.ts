@@ -109,7 +109,7 @@ async function harness(adapter: ScriptedAdapter): Promise<{ ctx: Context; dispos
   return { ctx, disposeAdapter }
 }
 
-function createAgent(ctx: Context, id: string, provider = 'mock', model = 'mock'): Agent {
+async function createAgent(ctx: Context, id: string, provider = 'mock', model = 'mock'): Promise<Agent> {
   return ctx.agentLoop.create(SessionId(id), { provider, model })
 }
 
@@ -129,7 +129,7 @@ describe('vision-model routing', () => {
     const adapter = new ScriptedAdapter([textResponse('plain'), textResponse('seen it')])
     ;({ ctx: context } = await harness(adapter))
     await configureVision(context)
-    const agent = createAgent(context, 'vision-route-basic')
+    const agent = await createAgent(context, 'vision-route-basic')
 
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -148,7 +148,7 @@ describe('vision-model routing', () => {
   it('keeps the session model without a configured vision model', async () => {
     const adapter = new ScriptedAdapter([textResponse('plain')])
     ;({ ctx: context } = await harness(adapter))
-    const agent = createAgent(context, 'vision-route-unconfigured')
+    const agent = await createAgent(context, 'vision-route-unconfigured')
 
     agent.followup(imageMessage())
     await agent.whenIdle()
@@ -161,7 +161,7 @@ describe('vision-model routing', () => {
     const adapter = new ScriptedAdapter([textResponse('a'), textResponse('b'), textResponse('c')])
     ;({ ctx: context } = await harness(adapter))
     await configureVision(context)
-    const agent = createAgent(context, 'vision-route-persistent')
+    const agent = await createAgent(context, 'vision-route-persistent')
 
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'one' }], source: { kind: 'user' } }))
     await agent.whenIdle()
@@ -180,7 +180,7 @@ describe('vision-model routing', () => {
     const adapter = new ScriptedAdapter([textResponse('seen it')])
     ;({ ctx: context } = await harness(adapter))
     await configureVision(context)
-    const agent = createAgent(context, 'vision-route-already-vision', 'vision', 'vl')
+    const agent = await createAgent(context, 'vision-route-already-vision', 'vision', 'vl')
 
     agent.followup(imageMessage())
     await agent.whenIdle()
@@ -194,7 +194,7 @@ describe('vision-model routing', () => {
     ;({ ctx: context } = await harness(adapter))
     // A deployment that misconfigures a text-only model as its vision route.
     await configureVision(context, 'mock', 'mock')
-    const agent = createAgent(context, 'vision-route-misconfigured')
+    const agent = await createAgent(context, 'vision-route-misconfigured')
 
     agent.followup(imageMessage())
     await agent.whenIdle()
@@ -212,7 +212,7 @@ describe('vision-model routing', () => {
     ])
     ;({ ctx: context } = await harness(adapter))
     await configureVision(context)
-    const agent = createAgent(context, 'vision-route-multistep')
+    const agent = await createAgent(context, 'vision-route-multistep')
     context.tools.register(defineContentToolFixture({
       name: 'echo',
       description: 'echo the text back',

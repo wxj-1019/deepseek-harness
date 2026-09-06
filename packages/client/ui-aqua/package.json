@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-aqua",
   "description": "Aqua theme plugin: glassmorphism for the Web surface — adjustable blur, frost, fluid or wallpaper backdrop, unified corners, and motion, with durable preferences over the settings and attachments seams",
-  "version": "0.1.2-alpha.3",
+  "version": "0.1.3-alpha.1",
   "publishConfig": {
     "access": "public"
   },

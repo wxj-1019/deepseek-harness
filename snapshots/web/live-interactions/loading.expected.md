@@ -3,7 +3,6 @@
     - button "Reply with a one-sentence description" [disabled]
   - img
   - text: Standard mode
-  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -26,7 +25,8 @@
 - textbox "Message or run a task... / commands, @ files or sessions"
 - button "Commands":
   - img
-- button "Attach image"
+- button "Add attachment":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

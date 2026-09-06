@@ -1,7 +1,6 @@
 - banner:
   - navigation "Session hierarchy":
     - button "Use the read tool twice" [disabled]
-  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -47,10 +46,10 @@
   - img
   - text: Read
   - button "b.txt"
-- button "Think Both files have been read. a.txt contains \"alpha\" and b.txt contains \"beta\". I'll now reply with DONE as instructed.":
+- button "Think This path was interrupted.":
   - img
   - img
-  - text: Think Both files have been read. a.txt contains "alpha" and b.txt contains "beta". I'll now reply with DONE as instructed.
+  - text: Think This path was interrupted.
 - text: Stopped Now give the final answer. 7/25 {{clock}}
 - button "Copy":
   - img
@@ -70,7 +69,8 @@
 - textbox "Message or run a task... / commands, @ files or sessions"
 - button "Commands":
   - img
-- button "Attach image"
+- button "Add attachment":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

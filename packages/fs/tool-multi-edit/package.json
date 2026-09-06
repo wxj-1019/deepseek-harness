@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-tool-multi-edit",
   "description": "Model-facing multi_edit tool: validate-then-apply batches of literal string edits across files over the filesystem seam",
-  "version": "0.1.2-alpha.3",
+  "version": "0.1.3-alpha.1",
   "publishConfig": {
     "access": "public"
   },

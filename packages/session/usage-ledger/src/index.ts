@@ -122,21 +122,28 @@ export class UsageLedgerService extends TypertRemoteService {
     cacheWriteTokens?: number
   }, model: string): void {
     const previous = this.chains.get(sessionId) ?? Promise.resolve()
-    const next = previous.then(() => this.applyAccumulation(sessionId, usage, model))
+    const now = Date.now()
+    const next = previous.then(() => this.applyAccumulation(sessionId, usage, model, now))
     const tail = next.then(() => undefined, () => undefined)
     this.chains.set(sessionId, tail)
   }
 
-  /** Serialized body of {@link accumulate}: read, add, write, emit. */
+  /**
+   * Serialized body of {@link accumulate}: read, add, write, emit.
+   * @param sessionId - the sampled session.
+   * @param usage - the sample's token buckets.
+   * @param model - the model that served the message.
+   * @param now - wall-clock sample time taken at event arrival, so the
+   *   recency order reflects when messages landed, not when disk writes settled.
+   */
   private async applyAccumulation(sessionId: SessionId, usage: {
     inputTokens: number
     outputTokens: number
     cacheReadTokens?: number
     cacheWriteTokens?: number
-  }, model: string): Promise<void> {
+  }, model: string, now: number): Promise<void> {
     const table = this.requireTable()
     const current = table.get(sessionId)
-    const now = Date.now()
     const dayKey = localDayKey(now)
     const models: Record<string, UsageLedgerBuckets> = { ...current?.models }
     const slice = models[model] ?? {

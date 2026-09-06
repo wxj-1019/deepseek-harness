@@ -17,10 +17,6 @@
     - img
     - text: workspace
   - treeitem "New Session" [selected]
-- button "Today’s todos":
-  - img
-  - text: Today’s todos
-- button "Notifications"
 - button "Settings":
   - img
   - text: Settings
@@ -36,7 +32,8 @@
 - textbox "Describe what you want to build... / commands, @ files or sessions"
 - button "Commands":
   - img
-- button "Attach image"
+- button "Add attachment":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Plan mode on, press to turn off": Plan
 - button "Select model, current DeepSeek-V4-Flash":

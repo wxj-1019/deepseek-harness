@@ -3,7 +3,6 @@
     - button "Begin your reply with the" [disabled]
   - img
   - text: Standard mode
-  - button "Pin"
   - button "Session log":
     - text: Session log
     - img
@@ -27,15 +26,17 @@
   - img
   - text: Think The user wants me to begin with "Reading the workspace now." and call bash with "echo alpha" in the same message. Then after the tool result, reply with the single word DONE and stop.
 - paragraph: Reading the workspace now.
-- 'button "Failed Bash Error: unknown tool \"bash\""':
+- button "Bash Print alpha to stdout":
   - img
-  - text: "Failed Bash Error: unknown tool \"bash\""
+  - img
+  - text: Bash Print alpha to stdout
 - paragraph: partial
 - status: Deep diving...
 - textbox "Message or run a task... / commands, @ files or sessions"
 - button "Commands":
   - img
-- button "Attach image"
+- button "Add attachment":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash

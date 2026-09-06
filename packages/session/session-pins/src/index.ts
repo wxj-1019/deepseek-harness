@@ -137,7 +137,7 @@ export class SessionPinsService extends TypertRemoteService {
    */
   private async sessionKnown(sessionId: SessionId): Promise<boolean> {
     if (this.ctx.sessions.get(sessionId) !== undefined) return true
-    const snapshots = await this.ctx.sessionPersistence.listSnapshots()
+    const snapshots = await this.ctx.sessionPersistence.list()
     if (snapshots.some(snapshot => snapshot.header.id === sessionId)) return true
     return this.ctx.sessions.get(sessionId) !== undefined
   }
