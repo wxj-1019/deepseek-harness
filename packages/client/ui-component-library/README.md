@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-client-ui-component-library` renders the component library card in the Plugins settings section's configurable tab: the learned-component count, a search box over the loaded records, and the approve/discard review controls that keep hallucinated model-contributed records out of the durable set. The card reads through `@deepseek-ai/dsh-component-library`'s Remote face, loads lazily on first render, and converges on the pushed `component-library/changed` event and on connection resets. Compose it together with the Host package; alone it renders nothing.
+`dsh-client-ui-component-library` renders two surfaces over the learned library: the component library card in the Plugins settings section's configurable tab (learned count, search, approve/discard review of model-contributed records) and the **Components** conversation-view gallery — a react-bits-style browsing tab with a searchable component list and a per-component contract pane (props table, raw props fallback, `--dsw-*` token chips, and the captured usage example). The card reads through `@deepseek-ai/dsh-component-library`'s Remote face, loads lazily on first render, and converges on the pushed `component-library/changed` event and on connection resets. Compose it together with the Host package; alone it renders nothing.
 
 ## Table of Contents
 
@@ -48,6 +48,7 @@ The browser half follows the settings-card convention: a slot registration on `s
 | [`src/client/index.ts`](src/client/index.ts) | Browser plugin: locale registration, pushed-invalidation subscriptions, slot registration |
 | [`src/client/controller.ts`](src/client/controller.ts) | Remote-face projection: lazy list read, review writes, client-side filter |
 | [`src/client/ComponentLibraryCard.tsx`](src/client/ComponentLibraryCard.tsx) | Card component: summary count, search box, record rows, review controls |
+| [`src/client/ComponentLibraryGallery.tsx`](src/client/ComponentLibraryGallery.tsx) | Gallery tab: searchable component list and the per-component contract pane |
 | [`src/client/locales.ts`](src/client/locales.ts) | The bilingual copy dictionary and its LocaleNamespaceMap merge |
 | [`src/index.ts`](src/index.ts) | Host half (no registrations; the domain is owned by the Host package) |
 | [`src/invariant.ts`](src/invariant.ts) | Invariant companion (no runtime invariant: write ordering is checked Host-side) |

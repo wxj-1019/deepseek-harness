@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-ui-component-library` 在 Plugins 设置区的可配置页签中渲染组件库卡片：已学习组件计数、对已加载记录的搜索框，以及把臆造的模型贡献记录挡在持久集合之外的通过/丢弃审核控件。卡片通过 `@deepseek-ai/dsh-component-library` 的 Remote 面读取，首次渲染时惰性加载，并在推送的 `component-library/changed` 事件与连接重置时收敛。必须与 Host 包一起组合；单独存在时不渲染任何内容。
+`dsh-client-ui-component-library` 为学习到的组件库提供两个界面：Plugins 设置区可配置页签中的组件库卡片（已学习计数、搜索、模型贡献记录的通过/丢弃审核），以及 **组件** 会话视图画廊——仿 React Bits 的浏览页签，左侧可搜索的组件列表，右侧展示所选组件的契约（props 表、未解析时的原始类型、`--dsw-*` 令牌徽标与捕获的用法示例）。卡片通过 `@deepseek-ai/dsh-component-library` 的 Remote 面读取，首次渲染时惰性加载，并在推送的 `component-library/changed` 事件与连接重置时收敛。必须与 Host 包一起组合；单独存在时不渲染任何内容。
 
 ## 目录
 
@@ -48,6 +48,7 @@ kind: "package-reference"
 | [`src/client/index.ts`](src/client/index.ts) | 浏览器插件：locale 注册、推送失效订阅、槽位注册 |
 | [`src/client/controller.ts`](src/client/controller.ts) | Remote 面投影：惰性列表读取、审核写入、客户端过滤 |
 | [`src/client/ComponentLibraryCard.tsx`](src/client/ComponentLibraryCard.tsx) | 卡片组件：摘要计数、搜索框、记录行、审核控件 |
+| [`src/client/ComponentLibraryGallery.tsx`](src/client/ComponentLibraryGallery.tsx) | 画廊页签：可搜索的组件列表与逐组件契约面板 |
 | [`src/client/locales.ts`](src/client/locales.ts) | 双语文案字典及其 LocaleNamespaceMap 合并 |
 | [`src/index.ts`](src/index.ts) | Host 半（无注册；domain 由 Host 包拥有） |
 | [`src/invariant.ts`](src/invariant.ts) | 不变量伴随（无运行时不变量：写入顺序在 Host 侧检查） |
