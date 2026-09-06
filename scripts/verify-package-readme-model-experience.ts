@@ -115,6 +115,8 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/client/ui-user-todo': { kind: 'none', reason: 'Browser-side daily-todo surface over the user-todo storage domain; registers nothing model-facing.' },
   'packages/client/ui-notification-center': { kind: 'none', reason: 'Browser-side bell and overlay panel over the notifications storage domain; registers nothing model-facing.' },
   'packages/client/ui-component-library': { kind: 'none', reason: 'Browser-side settings card over the component_library storage domain; registers nothing model-facing.' },
+  'packages/client/ui-git-graph': { kind: 'none', reason: 'Browser-side commit-rail conversation view over the git-graph HTTP route; registers nothing model-facing.' },
+  'packages/web/git-graph': { kind: 'none', reason: 'Read-only HTTP route serving git history rows to the web client; registers nothing model-facing.' },
   'packages/session/usage-ledger': { kind: 'none', reason: 'Durable per-session usage rows accumulated from provider-reported samples; user-facing only, never enters a session log or model request.' },
   'packages/client/ui-usage': { kind: 'none', reason: 'Browser-side usage dashboard over the usage-ledger storage domain; registers nothing model-facing.' },
   'packages/client/ui-session-pins': { kind: 'none', reason: 'Browser-side pinned-session surfaces (header star, sidebar section) over the session-pins storage domain; registers nothing model-facing.' },
