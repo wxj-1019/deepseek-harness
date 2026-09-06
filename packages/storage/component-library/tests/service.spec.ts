@@ -133,6 +133,36 @@ describe('ComponentLibraryService', () => {
     }
   })
 
+  it('rejects a review of a scanned record without deleting it', async () => {
+    const harness = await setupLibrary()
+    try {
+      const service = harness.ctx.componentLibrary
+      for (const decision of ['discard', 'approve'] as const) {
+        const result = await service.review({ id: 'ui-demo/Gauge', decision })
+        expect(result, decision).toEqual({ ok: false, error: { code: 'scanned-record', id: 'ui-demo/Gauge' } })
+      }
+      expect(service.snapshotAll().map(record => record.id)).toContain('ui-demo/Gauge')
+    } finally {
+      await harness.dispose()
+    }
+  })
+
+  it('rejects a contributed record whose pkg does not match the owning manifest', async () => {
+    const harness = await setupLibrary()
+    try {
+      const result = await harness.ctx.componentLibrary.contribute({
+        name: 'MisnamedCard',
+        pkg: '@deepseek-ai/dsh-client-ui-somewhere-else',
+        path: 'packages/client/ui-demo/src/client/MisnamedCard.tsx',
+      })
+      expect(result).toMatchObject({ ok: false, error: { code: 'invalid-record' } })
+      expect(JSON.stringify(result)).toContain('@deepseek-ai/dsh-client-ui-demo')
+      expect(harness.ctx.componentLibrary.snapshotAll().map(record => record.id)).not.toContain('ui-demo/MisnamedCard')
+    } finally {
+      await harness.dispose()
+    }
+  })
+
   it('discards a model record on review', async () => {
     const harness = await setupLibrary()
     try {

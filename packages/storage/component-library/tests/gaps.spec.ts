@@ -101,12 +101,22 @@ describe('skill body edge cases', () => {
 })
 
 describe('ComponentLibraryService review and contribution edges', () => {
-  it('approving an already-reviewed record is a no-op ack', async () => {
+  it('approving an already-reviewed model record is a no-op ack', async () => {
     const harness = await setupLibrary()
     try {
-      // Scanned records are born reviewed; approving one changes nothing.
-      const result = await harness.ctx.componentLibrary.review({ id: 'ui-demo/Gauge', decision: 'approve' })
+      const service = harness.ctx.componentLibrary
+      await service.contribute({
+        name: 'Settled',
+        pkg: '@deepseek-ai/dsh-client-ui-demo',
+        path: 'packages/client/ui-demo/src/client/Settled.tsx',
+      })
+      await service.review({ id: 'ui-demo/Settled', decision: 'approve' })
+      const before = service.snapshotAll().find(entry => entry.id === 'ui-demo/Settled')
+      const result = await service.review({ id: 'ui-demo/Settled', decision: 'approve' })
       expect(result).toEqual({ ok: true, value: { done: true } })
+      // A no-op ack neither rewrites the record nor re-announces the library.
+      expect(service.snapshotAll().find(entry => entry.id === 'ui-demo/Settled')?.updatedAt)
+        .toBe(before?.updatedAt)
     } finally {
       await harness.dispose()
     }

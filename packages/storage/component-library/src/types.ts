@@ -157,7 +157,7 @@ export type ComponentLibraryRecordResult =
 
 /** Confirm or drop one model-contributed record from the panel. */
 export interface ComponentLibraryReviewRequest {
-  /** The record to review. */
+  /** The model-contributed record to review; scanned ids are rejected. */
   readonly id: string
   /** `approve` marks the record reviewed; `discard` deletes it. */
   readonly decision: 'approve' | 'discard'
@@ -166,7 +166,7 @@ export interface ComponentLibraryReviewRequest {
 /** Result returned by the `review` operation. */
 export type ComponentLibraryReviewResult =
   | { readonly ok: true; readonly value: { readonly done: true } }
-  | { readonly ok: false; readonly error: { readonly code: 'component-not-found'; readonly id: string } }
+  | { readonly ok: false; readonly error: { readonly code: 'component-not-found' | 'scanned-record'; readonly id: string } }
 
 declare module '@deepseek-ai/cordis' {
   interface Events {

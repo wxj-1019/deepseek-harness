@@ -52,9 +52,13 @@ The Host package owns the domain schema and the learning pipeline. The Client pa
   "props": [
     { "name": "useSessions", "type": "SnapshotSelectorHook<SessionListState>", "required": true }
   ],
+  "propsInferred": true,
+  "rawProps": "",
   "tokens": ["--dsw-alias-label-primary", "--dsw-alias-bg-layer-1"],
   "jsdoc": "The Usage view body: per-session token accounting dashboard.",
   "example": "…a short usage snippet extracted from the first host spec…",
+  "origin": "scanned",
+  "reviewed": true,
   "updatedAt": 1787767305030
 }
 ```
@@ -65,27 +69,27 @@ The Host package owns the domain schema and the learning pipeline. The Client pa
 
 ### Storage-domain schema
 
-The domain's zod table for component records:
+The domain's zod table for component records (shipped verbatim in [`packages/storage/component-library/src/spec.ts`](../packages/storage/component-library/src/spec.ts)):
 
 ```ts
-const ComponentRecord = z.object({
-  id: z.string().required(),
-  pkg: z.string().required(),
-  name: z.string().required(),
-  path: z.string().required(),
+const componentRecordSchema: z.ZodType<ComponentRecord> = z.object({
+  id: z.string().min(1),
+  pkg: z.string().min(1),
+  name: z.string().min(1),
+  path: z.string().min(1),
   props: z.array(z.object({
-    name: z.string().required(),
-    type: z.string().required(),
-    required: z.boolean().default(false),
-  })).default([]),
-  tokens: z.array(z.string()).default([]),
-  jsdoc: z.string().default(''),
-  example: z.string().default(''),
-  origin: z.enum(['scanned', 'model']).default('scanned'),
-  propsInferred: z.boolean().default(true),
-  rawProps: z.string().default(''),
-  reviewed: z.boolean().default(false),
-  updatedAt: z.number().default(0),
+    name: z.string().min(1),
+    type: z.string(),
+    required: z.boolean(),
+  })),
+  tokens: z.array(z.string()),
+  jsdoc: z.string(),
+  example: z.string(),
+  origin: z.union([z.literal('scanned'), z.literal('model')]),
+  propsInferred: z.boolean(),
+  rawProps: z.string(),
+  reviewed: z.boolean(),
+  updatedAt: z.number().int().nonnegative(),
 })
 ```
 
@@ -108,13 +112,13 @@ The scanner is pure static analysis — it does not evaluate components, so CSS 
 
 ### 5.2 Continuous learning (watch)
 
-Mirror `skill-filesystem`'s `SkillWatchManager`: a chokidar watcher over `packages/client` with a 200 ms stability threshold, project-root LRU eviction, and an `invalidate()` callback that re-runs the affected file's extraction. Only `.tsx` and `*.module.css` events matter.
+Mirror `skill-filesystem`'s `SkillWatchManager`: a chokidar watcher over `packages/client` with a 200 ms stability threshold and an `invalidate()` callback that re-runs the affected file's extraction. The watched scope matches the scanner's walk exactly: `.tsx` and `*.module.css` files under a package's `src/client`, plus the theme stylesheet — a settled theme-stylesheet change re-reads the token inventory. Everything else under the client tree (specs, fixtures, other stylesheets) never reaches the pipeline.
 
 A write lands a record in the storage domain and emits `domain/changed`, which the client panel uses to refetch.
 
 ### 5.3 Model-driven learning
 
-`component_record` lets the model write a record after it creates a component (usually inside a conversation's task). The record is the same shape; `origin: 'model'` marks it for review, and it is born `reviewed: false`. Unreviewed model records are quarantined out of `component_query` results until a human approves them on the panel (the `component-library` settings namespace's `includeUnreviewed` knob lists them anyway, ranked last). This review step keeps hallucinated entries out of the durable set.
+`component_record` lets the model write a record after it creates a component (usually inside a conversation's task). The record is the same shape; `origin: 'model'` marks it for review, and it is born `reviewed: false`. Unreviewed model records are quarantined out of `component_query` results until a human approves them on the panel (the `component-library` settings namespace's `includeUnreviewed` knob lists them anyway, ranked last). This review step keeps hallucinated entries out of the durable set. The panel's review face applies to model-contributed records only — a scanned id is rejected as `scanned-record`, since scanned records are born reviewed and authoritative.
 
 ## 6. Model-facing tools
 

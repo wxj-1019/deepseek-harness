@@ -52,9 +52,13 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
   "props": [
     { "name": "useSessions", "type": "SnapshotSelectorHook<SessionListState>", "required": true }
   ],
+  "propsInferred": true,
+  "rawProps": "",
   "tokens": ["--dsw-alias-label-primary", "--dsw-alias-bg-layer-1"],
   "jsdoc": "The Usage view body: per-session token accounting dashboard.",
   "example": "…a short usage snippet extracted from the first host spec…",
+  "origin": "scanned",
+  "reviewed": true,
   "updatedAt": 1787767305030
 }
 ```
@@ -65,27 +69,27 @@ chokidar watcher     domain "component_library"    SkillProvider (skill catalog)
 
 ### 存储域 schema
 
-域的 zod 组件记录表：
+域的 zod 组件记录表（随 [`packages/storage/component-library/src/spec.ts`](../packages/storage/component-library/src/spec.ts) 原样发布）:
 
 ```ts
-const ComponentRecord = z.object({
-  id: z.string().required(),
-  pkg: z.string().required(),
-  name: z.string().required(),
-  path: z.string().required(),
+const componentRecordSchema: z.ZodType<ComponentRecord> = z.object({
+  id: z.string().min(1),
+  pkg: z.string().min(1),
+  name: z.string().min(1),
+  path: z.string().min(1),
   props: z.array(z.object({
-    name: z.string().required(),
-    type: z.string().required(),
-    required: z.boolean().default(false),
-  })).default([]),
-  tokens: z.array(z.string()).default([]),
-  jsdoc: z.string().default(''),
-  example: z.string().default(''),
-  origin: z.enum(['scanned', 'model']).default('scanned'),
-  propsInferred: z.boolean().default(true),
-  rawProps: z.string().default(''),
-  reviewed: z.boolean().default(false),
-  updatedAt: z.number().default(0),
+    name: z.string().min(1),
+    type: z.string(),
+    required: z.boolean(),
+  })),
+  tokens: z.array(z.string()),
+  jsdoc: z.string(),
+  example: z.string(),
+  origin: z.union([z.literal('scanned'), z.literal('model')]),
+  propsInferred: z.boolean(),
+  rawProps: z.string(),
+  reviewed: z.boolean(),
+  updatedAt: z.number().int().nonnegative(),
 })
 ```
 
@@ -108,13 +112,13 @@ const ComponentRecord = z.object({
 
 ### 5.2 持续学习（监听）
 
-镜像 `skill-filesystem` 的 `SkillWatchManager`：对 `packages/client` 起一个 chokidar 监听，200ms 稳定性阈值、项目根 LRU 驱逐、变更后经 `invalidate()` 回调重提受影响文件。只有 `.tsx` 与 `*.module.css` 事件生效。
+镜像 `skill-filesystem` 的 `SkillWatchManager`：对 `packages/client` 起一个 chokidar 监听，200ms 稳定性阈值、变更后经 `invalidate()` 回调重提受影响文件。监听范围与扫描器遍历完全一致：包内 `src/client` 下的 `.tsx` 与 `*.module.css`，外加主题样式表——主题样式表稳定变更会重读令牌清单。client 树下其余一切（spec、fixture、其他样式表）都不会进入管线。
 
 一次写入落组件记录到存储域并发出 `domain/changed`，客户端面板据此重取。
 
 ### 5.3 模型驱动的学习
 
-`component_record` 让模型在创建组件后回写记录（通常在会话任务中）。记录形状相同；`origin: 'model'` 标记供审查，且天生 `reviewed: false`。未审核的模型记录在 `component_query` 结果中被隔离，直到人工在面板上通过（`component-library` settings 命名空间的 `includeUnreviewed` 开关会把它们列入，排在最后）。这一审查环节把幻觉条目挡在持久集外。
+`component_record` 让模型在创建组件后回写记录（通常在会话任务中）。记录形状相同；`origin: 'model'` 标记供审查，且天生 `reviewed: false`。未审核的模型记录在 `component_query` 结果中被隔离，直到人工在面板上通过（`component-library` settings 命名空间的 `includeUnreviewed` 开关会把它们列入，排在最后）。这一审查环节把幻觉条目挡在持久集外。面板的 review 面只作用于模型贡献记录——扫描记录的 id 以 `scanned-record` 拒绝，因为扫描记录天生已审核且是权威。
 
 ## 6. 面向模型的工具
 

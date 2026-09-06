@@ -83,6 +83,7 @@ export function ComponentLibraryCard(props: ComponentLibraryCardComponentProps):
         }}
       />
       {state.status === 'error' && <p className={css.error}>{state.error ?? t('card.unavailable')}</p>}
+      {state.reviewError !== null && <p className={css.error}>{state.reviewError}</p>}
       {state.status === 'ready' && items.length === 0 && <p className={css.empty}>{t('card.empty')}</p>}
       <ul className={css.rows}>
         {items.map(item => (

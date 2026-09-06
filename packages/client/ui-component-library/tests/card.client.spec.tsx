@@ -138,17 +138,21 @@ describe('ComponentLibraryController', () => {
     expect(controller.store.getSnapshot().items).toHaveLength(0)
   })
 
-  it('rejects a review of an unknown id', async () => {
+  it('publishes a result-level review failure to the store instead of rejecting', async () => {
     const controller = new ComponentLibraryController(fakeRemote([]))
-    await expect(controller.review('ui-demo/Ghost', 'approve')).rejects.toThrow('component-not-found')
+    await controller.review('ui-demo/Ghost', 'approve')
+    expect(controller.store.getSnapshot().reviewError).toBe('component-not-found')
   })
 
-  it('propagates a carrier-level review failure', async () => {
+  it('publishes a carrier-level review failure to the store', async () => {
     const remote = fakeRemote([modeled('ui-demo/BotCard', 'BotCard')])
     vi.spyOn(remote, 'review').mockRejectedValueOnce(new Error('connection lost'))
     const controller = new ComponentLibraryController(remote)
     await controller.ensure()
-    await expect(controller.review('ui-demo/BotCard', 'approve')).rejects.toThrow('connection lost')
+    await controller.review('ui-demo/BotCard', 'approve')
+    const state = controller.store.getSnapshot()
+    expect(state.reviewError).toBe('connection lost')
+    expect(state.items).toHaveLength(1)
   })
 
   it('publishes the search text and short-circuits a warm ensure', async () => {
@@ -206,6 +210,16 @@ describe('ComponentLibraryCard', () => {
     fireEvent.click(approve)
     expect(reviewed).toEqual([['ui-demo/BotCard', 'approve']])
     await screen.findByText('BotCard')
+  })
+
+  it('renders a failed review as the review error line', async () => {
+    const remote = fakeRemote([modeled('ui-demo/BotCard', 'BotCard')])
+    const controller = new ComponentLibraryController(remote)
+    mountCard(controller)
+    expect(await screen.findByText('BotCard')).toBeDefined()
+    vi.spyOn(remote, 'review').mockRejectedValueOnce(new Error('host offline'))
+    fireEvent.click(screen.getByText(en['card.approve']))
+    expect(await screen.findByText('host offline')).toBeDefined()
   })
 
   it('renders the pending-review badge and the empty and error states', async () => {

@@ -44,7 +44,7 @@ beforeEach(() => {
 function collect(): {
   settled: string[]
   removed: string[]
-  events: { onFileSettled: (file: string) => void; onFileRemoved: (file: string) => void }
+  events: { onFileSettled: (file: string) => void; onFileRemoved: (file: string) => void; onThemeSettled: () => void }
 } {
   const settled: string[] = []
   const removed: string[] = []
@@ -54,6 +54,7 @@ function collect(): {
     events: {
       onFileSettled: file => settled.push(file),
       onFileRemoved: file => removed.push(file),
+      onThemeSettled: () => {},
     },
   }
 }
@@ -108,6 +109,32 @@ describe('ComponentLibraryWatcher', () => {
 
     expect(removed).toEqual(['/checkout/packages/client/ui-demo/src/client/Old.tsx'])
     expect(settled).toEqual(['/checkout/packages/client/ui-demo/src/client/Gauge.tsx'])
+    await watcher.dispose()
+  })
+
+  it('routes the theme stylesheet to onThemeSettled and ignores files outside src/client', async () => {
+    const { settled, removed } = collect()
+    let theme = 0
+    const watcher = new ComponentLibraryWatcher('/checkout', {
+      onFileSettled: file => settled.push(file),
+      onFileRemoved: file => removed.push(file),
+      onThemeSettled: () => {
+        theme += 1
+      },
+    }, noLog)
+    await watcher.start()
+    const fake = harness.watchers[0]!
+
+    fake.emit('change', '/checkout/packages/client/ui-theme/src/styles/design-platform.css')
+    fake.emit('unlink', '/checkout/packages/client/ui-theme/src/styles/design-platform.css')
+    // Specs, plain stylesheets, and sources outside src/client never reach the pipeline.
+    fake.emit('change', '/checkout/packages/client/ui-demo/tests/Gauge.spec.tsx')
+    fake.emit('change', '/checkout/packages/client/ui-demo/tests/plain.css')
+    fake.emit('change', '/checkout/packages/client/ui-demo/src/styles/theme.css')
+
+    expect(theme).toBe(2)
+    expect(settled).toEqual([])
+    expect(removed).toEqual([])
     await watcher.dispose()
   })
 

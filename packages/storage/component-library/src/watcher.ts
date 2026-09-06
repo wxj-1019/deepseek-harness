@@ -1,14 +1,17 @@
 /**
  * Continuous learning watcher: chokidar over the checkout's
- * `packages/client` tree with a 200 ms stability threshold. Only `.tsx` and
- * `*.module.css` events matter; a settled CSS module re-learns its sibling
- * component file because the token references live there.
+ * `packages/client` tree with a 200 ms stability threshold. Only the files
+ * the pipeline consumes raise events: component sources and their CSS
+ * modules under a package's `src/client`, and the theme stylesheet. A
+ * settled CSS module re-learns its sibling component file because the token
+ * references live there; a settled or removed theme stylesheet re-reads the
+ * token inventory.
  * @module @deepseek-ai/dsh-component-library/src/watcher
  */
 
 import { join } from 'node:path'
 import chokidar, { type FSWatcher } from 'chokidar'
-import { CLIENT_TREE } from './scanner.ts'
+import { CLIENT_TREE, THEME_STYLESHEET } from './scanner.ts'
 
 /** Default awaitWriteFinish stability threshold, matching the skill watcher. */
 export const WATCH_STABILITY_THRESHOLD_MS = 200
@@ -16,28 +19,39 @@ export const WATCH_STABILITY_THRESHOLD_MS = 200
 /** Default awaitWriteFinish poll interval, matching the skill watcher. */
 export const WATCH_POLL_INTERVAL_MS = 100
 
-/** Watch-root depth: packages/client/<pkg>/src/client/<nested dirs>/<file>. */
-const WATCH_DEPTH = 6
-
 /** Sink for one human-readable watcher log line. */
 export type WatchLog = (line: string) => void
 
 /** Callbacks the watcher raises on settled filesystem events. */
 export interface ComponentLibraryWatchEvents {
-  /** One `.tsx` file (or its CSS module) settled and should be re-learned. */
+  /** One `.tsx` file (or its CSS module) under `src/client` settled and should be re-learned. */
   readonly onFileSettled: (file: string) => void
   /** One `.tsx` file disappeared; its records should be dropped. */
   readonly onFileRemoved: (file: string) => void
+  /** The theme stylesheet settled or disappeared; the token inventory should be re-read. */
+  readonly onThemeSettled: () => void
 }
 
-/** True for the only two file kinds the pipeline learns from. */
+/**
+ * True for the only files the pipeline consumes. The scope matches the
+ * scanner's walk exactly — `src/client` sources plus the theme stylesheet —
+ * so spec files, fixtures, and other stylesheets never reach the pipeline.
+ */
 function isRelevant(file: string): boolean {
-  return file.endsWith('.tsx') || file.endsWith('.module.css')
+  const posix = file.replaceAll('\\', '/')
+  if (posix.endsWith(THEME_STYLESHEET)) return true
+  if (!posix.includes('/src/client/')) return false
+  return posix.endsWith('.tsx') || posix.endsWith('.module.css')
 }
 
 /** Map one changed path to the `.tsx` file whose records it feeds. */
 function sourceFileOf(file: string): string {
   return file.endsWith('.module.css') ? file.replace(/\.module\.css$/, '.tsx') : file
+}
+
+/** True when one relevant path is the theme stylesheet. */
+function isThemeStylesheet(file: string): boolean {
+  return file.replaceAll('\\', '/').endsWith(THEME_STYLESHEET)
 }
 
 /**
@@ -66,7 +80,7 @@ export class ComponentLibraryWatcher {
     const watcher = chokidar.watch(join(this.root, CLIENT_TREE), {
       persistent: true,
       ignoreInitial: true,
-      depth: WATCH_DEPTH,
+      // Uncapped like the scanner's walk; node_modules is excluded below.
       followSymlinks: false,
       atomic: true,
       awaitWriteFinish: {
@@ -104,12 +118,21 @@ export class ComponentLibraryWatcher {
   /** Raise the settled callback for one relevant path. */
   private settled(file: string): void {
     if (!isRelevant(file)) return
+    if (isThemeStylesheet(file)) {
+      this.events.onThemeSettled()
+      return
+    }
     this.events.onFileSettled(sourceFileOf(file))
   }
 
   /** Raise the removal callback for one relevant path. */
   private removed(file: string): void {
     if (!isRelevant(file)) return
+    if (isThemeStylesheet(file)) {
+      // The inventory re-read treats an absent stylesheet as empty.
+      this.events.onThemeSettled()
+      return
+    }
     if (file.endsWith('.module.css')) {
       // Token references changed; re-learn the sibling component file.
       this.events.onFileSettled(sourceFileOf(file))

@@ -67,14 +67,16 @@ describe('component_query presentation', () => {
         arguments: { query: 'Panel' },
       })
       expect(result.isError).toBe(false)
-      const value = result.value as { matches: { propsInferred: boolean; rawProps: string; props: unknown[] }[] }
-      expect(value.matches.at(0)).toMatchObject({
+      const value = result.value
+      if (value === undefined) throw new Error('component_query returned no canonical value')
+      const matches = value as { matches: { propsInferred: boolean; rawProps: string; props: unknown[] }[] }
+      expect(matches.matches.at(0)).toMatchObject({
         propsInferred: false,
         rawProps: 'BaseProps & { title: string }',
         props: [],
       })
 
-      const rendered = definition.output.render({ query: 'Panel' }, result.value)
+      const rendered = definition.output.render({ query: 'Panel' }, value)
       expect(textOf(rendered)).toContain('unresolved: BaseProps & { title: string }')
     } finally {
       await harness.dispose()

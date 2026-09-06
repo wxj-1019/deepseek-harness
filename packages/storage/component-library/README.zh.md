@@ -45,7 +45,7 @@ kind: "package-reference"
 
 ### 可观察行为
 
-插件加载时扫描 `packages/client/*/src/client` 中导出的 PascalCase 组件，按序解析每个组件的 props 类型（`<Name>Props`、首个参数标注、导出的 `Props` 类型），收集同基名 CSS module 的 `--dsw-*` 引用，并从组件的 spec 或 JSDoc `@example` 提取用法示例。记录落入 `component_library` domain；每次持久写入在 domain 提交后广播 `component-library/changed`。`watch` 开启时，一个稳定的 `.tsx` 或 `*.module.css` 变更只重新学习一个文件，`.tsx` 删除会移除其记录。`component_record` 的 path 会被归一化为仓库相对的 POSIX 形式，未指向 `packages/client` 内文件时被拒绝，因此模型衍生的 id 始终落在扫描器的 id 空间内。来自 `component_record` 的模型贡献记录处于隔离状态（`reviewed: false`），直到在面板上通过审核；除非 `component-library` settings 命名空间设置 `includeUnreviewed`，查询不含它们。
+插件加载时扫描 `packages/client/*/src/client` 中导出的 PascalCase 组件，按序解析每个组件的 props 类型（`<Name>Props`、首个参数标注、导出的 `Props` 类型），收集同基名 CSS module 的 `--dsw-*` 引用，并从组件的 spec 或 JSDoc `@example` 提取用法示例。记录落入 `component_library` domain；每次持久写入在 domain 提交后广播 `component-library/changed`。`watch` 开启时，包内 `src/client` 下一个稳定的 `.tsx` 或 `*.module.css` 变更只重新学习一个文件，`.tsx` 删除会移除其记录，主题样式表的稳定变更会重读令牌清单；client 树下其余一切都被忽略。`component_record` 的 path 会被归一化为仓库相对的 POSIX 形式，未指向 `packages/client` 内文件时被拒绝，且 `pkg` 必须与所属目录的 manifest 名称一致，因此模型衍生的 id 始终落在扫描器的 id 空间内。来自 `component_record` 的模型贡献记录处于隔离状态（`reviewed: false`），直到在面板上通过审核；除非 `component-library` settings 命名空间设置 `includeUnreviewed`，查询不含它们，且 review 面以 `scanned-record` 拒绝扫描记录的 id。
 
 -----
 

@@ -20,7 +20,8 @@ import z from '@deepseek-ai/schemastery'
 import type {} from '@deepseek-ai/dsh-settings'
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
 import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
-import { CLIENT_TREE, extractFile, recordPath, scanComponentLibrary, scanDesignTokens } from './scanner.ts'
+import type { SkillProviderControl } from '@deepseek-ai/dsh-skill'
+import { CLIENT_TREE, extractFile, packageName, recordPath, scanComponentLibrary, scanDesignTokens } from './scanner.ts'
 import { componentLibraryDomainSpec, componentRecordSchema } from './spec.ts'
 import { ComponentLibraryWatcher } from './watcher.ts'
 import { registerComponentTools } from './tools.ts'
@@ -198,6 +199,7 @@ export class ComponentLibraryService extends TypertRemoteService {
   private table?: KvTable<string, ComponentRecord>
   private tokens: readonly StyleToken[] = []
   private settings: ComponentLibrarySettings | undefined
+  private skillControl?: SkillProviderControl
   private changeQueued = false
 
   /**
@@ -235,7 +237,9 @@ export class ComponentLibraryService extends TypertRemoteService {
     registerComponentTools(this.ctx, this)
     this.ctx.skills.registerProvider((control) => {
       // The catalog caches list() output; a library change must re-collect so
-      // a later load regenerates the body from fresh records.
+      // a later load regenerates the body from fresh records. Token-only
+      // changes reach the same control directly (see rescanDesignTokens).
+      this.skillControl = control
       this.ctx.on('component-library/changed', () => { control.invalidate() })
       return createComponentLibrarySkillProvider(this)
     })
@@ -249,6 +253,7 @@ export class ComponentLibraryService extends TypertRemoteService {
       const watcher = new ComponentLibraryWatcher(this.spec.root, {
         onFileSettled: file => void this.relearnFile(file),
         onFileRemoved: file => void this.forgetFile(file),
+        onThemeSettled: () => void this.rescanDesignTokens(),
       }, warn)
       this.ctx.effect(() => async () => {
         await watcher.dispose()
@@ -358,6 +363,17 @@ export class ComponentLibraryService extends TypertRemoteService {
   }
 
   /**
+   * Re-read the theme token inventory after a settled theme-stylesheet
+   * change. No durable record changes, so this refreshes the generated skill
+   * body through the provider control directly instead of announcing a
+   * library change — a change broadcast must trail a durable domain write.
+   */
+  private async rescanDesignTokens(): Promise<void> {
+    this.tokens = await scanDesignTokens(this.spec.root)
+    this.skillControl?.invalidate()
+  }
+
+  /**
    * Rank matches for one free-text query. Unreviewed model records stay
    * quarantined unless the settings namespace opts in; when included they
    * rank below every scanned match.
@@ -389,10 +405,11 @@ export class ComponentLibraryService extends TypertRemoteService {
   /**
    * Validate and store one model-contributed record: quarantined
    * (`reviewed: false`) until a human approves it on the panel. The path is
-   * normalized into the scanner's repository-relative POSIX form, and a path
-   * that does not name a file under the client tree is a loud rejection. An
-   * id already covered by the scanner is also a loud rejection, not an
-   * overwrite.
+   * normalized into the scanner's repository-relative POSIX form, `pkg` must
+   * match the owning directory's manifest name (the scanner's own
+   * resolution), and a path that does not name a file under the client tree
+   * is a loud rejection. An id already covered by the scanner is also a loud
+   * rejection, not an overwrite.
    * @param request - the model's claim about the component it created.
    * @returns the stored id, or `invalid-record`.
    */
@@ -408,6 +425,16 @@ export class ComponentLibraryService extends TypertRemoteService {
       }
     }
     const { path, directory } = contributed
+    const expectedPkg = await packageName(join(this.spec.root, CLIENT_TREE), directory, () => {})
+    if (request.pkg !== expectedPkg) {
+      return {
+        ok: false,
+        error: {
+          code: 'invalid-record',
+          detail: `pkg must be ${expectedPkg}, the manifest name of packages/client/${directory}`,
+        },
+      }
+    }
     const id = `${directory}/${request.name}`
     const table = this.requireTable()
     const current = table.get(id)
@@ -485,10 +512,12 @@ export class ComponentLibraryService extends TypertRemoteService {
   }
 
   /**
-   * Apply one panel review decision: `approve` marks the record reviewed and
-   * lifts the quarantine; `discard` deletes it.
+   * Apply one panel review decision to a model-contributed record:
+   * `approve` marks the record reviewed and lifts the quarantine; `discard`
+   * deletes it. Scanned records are outside the review seam — they are born
+   * reviewed and authoritative, so their id is a loud rejection.
    * @param request - the record and the decision.
-   * @returns the ack, or `component-not-found`.
+   * @returns the ack, or `component-not-found` / `scanned-record`.
    */
   @Remote('review')
   async review(request: ComponentLibraryReviewRequest): Promise<ComponentLibraryReviewResult> {
@@ -496,6 +525,9 @@ export class ComponentLibraryService extends TypertRemoteService {
     const current = table.get(request.id)
     if (current === undefined) {
       return { ok: false, error: { code: 'component-not-found', id: request.id } }
+    }
+    if (current.origin === 'scanned') {
+      return { ok: false, error: { code: 'scanned-record', id: request.id } }
     }
     if (request.decision === 'discard') {
       await table.delete(request.id)

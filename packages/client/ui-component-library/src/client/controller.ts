@@ -34,6 +34,8 @@ export interface ComponentLibraryState {
   query: string
   /** Reason the last load failed, cleared by the next successful load. */
   error: string | null
+  /** Reason the last review decision failed, cleared by the next attempt or success. */
+  reviewError: string | null
 }
 
 /**
@@ -53,7 +55,7 @@ export class ComponentLibraryController implements HostObservable<ComponentLibra
 
   constructor(private readonly remote: ComponentLibraryRemoteFace) {
     this.store = createSnapshotStore<ComponentLibraryState>({
-      status: 'cold', items: [], query: '', error: null,
+      status: 'cold', items: [], query: '', error: null, reviewError: null,
     })
   }
 
@@ -126,16 +128,28 @@ export class ComponentLibraryController implements HostObservable<ComponentLibra
   }
 
   /**
-   * Apply one review decision, then converge from the Host.
+   * Apply one review decision, then converge from the Host. The injected
+   * face discards this promise, so a failure publishes to the store instead
+   * of rejecting — the card renders it as the review error line.
    * @param id - the record under review.
    * @param decision - `approve` lifts the quarantine; `discard` deletes.
    * @returns resolution when the follow-up read settles.
    */
   async review(id: string, decision: 'approve' | 'discard'): Promise<void> {
-    const response = await this.remote.review({ id, decision })
-    if (!response.ok) throw new Error(response.error.message)
-    const result = response.value
-    if (!result.ok) throw new Error(result.error.code)
+    this.store.update((state) => {
+      state.reviewError = null
+    })
+    try {
+      const response = await this.remote.review({ id, decision })
+      if (!response.ok) throw new Error(response.error.message)
+      const result = response.value
+      if (!result.ok) throw new Error(result.error.code)
+    } catch (error) {
+      this.store.update((state) => {
+        state.reviewError = messageOf(error)
+      })
+      return
+    }
     await this.resync()
   }
 }

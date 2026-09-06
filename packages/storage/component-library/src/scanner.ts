@@ -46,8 +46,15 @@ async function readIfPresent(file: string): Promise<string | undefined> {
   }
 }
 
-/** Read one client package's manifest name, falling back to its directory name. */
-async function packageName(clientRoot: string, directory: string, log: ScanLog): Promise<string> {
+/**
+ * Resolve one client package's manifest name, falling back to its directory
+ * name — the same resolution the scanner applies to records' `pkg` field.
+ * @param clientRoot - absolute `packages/client` root.
+ * @param directory - the package directory under {@link CLIENT_TREE}.
+ * @param log - sink for one human-readable fallback line.
+ * @returns the resolved package name.
+ */
+export async function packageName(clientRoot: string, directory: string, log: ScanLog): Promise<string> {
   const manifest = await readIfPresent(join(clientRoot, directory, 'package.json'))
   if (manifest === undefined) {
     log(`component-library: ${directory} has no readable package.json; using the directory name`)
