@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-client-ui-component-library` renders two surfaces over the learned library: the component library card in the Plugins settings section's configurable tab (learned count, search, approve/discard review of model-contributed records) and the **Components** conversation-view gallery — a react-bits-style browsing tab with a searchable component list and a per-component contract pane (props table, raw props fallback, `--dsw-*` token chips, and the captured usage example). The card reads through `@deepseek-ai/dsh-component-library`'s Remote face, loads lazily on first render, and converges on the pushed `component-library/changed` event and on connection resets. Compose it together with the Host package; alone it renders nothing.
+`dsh-client-ui-component-library` renders two surfaces over the learned library: the component library card in the Plugins settings section's configurable tab (learned count, search, approve/discard review of model-contributed records) and the **Components** conversation-view gallery — a react-bits-style browsing tab with a searchable component list and a per-component contract pane (props table, raw props fallback, `--dsw-*` token chips, and the captured usage example). When a component has a story under its package's `tests/stories/`, the pane also mounts a live preview of the real component. The card reads through `@deepseek-ai/dsh-component-library`'s Remote face, loads lazily on first render, and converges on the pushed `component-library/changed` event and on connection resets. Compose it together with the Host package; alone it renders nothing.
 
 ## Table of Contents
 

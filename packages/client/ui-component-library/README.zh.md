@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-ui-component-library` 为学习到的组件库提供两个界面：Plugins 设置区可配置页签中的组件库卡片（已学习计数、搜索、模型贡献记录的通过/丢弃审核），以及 **组件** 会话视图画廊——仿 React Bits 的浏览页签，左侧可搜索的组件列表，右侧展示所选组件的契约（props 表、未解析时的原始类型、`--dsw-*` 令牌徽标与捕获的用法示例）。卡片通过 `@deepseek-ai/dsh-component-library` 的 Remote 面读取，首次渲染时惰性加载，并在推送的 `component-library/changed` 事件与连接重置时收敛。必须与 Host 包一起组合；单独存在时不渲染任何内容。
+`dsh-client-ui-component-library` 为学习到的组件库提供两个界面：Plugins 设置区可配置页签中的组件库卡片（已学习计数、搜索、模型贡献记录的通过/丢弃审核），以及 **组件** 会话视图画廊——仿 React Bits 的浏览页签，左侧可搜索的组件列表，右侧展示所选组件的契约（props 表、未解析时的原始类型、`--dsw-*` 令牌徽标与捕获的用法示例）。当组件在其包的 `tests/stories/` 下有 story 时，面板还会挂载真实组件的实时预览。卡片通过 `@deepseek-ai/dsh-component-library` 的 Remote 面读取，首次渲染时惰性加载，并在推送的 `component-library/changed` 事件与连接重置时收敛。必须与 Host 包一起组合；单独存在时不渲染任何内容。
 
 ## 目录
 

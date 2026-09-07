@@ -120,6 +120,7 @@ The GUI test structure (three tiers, lane map) is settled in the [GUI testing sy
 - Component specs render with realistic props or a driven fixture runtime and assert user-visible behavior, not class names, hook internals, or render counts.
 - The jsdom environment comes from a per-file `// @vitest-environment jsdom` pragma on the spec's first line; the shared config stays node-env.
 - Each tier asserts its own layer. Data-layer semantics belong to the runtime and host suites; component specs cover presentation behavior.
+- Component live previews are stories under `packages/client/<pkg>/tests/stories/<Component>.stories.tsx`: each exports `story = { record: '<pkg dir>/<Component>', mount(container) }` mounting the real component over hand-fed fake props (the spec's factories). The apps/web build compiles them into `window.__DSH_STORIES__`, which the component library gallery mounts; adding or removing a story requires a `pnpm run build` to re-roll the stories entry.
 
 ## Before you push: the local check ladder
 

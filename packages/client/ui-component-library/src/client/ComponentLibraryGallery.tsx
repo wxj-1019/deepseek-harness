@@ -1,10 +1,11 @@
 /**
  * The component library gallery: a react-bits-style browsing view of every
  * learned component — searchable list on the left, the selected component's
- * contract (props table, design tokens, usage example) on the right. Data
- * rides the same controller as the settings card; the view is read-only.
+ * live preview (when a story exists) and its contract (props table, design
+ * tokens, usage example) on the right. Data rides the same controller as the
+ * settings card; the view is read-only.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { Component, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { CodeBlock } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ConvViewProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -15,6 +16,69 @@ import type {} from './locales.ts'
 import type { ComponentLibraryState } from './controller.ts'
 import { filterRecords } from './controller.ts'
 import css from './ComponentLibraryGallery.module.css'
+
+/** The live-preview registry the stories entry installs on the page. */
+interface ComponentStoriesRegistry {
+  has(id: string): boolean
+  mount(id: string, container: HTMLElement): Promise<void | (() => void)>
+}
+
+/** Read the page's story registry; absent outside the apps/web built page. */
+function storiesRegistry(): ComponentStoriesRegistry | undefined {
+  return (window as { __DSH_STORIES__?: ComponentStoriesRegistry }).__DSH_STORIES__
+}
+
+/** Boundary so a crashing story can never take the gallery (or the app) down. */
+class StoryErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false }
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true }
+  }
+
+  override render(): ReactNode {
+    return this.state.failed ? null : this.props.children
+  }
+}
+
+/**
+ * Mount one component story into a detached container and hand its element
+ * to the gallery. The story owns the subtree; teardown on id change or
+ * unmount runs the story's disposer and clears the container.
+ */
+function StoryPreview(props: { id: string; name: string }): ReactNode {
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    if (container === null) return
+    const stories = storiesRegistry()
+    if (stories === undefined || !stories.has(props.id)) return
+    let disposer: (() => void) | undefined
+    let disposed = false
+    void stories.mount(props.id, container).then((cleanup) => {
+      const dispose = cleanup ?? undefined
+      if (disposed) dispose?.()
+      else disposer = dispose
+    }).catch(() => {
+      if (!disposed) setFailed(true)
+    })
+    return () => {
+      disposed = true
+      disposer?.()
+      container.replaceChildren()
+    }
+  }, [container, props.id])
+
+  if (failed) {
+    return (
+      <div className={css.storyFrame} data-story="failed">
+        <p className={css.dim}>{props.name}: preview crashed.</p>
+      </div>
+    )
+  }
+  return <div className={css.storyFrame} data-story="live" ref={setContainer} />
+}
 
 /** The registration-side face the gallery's slot entry injects. */
 export interface ComponentLibraryGalleryFace {
@@ -124,6 +188,15 @@ export function ComponentLibraryGallery(props: ComponentLibraryGalleryProps): Re
                   {': '}
                   <code>{selected.path}</code>
                 </p>
+
+                {storiesRegistry()?.has(selected.id) === true && (
+                  <>
+                    <h4 className={css.sectionTitle}>{t('gallery.preview')}</h4>
+                    <StoryErrorBoundary>
+                      <StoryPreview id={selected.id} name={selected.name} />
+                    </StoryErrorBoundary>
+                  </>
+                )}
 
                 <h4 className={css.sectionTitle}>{t('gallery.props')}</h4>
                 {selected.propsInferred

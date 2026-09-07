@@ -51,6 +51,17 @@ function fakeRemote(initial: ComponentRecord[]): ComponentLibraryRemoteFace {
 }
 
 /** Mount the gallery with hand-fed slot props and a reactive store hook. */
+/** The page-global registry double the gallery reads through window.__DSH_STORIES__. */
+type StoriesDouble = { has(id: string): boolean; mount(id: string, container: HTMLElement): Promise<(() => void) | undefined> }
+
+/** Install the page-global registry double; removed by the returned reset. */
+function installStories(double: StoriesDouble): () => void {
+  ;(window as unknown as { __DSH_STORIES__?: StoriesDouble }).__DSH_STORIES__ = double
+  return () => {
+    delete (window as unknown as { __DSH_STORIES__?: StoriesDouble }).__DSH_STORIES__
+  }
+}
+
 function mountGallery(controller: ComponentLibraryController): void {
   const t = (key: string): string => (en as Record<string, string>)[key] ?? key
   render(
@@ -83,6 +94,38 @@ function mountGallery(controller: ComponentLibraryController): void {
 }
 
 describe('ComponentLibraryGallery', () => {
+  it('mounts a live preview when the page installs a story for the record', async () => {
+    const mounts: string[] = []
+    let disposed = 0
+    const reset = installStories({
+      has: id => id === 'ui-x/Gauge',
+      mount: (id, container) => {
+        mounts.push(id)
+        const marker = document.createElement('div')
+        marker.textContent = `story:${id}`
+        container.appendChild(marker)
+        return Promise.resolve(() => {
+          disposed += 1
+        })
+      },
+    })
+    const controller = new ComponentLibraryController(fakeRemote([
+      rich('ui-x/Gauge', 'Gauge', '@deepseek-ai/dsh-client-ui-x'),
+      rich('ui-x/Panel', 'Panel', '@deepseek-ai/dsh-client-ui-x'),
+    ]))
+    mountGallery(controller)
+
+    expect(await screen.findByText('story:ui-x/Gauge')).toBeDefined()
+    expect(mounts).toEqual(['ui-x/Gauge'])
+
+    // The record without a story releases the old preview on switch.
+    fireEvent.click(screen.getAllByText('Panel')[0]!)
+    await screen.findByText('The Panel component.')
+    expect(disposed).toBe(1)
+    expect(document.querySelector('[data-story="live"]')).toBeNull()
+    reset()
+  })
+
   it('renders the list, selects a row, and shows its contract', async () => {
     const controller = new ComponentLibraryController(fakeRemote([
       rich('ui-x/Gauge', 'Gauge', '@deepseek-ai/dsh-client-ui-x'),
