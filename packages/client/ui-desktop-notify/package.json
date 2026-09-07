@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "workspace:^",
-    "react": "^18.2.0"
+    "react": "^19.2.8"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "workspace:^"
@@ -62,7 +62,7 @@
     "@deepseek-ai/dsh-invariants": "workspace:^",
     "@deepseek-ai/dsh-session": "workspace:^",
     "@deepseek-ai/dsh-settings": "workspace:^",
-    "@types/react": "~18.3.1"
+    "@types/react": "~19.2.18"
   },
   "files": [
     "lib/index.js",
