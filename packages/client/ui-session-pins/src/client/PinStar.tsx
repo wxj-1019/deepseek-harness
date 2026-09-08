@@ -46,15 +46,14 @@ export function PinStar({ sessionId, usePins, ensure, toggle, t }: PinStarProps)
   // Load at mount: the filled state must be visible without a click.
   useEffect(() => { void ensure() }, [ensure])
   const pins = usePins(current => current.sessionIds)
-  const pinned = sessionId !== undefined && pins.includes(sessionId)
+  const pinned = pins.includes(sessionId)
 
   /** Flip the pin and hold a failure as tooltip text instead of swallowing it. */
   const onToggle = (): void => {
-    if (sessionId === undefined) return
     setActionError(null)
     void ensure()
       .then(() => toggle(sessionId))
-      .then(message => setActionError(message ?? null))
+      .then((message) => { setActionError(message ?? null) })
   }
 
   return (

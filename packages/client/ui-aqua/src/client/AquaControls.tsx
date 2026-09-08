@@ -84,8 +84,11 @@ export function Segmented<T extends string>({ label, value, options, onSelect }:
 export async function fileToDataUrl(file: File): Promise<string> {
   const raw = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => { resolve(String(reader.result)) }
-    reader.onerror = () => { reject(reader.error) }
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result)
+      else reject(new Error('ui-aqua: wallpaper read did not produce a data URL'))
+    }
+    reader.onerror = () => { reject(new Error('ui-aqua: wallpaper read failed', { cause: reader.error })) }
     reader.readAsDataURL(file)
   })
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {

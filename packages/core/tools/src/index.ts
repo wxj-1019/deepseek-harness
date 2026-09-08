@@ -639,9 +639,9 @@ function errorInfo(error: unknown): ToolErrorInfo | undefined {
     // break instanceof across package boundaries; a string `code` field is the
     // same machine-routable contract, so fall back to it structurally.
     if (typeof error === 'object' && error !== null) {
-      const code = (error as { code?: unknown }).code
-      if (typeof code === 'string' && code.length > 0) {
-        return { name: (error as Error).name ?? 'Error', code }
+      const structural = error as { code?: unknown; name?: unknown }
+      if (typeof structural.code === 'string' && structural.code.length > 0) {
+        return { name: typeof structural.name === 'string' && structural.name.length > 0 ? structural.name : 'Error', code: structural.code }
       }
     }
     return undefined

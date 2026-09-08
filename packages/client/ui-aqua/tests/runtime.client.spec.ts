@@ -121,7 +121,8 @@ describe('AquaRuntime one-shot migration', () => {
     localStorage.setItem('dsh.ui-aqua.blur', '12')
     localStorage.setItem('dsh.ui-aqua.wallpaper', 'data:image/jpeg;base64,MTIz')
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
-      if (String(input).startsWith('data:')) return new Response(new Uint8Array([1, 2, 3]))
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      if (url.startsWith('data:')) return new Response(new Uint8Array([1, 2, 3]))
       return new Response(JSON.stringify(IMAGE_REF), { status: 201 })
     })
     vi.stubGlobal('fetch', fetchMock)

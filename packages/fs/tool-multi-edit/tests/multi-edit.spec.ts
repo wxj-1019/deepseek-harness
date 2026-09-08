@@ -64,6 +64,6 @@ describe('multi_edit regex mode', () => {
     expect(applyOne('hello world', '(\\w+) (\\w+)', '$2, $1', false, true)).toBe('world, hello')
   })
   test('applyOne rejects a non-matching pattern like a missing literal', () => {
-    expect(() => applyOne('abc', 'z+', 'X', false, true)).toThrowError('oldString not found in file')
+    expect(() => applyOne('abc', 'z+', 'X', false, true)).toThrow('oldString not found in file')
   })
 })

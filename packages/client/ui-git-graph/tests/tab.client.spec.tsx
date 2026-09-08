@@ -43,7 +43,7 @@ function stubFetch(handler: (url: string, init?: RequestInit) => Promise<unknown
   vi.stubGlobal('fetch', vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => ({
     ok: true,
     status: 200,
-    async json() { return handler(String(url), init) },
+    async json() { return handler(typeof url === 'string' ? url : url instanceof URL ? url.href : url.url, init) },
   })))
 }
 
@@ -53,15 +53,15 @@ function mount(overrides: Partial<GitGraphTabProps> = {}): void {
     viewRequest: null,
     openView: () => {},
     completeViewRequest: () => {},
-    useSession: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useSession'],
+    useSession: () => { throw new Error('unused by the git graph tab') },
     useSessions,
-    useSessionPendingInteraction: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useSessionPendingInteraction'],
-    useWorkspaces: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useWorkspaces'],
+    useSessionPendingInteraction: () => { throw new Error('unused by the git graph tab') },
+    useWorkspaces: () => { throw new Error('unused by the git graph tab') },
     useProjection: () => undefined,
-    useConversation: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useConversation'],
-    useChat: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useChat'],
-    useTrajectory: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useTrajectory'],
-    useInput: (() => { throw new Error('unused by the git graph tab') }) as unknown as GitGraphTabProps['useInput'],
+    useConversation: () => { throw new Error('unused by the git graph tab') },
+    useChat: () => { throw new Error('unused by the git graph tab') },
+    useTrajectory: () => { throw new Error('unused by the git graph tab') },
+    useInput: () => { throw new Error('unused by the git graph tab') },
     inputActions: {} as unknown as GitGraphTabProps['inputActions'],
     t: key => en[key as keyof typeof en] ?? key,
     ...overrides,
@@ -82,7 +82,7 @@ describe('GitGraphTab', () => {
       return Promise.resolve({ ok: false, error: { code: 'x', message: 'unexpected url' } })
     })
     mount()
-    await waitFor(() => expect(screen.getByText(/subject aaaaaaa/)).toBeTruthy())
+    await waitFor(() => { expect(screen.getByText(/subject aaaaaaa/)).toBeTruthy() })
     expect(screen.getByText(/subject bbbbbbb/)).toBeTruthy()
     // The first row carries the rail cell with lanes (svg children).
     const rails = document.querySelectorAll('[class*="rail"] svg line, [class*="rail"] svg circle')
@@ -105,9 +105,9 @@ describe('GitGraphTab', () => {
       return Promise.resolve({ ok: false, error: { code: 'x', message: 'unexpected url' } })
     })
     mount()
-    await waitFor(() => expect(screen.getByText(/subject ccccccc/)).toBeTruthy())
+    await waitFor(() => { expect(screen.getByText(/subject ccccccc/)).toBeTruthy() })
     fireEvent.click(screen.getByText(en['loadMore']))
-    await waitFor(() => expect(screen.getByText(/subject ddddddd/)).toBeTruthy())
+    await waitFor(() => { expect(screen.getByText(/subject ddddddd/)).toBeTruthy() })
     expect(logCalls).toBe(2)
   })
 

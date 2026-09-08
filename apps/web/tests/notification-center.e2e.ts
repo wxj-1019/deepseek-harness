@@ -11,7 +11,6 @@ import { join } from 'node:path'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
-import type { ReplayProviderConfig } from '@deepseek-ai/dsh-llm-replay'
 import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden, fixtureUserPrompts,
   launchWebScaffold, recordFixture, watchConsole, webSnapshotMode, type WebScaffold,
@@ -24,15 +23,6 @@ const PANEL_EXPECTED = join(SNAPSHOT_DIR, 'panel.expected.md')
 const MODE = webSnapshotMode()
 const PROMPT = 'Reply with the single word OK and stop.'
 
-/** Replay roster: the shipped DeepSeek route. */
-const ROSTER: ReplayProviderConfig[] = [
-  {
-    id: 'deepseek-official',
-    name: 'DeepSeek',
-    models: [{ id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', contextWindow: 128_000 }],
-  },
-]
-
 describe('web e2e: notification center (bell + overlay panel)', () => {
   let scaffold: WebScaffold
   let browser: Browser
@@ -42,7 +32,6 @@ describe('web e2e: notification center (bell + overlay panel)', () => {
   beforeAll(async () => {
     scaffold = await launchWebScaffold({
       ...(MODE === 'record' ? {} : { replayFixture: FIXTURE, paceMs: 15 }),
-      replayProviders: ROSTER,
     })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
@@ -129,5 +118,5 @@ async function currentSessionId(scaffold: WebScaffold) {
   const listed = await scaffold.ctx.sessionPersistence.list()
   const last = listed.at(-1)
   if (last === undefined) throw new Error('notification-center e2e: no session to record')
-  return last.id
+  return last.header.id
 }

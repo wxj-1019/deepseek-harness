@@ -245,7 +245,9 @@ export function attachFluidShader(canvas: HTMLCanvasElement, params: FluidParams
     const vertex = compile(gl.VERTEX_SHADER, VERTEX_SHADER)
     const frag = compile(gl.FRAGMENT_SHADER, fragment)
     if (vertex === null || frag === null) return null
-    const program = gl.createProgram()
+    // The TS 6 DOM lib types create* as non-null; the widening assertion
+    // records that WebGL still returns null on a lost context.
+    const program = gl.createProgram() as WebGLProgram | null
     if (program === null) return null
     gl.attachShader(program, vertex)
     gl.attachShader(program, frag)
@@ -312,7 +314,7 @@ export function attachFluidShader(canvas: HTMLCanvasElement, params: FluidParams
 
   interface FlowTarget { fbo: WebGLFramebuffer; tex: WebGLTexture }
   const makeTarget = (width: number, height: number, initial?: Uint8Array): FlowTarget => {
-    const tex = gl.createTexture()
+    const tex = gl.createTexture() as WebGLTexture | null
     if (tex === null) throw new Error('ui-aqua fluid: texture allocation failed')
     gl.bindTexture(gl.TEXTURE_2D, tex)
     if (initial !== undefined) {

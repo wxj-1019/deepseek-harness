@@ -192,14 +192,14 @@ export class UserTodoService extends TypertRemoteService {
    * @returns the frozen snapshot list.
    */
   @Remote('list')
-  async list(): Promise<UserTodoListResult> {
+  list(): Promise<UserTodoListResult> {
     const table = this.requireTable()
     const items = [...table.entries()]
       .map(([, record]) => record)
       .sort((left, right) => left.createdAt - right.createdAt)
       .map(snapshotItem)
     Object.freeze(items)
-    return success<UserTodoListValue>({ items })
+    return Promise.resolve(success<UserTodoListValue>({ items }))
   }
 
   /**
@@ -359,7 +359,7 @@ export class UserTodoService extends TypertRemoteService {
       return rejected({ code: 'session-link-without-workspace', sessionId })
     }
     if (workspaceId === undefined) return success({})
-    const workspace = this.ctx.workspaceRegistry.get(workspaceId as WorkspaceId)
+    const workspace = this.ctx.workspaceRegistry.get(workspaceId)
     if (workspace === undefined) return rejected({ code: 'workspace-not-found', workspaceId })
     if (sessionId !== undefined && !workspace.sessionIds.includes(sessionId)) {
       return rejected({ code: 'session-not-in-workspace', workspaceId, sessionId })

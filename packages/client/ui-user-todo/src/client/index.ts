@@ -106,7 +106,7 @@ export function apply(ctx: ClientContext): void {
         notification.onclick = (): void => { window.focus(); notification.close() }
       }
     }, 30_000)
-    return () => clearInterval(timer)
+    return () => { clearInterval(timer) }
   }, 'ui-user-todo: due reminders')
 
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({

@@ -17,9 +17,9 @@ describe('applyTextEdits', () => {
   })
 
   it('rejects out-of-range lines, characters, and overlaps', () => {
-    expect(() => applyTextEdits('ab', [range(5, 0, 5, 1)])).toThrowError(/outside the file/)
-    expect(() => applyTextEdits('ab', [range(0, 9, 0, 10)])).toThrowError(/outside line 0/)
-    expect(() => applyTextEdits('abcd', [range(0, 0, 0, 3), range(0, 2, 0, 4)])).toThrowError(/overlapping edits/)
+    expect(() => applyTextEdits('ab', [range(5, 0, 5, 1)])).toThrow(/outside the file/)
+    expect(() => applyTextEdits('ab', [range(0, 9, 0, 10)])).toThrow(/outside line 0/)
+    expect(() => applyTextEdits('abcd', [range(0, 0, 0, 3), range(0, 2, 0, 4)])).toThrow(/overlapping edits/)
   })
 })
 
@@ -31,7 +31,7 @@ describe('planUriToPath', () => {
   })
 
   it('rejects non-file schemes and paths outside the workspace', () => {
-    expect(() => planUriToPath('https://example.com/a.ts', root)).toThrowError(/not a file: URI/)
-    expect(() => planUriToPath(pathToFileURL(process.platform === 'win32' ? 'C:\\elsewhere\\a.ts' : '/elsewhere/a.ts').href, root)).toThrowError(/outside the session workspace/)
+    expect(() => planUriToPath('https://example.com/a.ts', root)).toThrow(/not a file: URI/)
+    expect(() => planUriToPath(pathToFileURL(process.platform === 'win32' ? 'C:\\elsewhere\\a.ts' : '/elsewhere/a.ts').href, root)).toThrow(/outside the session workspace/)
   })
 })

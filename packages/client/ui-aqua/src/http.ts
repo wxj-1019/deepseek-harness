@@ -47,7 +47,7 @@ export async function handleWallpaperUpload(
     json(res, 403, { error: 'cross-site' })
     return
   }
-  const declared = String(req.headers['content-type'] ?? '')
+  const declared = req.headers['content-type'] ?? ''
   const isImage = (WALLPAPER_IMAGE_MEDIA_TYPES as readonly string[]).some(type => type === declared)
   const isVideo = (WALLPAPER_VIDEO_MEDIA_TYPES as readonly string[]).some(type => type === declared)
   if (!isImage && !isVideo) {

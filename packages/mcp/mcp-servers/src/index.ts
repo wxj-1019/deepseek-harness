@@ -149,9 +149,9 @@ export default class McpServers extends EntryGroup {
     yield () => { void this.stop() }
     const scope = this.ctx.settings.register(SETTINGS_NAMESPACE, McpSettings)
     const unwatch = scope.watch((next) => {
-      void this.update(composeRows(next, message => this.ctx.logger.error(message)))
+      void this.update(composeRows(next, (message) => { this.ctx.logger.error(message) }))
     })
     yield () => { unwatch() }
-    await this.update(composeRows(scope.get(), message => this.ctx.logger.error(message)))
+    await this.update(composeRows(scope.get(), (message) => { this.ctx.logger.error(message) }))
   }
 }

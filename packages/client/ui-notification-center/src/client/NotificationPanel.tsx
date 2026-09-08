@@ -63,7 +63,7 @@ export function NotificationPanel(props: NotificationPanelProps) {
   /** Run one verb and surface its rejection text until the next action. */
   const run = (pending: Promise<string | undefined>): void => {
     setActionError(null)
-    void pending.then(message => setActionError(message ?? null))
+    void pending.then((message) => { setActionError(message ?? null) })
   }
 
   /** Escape closes the panel. */

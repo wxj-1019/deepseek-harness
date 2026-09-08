@@ -44,13 +44,18 @@ export function TodoDrawer(props: TodoDrawerProps) {
   } = props
   const actions = { ensure, add, toggle, retitle, setWorkspaceLink, setSessionLink, setDue, remove }
   /** Business-rejection codes the Host can return, mapped to locale keys. */
-  const ERROR_CODES = {
+  const ERROR_CODES: Record<string,
+  | 'error.code.title-blank'
+  | 'error.code.item-not-found'
+  | 'error.code.workspace-not-found'
+  | 'error.code.session-link-without-workspace'
+  | 'error.code.session-not-in-workspace'> = {
     'title-blank': 'error.code.title-blank',
     'item-not-found': 'error.code.item-not-found',
     'workspace-not-found': 'error.code.workspace-not-found',
     'session-link-without-workspace': 'error.code.session-link-without-workspace',
     'session-not-in-workspace': 'error.code.session-not-in-workspace',
-  } as const
+  }
   /** Run one verb and surface its rejection text until the next action. */
   const run = (pending: Promise<string | undefined>): void => {
     setActionError(null)
@@ -60,7 +65,9 @@ export function TodoDrawer(props: TodoDrawerProps) {
         return
       }
       if (message.startsWith('code:')) {
-        const code = message.slice(5) as keyof typeof ERROR_CODES
+        // The Host can return a code this client build does not know; the
+        // Record index then yields undefined and the raw code shows instead.
+        const code = message.slice(5)
         const key = ERROR_CODES[code]
         setActionError(key === undefined ? code : t(key))
         return
@@ -130,7 +137,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             type="button"
             className={css.check}
             aria-label={item.done ? t('row.check.undo') : t('row.check.done')}
-            onClick={() => run(actions.toggle(item.id, !item.done))}
+            onClick={() => { run(actions.toggle(item.id, !item.done)) }}
           >
             {item.done && <IconCheckOutline14 />}
           </button>
@@ -138,7 +145,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             type="button"
             className={expanded ? `${css.title} ${css.titleOpen}` : css.title}
             aria-expanded={expanded}
-            onClick={() => setExpandedId(current => (current === item.id ? null : item.id))}
+            onClick={() => { setExpandedId(current => (current === item.id ? null : item.id)) }}
           >
             {item.title}
             {item.dueAt !== undefined && (
@@ -152,7 +159,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             className={css.chevron}
             aria-label={t('row.detail')}
             aria-expanded={expanded}
-            onClick={() => setExpandedId(current => (current === item.id ? null : item.id))}
+            onClick={() => { setExpandedId(current => (current === item.id ? null : item.id)) }}
           >
             <IconChevronDownOutline14 />
           </button>
@@ -160,7 +167,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             type="button"
             className={css.iconAction}
             aria-label={t('row.delete')}
-            onClick={() => run(actions.remove(item.id))}
+            onClick={() => { run(actions.remove(item.id)) }}
           >
             <IconTrashOutline16 />
           </button>
@@ -206,7 +213,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
                   type="button"
                   className={css.cardClear}
                   aria-label={t('due.clear')}
-                  onClick={() => run(actions.setDue(item.id, null))}
+                  onClick={() => { run(actions.setDue(item.id, null)) }}
                 >
                   {t('due.clear')}
                 </button>
@@ -237,7 +244,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
                     { value: '', label: t('session.none') },
                     ...sessionOptionsOf(item).map(sessionId => ({
                       value: sessionId,
-                      label: sessionsById[sessionId as never]?.displayTitle ?? String(sessionId).slice(0, 8),
+                      label: sessionsById[sessionId as never]?.displayTitle ?? sessionId.slice(0, 8),
                     })),
                   ]}
                   onSelect={(picked) => {
@@ -251,7 +258,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
               <button
                 type="button"
                 className={css.cardOpen}
-                onClick={() => openSession(linkedSession)}
+                onClick={() => { openSession(linkedSession) }}
               >
                 {t('row.open')}
               </button>
@@ -261,7 +268,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
               <button
                 type="button"
                 className={css.cardDelete}
-                onClick={() => run(actions.remove(item.id))}
+                onClick={() => { run(actions.remove(item.id)) }}
               >
                 {t('row.delete')}
               </button>
@@ -279,7 +286,10 @@ export function TodoDrawer(props: TodoDrawerProps) {
         className={css.edgeTab}
         aria-label={t('button.aria')}
         aria-expanded={open}
-        onClick={() => (open ? setOpen(false) : openDrawer())}
+        onClick={() => {
+          if (open) setOpen(false)
+          else openDrawer()
+        }}
       >
         <IconCheckOutline14 />
         {pendingCount > 0 && <span className={css.badge} aria-hidden="true">{pendingCount}</span>}
@@ -290,7 +300,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
           <header className={css.panelHead}>
             <strong>{t('button.label')}</strong>
             {pendingCount > 0 && <span className={css.count}>{t('count.pending', { count: pendingCount })}</span>}
-            <button type="button" className={css.iconAction} aria-label={t('panel.close')} onClick={() => setOpen(false)}>
+            <button type="button" className={css.iconAction} aria-label={t('panel.close')} onClick={() => { setOpen(false) }}>
               <IconCloseOutline16 />
             </button>
           </header>
@@ -327,7 +337,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
               <button
                 type="button"
                 className={css.historyToggle}
-                onClick={() => setShowHistory(value => !value)}
+                onClick={() => { setShowHistory(value => !value) }}
               >
                 {t('history.toggle', { count: earlier.length })}
               </button>

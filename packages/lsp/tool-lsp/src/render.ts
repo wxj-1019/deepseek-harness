@@ -92,19 +92,19 @@ export function parseLspArgs(args: LspToolArgs): LspToolInput {
     if (args.file_path === undefined || args.file_path.trim().length === 0) {
       throw new Error('file_path must be a non-empty string')
     }
-    return { operation, filePath: args.file_path, position: toPosition(args) } as LspToolInput
+    return { operation, filePath: args.file_path, position: toPosition(args) }
   }
   if (operation === 'documentSymbol' || operation === 'diagnostics') {
     if (args.file_path === undefined || args.file_path.trim().length === 0) {
       throw new Error('file_path must be a non-empty string')
     }
-    return { operation, filePath: args.file_path } as LspToolInput
+    return { operation, filePath: args.file_path }
   }
   if (operation === 'workspaceSymbol') {
     if (args.query === undefined || args.query.trim().length === 0) {
       throw new Error('query must be a non-empty string for workspaceSymbol')
     }
-    return { operation, query: args.query } as LspToolInput
+    return { operation, query: args.query }
   }
   if (args.file_path === undefined || args.file_path.trim().length === 0) {
     throw new Error('file_path must be a non-empty string')
@@ -115,7 +115,7 @@ export function parseLspArgs(args: LspToolArgs): LspToolInput {
     position: toPosition(args),
     newName: args.new_name ?? '',
     apply: args.apply === true,
-  } as LspToolInput
+  }
 }
 
 /** Whether a string is one of the operations. */

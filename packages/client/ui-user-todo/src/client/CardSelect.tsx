@@ -76,7 +76,7 @@ export function CardSelect(props: CardSelectProps): ReactNode {
   }
   useEffect(() => {
     if (!open) return
-    const dismiss = (): void => setOpen(false)
+    const dismiss = (): void => { setOpen(false) }
     window.addEventListener('resize', dismiss)
     window.addEventListener('scroll', dismiss, true)
     return () => {
@@ -134,7 +134,10 @@ export function CardSelect(props: CardSelectProps): ReactNode {
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         aria-label={ariaLabel}
-        onClick={() => (open ? setOpen(false) : openMenu())}
+        onClick={() => {
+          if (open) setOpen(false)
+          else openMenu()
+        }}
       >
         <span className={css.triggerValue}>{current?.label ?? ''}</span>
         <IconChevronDownOutline14 className={open ? `${css.chevron} ${css.chevronOpen}` : css.chevron} />
@@ -166,7 +169,7 @@ export function CardSelect(props: CardSelectProps): ReactNode {
                     ? `${css.option} ${css.optionActive}`
                     : css.option
                 }
-                onPointerMove={() => setActive(index)}
+                onPointerMove={() => { setActive(index) }}
                 onClick={() => {
                   setOpen(false)
                   onSelect(option.value)

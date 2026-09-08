@@ -12,7 +12,6 @@ import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import type { SessionEvent } from '@deepseek-ai/dsh-session'
-import type { ReplayProviderConfig } from '@deepseek-ai/dsh-llm-replay'
 import {
   assertFixtureInventory, fixtureUserPrompts, launchWebScaffold, recordFixture,
   watchConsole, webSnapshotMode, type WebScaffold,
@@ -22,26 +21,6 @@ import { connectFreshWorkspace, newEnglishPage, saveFailureShot } from './suppor
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/vision-route', import.meta.url))
 const FIXTURE = join(SNAPSHOT_DIR, 'session.jsonl')
 const MODE = webSnapshotMode()
-
-/**
- * Replay roster: the shipped text-only DeepSeek route plus a declared vision
- * route. The session model stays text-only so routing is observable.
- */
-const ROSTER: ReplayProviderConfig[] = [
-  {
-    id: 'deepseek-official',
-    name: 'DeepSeek',
-    models: [{ id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', contextWindow: 128_000 }],
-  },
-  {
-    id: 'qwen-dashscope',
-    name: 'Qwen (DashScope)',
-    models: [{
-      id: 'qwen3-vl-plus', name: 'Qwen3-VL-Plus', contextWindow: 128_000,
-      inputModalities: ['text', 'image'],
-    }],
-  },
-]
 
 /**
  * A 64x64 two-color PNG (left warm, right cool): small enough to embed,
@@ -66,7 +45,6 @@ describe('web e2e: vision-model routing', () => {
   beforeAll(async () => {
     scaffold = await launchWebScaffold({
       ...(MODE === 'record' ? {} : { replayFixture: FIXTURE, paceMs: 15 }),
-      replayProviders: ROSTER,
     })
     if (MODE === 'record') {
       // The real vision route: the pi-ai adapter mounts the provider profile
@@ -119,11 +97,11 @@ describe('web e2e: vision-model routing', () => {
 
     // The composer admits images through paste/drop; a synthetic drop is the
     // same intake path a real user drags through.
-    await page.evaluate(([bytes]) => {
+    await page.evaluate((bytes: number[]) => {
       const dt = new DataTransfer()
       dt.items.add(new File([new Uint8Array(bytes)], 'pixel.png', { type: 'image/png' }))
       document.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt }))
-    }, [Array.from(TEST_PNG)])
+    }, Array.from(TEST_PNG))
     await expect.poll(async () => page.locator('[role="group"][aria-label="Pending images"]').count(), {
       timeout: 15_000,
     }).toBe(1)

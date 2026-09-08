@@ -127,7 +127,7 @@ export class UserTodoController implements HostObservable<UserTodoState> {
     try {
       const response = await this.remote.list()
       if (!response.ok) throw new Error(response.error.message)
-      const items = response.value.ok ? response.value.value.items : []
+      const items = response.value.value.items
       this.store.update((state) => {
         state.status = 'ready'
         state.items = Object.freeze(items.map(item => ({ ...item })))
@@ -228,7 +228,7 @@ export class UserTodoController implements HostObservable<UserTodoState> {
     try {
       const response = await run(this.remote)
       if (!response.ok) return response.error.message
-      if (!response.value.ok) return `code:${String(response.value.error.code)}`
+      if (!response.value.ok) return `code:${response.value.error.code}`
     } catch (error) {
       return messageOf(error)
     }

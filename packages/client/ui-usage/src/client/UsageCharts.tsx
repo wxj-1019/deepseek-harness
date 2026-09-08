@@ -25,7 +25,7 @@ export const SERIES_COLORS = [
 
 /** Color for a series index, cycling past the palette's end. */
 export function seriesColor(index: number): string {
-  return SERIES_COLORS[index % SERIES_COLORS.length] ?? SERIES_COLORS[0] ?? '#4f8cff'
+  return SERIES_COLORS.at(index % SERIES_COLORS.length) ?? '#4f8cff'
 }
 
 /**

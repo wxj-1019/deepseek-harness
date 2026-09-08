@@ -154,7 +154,7 @@ export class AquaRuntime {
     const max = field === 'blur' || field === 'wallpaperBlur' || field === 'videoBlur' ? 40
       : field === 'fluidHue' ? 360
         : 100
-    this.write({ [field]: Math.min(max, Math.max(0, Number.isFinite(value) ? value : AQUA_DEFAULTS[field])) } as Partial<AquaSection>)
+    this.write({ [field]: Math.min(max, Math.max(0, Number.isFinite(value) ? value : AQUA_DEFAULTS[field])) })
   }
 
   /**
@@ -171,7 +171,7 @@ export class AquaRuntime {
    * @param value - the next flag state.
    */
   setFlag(field: 'whale' | 'critters' | 'mesh' | 'spotlight' | 'press', value: boolean): void {
-    this.write({ [field]: value } as Partial<AquaSection>)
+    this.write({ [field]: value })
   }
 
   /**
@@ -279,9 +279,10 @@ export class AquaRuntime {
 
   /** Write one patch's fields through the scope, then publish optimistically. */
   private write(patch: Partial<AquaSection>): void {
+    // exactOptionalPropertyTypes keeps undefined out of AquaSection, so every
+    // present field is a set; clearing goes through unset's own call site.
     for (const [field, value] of Object.entries(patch)) {
-      if (value === undefined) void this.host.unset(field)
-      else void this.host.set(field, value)
+      void this.host.set(field, value)
     }
     this.section = { ...this.section, ...patch }
     this.publish()

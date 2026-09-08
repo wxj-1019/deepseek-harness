@@ -226,7 +226,7 @@ export function usageStreaks(dayKeys: readonly string[]): UsageStreaks {
   const today = todayKey()
   let current = 0
   let cursor = unique.includes(today) ? today : previousDay(today)
-  while (cursor !== undefined && unique.includes(cursor)) {
+  while (unique.includes(cursor)) {
     current += 1
     cursor = previousDay(cursor)
   }

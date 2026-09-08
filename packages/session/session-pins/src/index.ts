@@ -88,13 +88,13 @@ export class SessionPinsService extends TypertRemoteService {
    * @returns the frozen snapshot list.
    */
   @Remote('list')
-  async list(): Promise<SessionPinListResult> {
+  list(): Promise<SessionPinListResult> {
     const table = this.requireTable()
     const sessionIds = [...table.entries()]
       .sort(([, left], [, right]) => left.pinnedAt - right.pinnedAt)
       .map(([sessionId]) => sessionId)
     Object.freeze(sessionIds)
-    return success<SessionPinListValue>({ sessionIds })
+    return Promise.resolve(success<SessionPinListValue>({ sessionIds }))
   }
 
   /**

@@ -33,7 +33,7 @@ function appendUsage(session: Session, turn: number, step: number, usage: {
 }
 
 /** Compose the service over the real storage stack plus a live session store. */
-async function setupFixture(): Promise<{ ctx: Context; dispose(): Promise<void> }> {
+async function setupFixture(): Promise<{ ctx: Context; dispose: () => Promise<void> }> {
   const root = await mkdtemp(join(tmpdir(), 'dsh-usage-ledger-test-'))
   const ctx = new Context()
   try {

@@ -286,8 +286,8 @@ describe('formatting', () => {
   })
 
   it('normalizeFormattingEdits rejects non-array payloads and malformed edits', () => {
-    expect(() => normalizeFormattingEdits({}, 'file:///ws/a.ts')).toThrowError(/was not an array/)
-    expect(() => normalizeFormattingEdits([{ range: { start: { line: 0 } }, newText: 'x' }], 'file:///ws/a.ts')).toThrowError(/malformed TextEdit/)
+    expect(() => normalizeFormattingEdits({}, 'file:///ws/a.ts')).toThrow(/was not an array/)
+    expect(() => normalizeFormattingEdits([{ range: { start: { line: 0 } }, newText: 'x' }], 'file:///ws/a.ts')).toThrow(/malformed TextEdit/)
   })
 })
 
@@ -301,9 +301,9 @@ describe('normalizePublishDiagnostics', () => {
   })
 
   it('rejects missing params, URIs, and malformed entries', () => {
-    expect(() => normalizePublishDiagnostics(null)).toThrowError(/were not an object/)
-    expect(() => normalizePublishDiagnostics({})).toThrowError(/no document URI/)
-    expect(() => normalizePublishDiagnostics({ uri: 'file:///ws/a.ts', diagnostics: [{ message: 'no range' }] })).toThrowError(/malformed entry/)
+    expect(() => normalizePublishDiagnostics(null)).toThrow(/were not an object/)
+    expect(() => normalizePublishDiagnostics({})).toThrow(/no document URI/)
+    expect(() => normalizePublishDiagnostics({ uri: 'file:///ws/a.ts', diagnostics: [{ message: 'no range' }] })).toThrow(/malformed entry/)
   })
 })
 
@@ -316,8 +316,8 @@ describe('normalizeCalls', () => {
     expect(normalizeCalls(null, 'to')).toEqual([])
   })
   it('rejects non-array payloads, missing far symbols, and missing spans', () => {
-    expect(() => normalizeCalls({}, 'from')).toThrowError(/was not an array/)
-    expect(() => normalizeCalls([{ to: item }], 'from')).toThrowError(/no far-end symbol/)
-    expect(() => normalizeCalls([{ from: item }], 'from')).toThrowError(/no call-site ranges/)
+    expect(() => normalizeCalls({}, 'from')).toThrow(/was not an array/)
+    expect(() => normalizeCalls([{ to: item }], 'from')).toThrow(/no far-end symbol/)
+    expect(() => normalizeCalls([{ from: item }], 'from')).toThrow(/no call-site ranges/)
   })
 })

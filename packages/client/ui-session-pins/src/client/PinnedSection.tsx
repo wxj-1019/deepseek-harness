@@ -57,7 +57,7 @@ export function PinnedSection(props: PinnedSectionProps) {
                 type="button"
                 className={css.title}
                 title={summary?.displayTitle}
-                onClick={() => openFromSection(sessionId)}
+                onClick={() => { openFromSection(sessionId) }}
               >
                 {summary?.displayTitle ?? String(sessionId).slice(0, 8)}
               </button>
@@ -70,7 +70,7 @@ export function PinnedSection(props: PinnedSectionProps) {
                   setActionError(null)
                   void ensure()
                     .then(() => unpin(sessionId))
-                    .then(message => setActionError(message ?? null))
+                    .then((message) => { setActionError(message ?? null) })
                 }}
               >
                 <IconCloseFill14 />

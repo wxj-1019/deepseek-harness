@@ -96,7 +96,7 @@ function mountRow(section: AquaSection, dark = false, configure?: (face: FaceMoc
   const props: AquaAppearanceRowComponentProps = {
     useSessions: emptySessions(),
     useWorkspaces: emptyWorkspaces(),
-    useSessionPendingInteraction: (() => { throw new Error('unused by the aqua row') }) as AquaAppearanceRowComponentProps['useSessionPendingInteraction'],
+    useSessionPendingInteraction: () => { throw new Error('unused by the aqua row') },
     useStore,
     actions: store.actions,
     t: (key: string) => COPY[key] ?? key,

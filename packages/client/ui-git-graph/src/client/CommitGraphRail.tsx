@@ -121,7 +121,7 @@ export function assignGraphRows(entries: readonly Pick<GraphLogEntry, 'hashFull'
 
     rows.push({
       rails,
-      node: { lane: nodeLane, color: PALETTE[nodeLane % PALETTE.length] ?? PALETTE[0] ?? '#4f8cff' },
+      node: { lane: nodeLane, color: PALETTE.at(nodeLane % PALETTE.length) ?? '#4f8cff' },
       edges,
     })
   })

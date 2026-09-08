@@ -158,7 +158,7 @@ export class SessionPinsController implements HostObservable<SessionPinsState> {
     try {
       const response = await run(this.remote)
       if (!response.ok) return response.error.message
-      if (!response.value.ok) return `code:${String(response.value.error.code)}`
+      if (!response.value.ok) return `code:${response.value.error.code}`
     } catch (error) {
       return messageOf(error)
     }

@@ -78,11 +78,11 @@ export function attachFluidInteractions(targets: FluidTargets): () => void {
   }
 
   const onPointerOver = (event: PointerEvent): void => {
-    const button = (event.target as Element | null)?.closest?.('button')
+    const button = (event.target as Element | null)?.closest('button')
     if (button !== undefined && button !== null) stirButton(button, 0.04)
   }
   const onClick = (event: MouseEvent): void => {
-    const button = (event.target as Element | null)?.closest?.('button')
+    const button = (event.target as Element | null)?.closest('button')
     if (button === undefined || button === null) return
     const now = performance.now()
     const previous = lastStir.get(button) ?? 0

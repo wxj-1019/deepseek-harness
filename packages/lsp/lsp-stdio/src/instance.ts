@@ -270,7 +270,7 @@ export class LspInstance {
       const prepareSend = this.connection.request('textDocument/prepareCallHierarchy', positionParams)
       // A signal-less caller cannot cancel; see the base branch below.
       const prepared = await (signal === undefined ? prepareSend : this.raceAbort(prepareSend, prepareId, signal))
-      const items = Array.isArray(prepared) ? prepared : []
+      const items: unknown[] = Array.isArray(prepared) ? prepared : []
       if (items.length === 0) return []
       const callId = this.connection.peekNextId()
       const callSend = this.connection.request(requestMethod(operation), { item: items[0] })

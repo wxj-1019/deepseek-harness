@@ -33,8 +33,9 @@ async function call<T>(action: 'log' | 'branch', payload: Record<string, unknown
   } catch (error) {
     throw new GitGraphApiError('network', error instanceof Error ? error.message : String(error))
   }
-  const parsed: { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } } | null
-    = await response.json().catch(() => null)
+  const parsed = (await response.json().catch(() => null)) as
+    | { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } }
+    | null
   if (!response.ok || parsed === null || parsed.ok !== true || parsed.value === undefined) {
     throw new GitGraphApiError(
       parsed?.error?.code ?? 'http',

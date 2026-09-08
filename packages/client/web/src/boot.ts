@@ -120,7 +120,7 @@ export class AppWebEntry {
         .catch((_prefetchError: unknown) => {
           // Prefetch only starts transport early; the Loader import retries and reports this bundle failure.
         })
-        .then(() => this.page.stepPrefetch()),
+        .then(() => { this.page.stepPrefetch() }),
     ))
   }
 

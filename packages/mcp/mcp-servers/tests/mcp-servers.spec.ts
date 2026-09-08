@@ -94,7 +94,8 @@ describe('composeRows', () => {
     try {
       const entry = { ...stdioEntry, env: { TOKEN: '${MCP_TEST_TOKEN}', KEEP: 'literal', BOTH: '${MCP_TEST_TOKEN}-suffix' } }
       const rows = composeRows(settings({ gh: entry }), () => {})
-      expect(rows[0]!.config.env).toEqual({ TOKEN: 'secret-value', KEEP: 'literal', BOTH: 'secret-value-suffix' })
+      const config = rows[0]!.config as { env: Record<string, string> }
+      expect(config.env).toEqual({ TOKEN: 'secret-value', KEEP: 'literal', BOTH: 'secret-value-suffix' })
     } finally {
       vi.unstubAllEnvs()
     }
@@ -105,7 +106,8 @@ describe('composeRows', () => {
     try {
       const entry = { ...httpEntry, headers: { Authorization: 'Bearer ${MCP_TEST_AUTH}' } }
       const rows = composeRows(settings({ web: entry }), () => {})
-      expect(rows[0]!.config.headers).toEqual({ Authorization: 'Bearer token' })
+      const config = rows[0]!.config as { headers: Record<string, string> }
+      expect(config.headers).toEqual({ Authorization: 'Bearer token' })
     } finally {
       vi.unstubAllEnvs()
     }

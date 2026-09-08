@@ -39,7 +39,7 @@ function fakeAgent(session: Session): Agent {
 }
 
 /** Compose the service over the real storage stack, the jobs registry, and the session store. */
-async function setupFixture(): Promise<{ ctx: Context; dispose(): Promise<void> }> {
+async function setupFixture(): Promise<{ ctx: Context; dispose: () => Promise<void> }> {
   const root = await mkdtemp(join(tmpdir(), 'dsh-notification-center-test-'))
   const ctx = new Context()
   try {

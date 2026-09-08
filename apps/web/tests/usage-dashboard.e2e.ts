@@ -4,7 +4,6 @@
 // session with nonzero totals plus a totals row. Zero model calls in replay.
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
-import type { ReplayProviderConfig } from '@deepseek-ai/dsh-llm-replay'
 import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
@@ -22,15 +21,6 @@ const SECTION_EXPECTED = join(SNAPSHOT_DIR, 'section.expected.md')
 const MODE = webSnapshotMode()
 const PROMPT = 'Reply with the single word OK and stop.'
 
-/** Replay roster: the shipped DeepSeek route. */
-const ROSTER: ReplayProviderConfig[] = [
-  {
-    id: 'deepseek-official',
-    name: 'DeepSeek',
-    models: [{ id: 'deepseek-v4-flash', name: 'DeepSeek-V4-Flash', contextWindow: 128_000 }],
-  },
-]
-
 describe('web e2e: usage dashboard (settings section)', () => {
   let scaffold: WebScaffold
   let browser: Browser
@@ -41,7 +31,6 @@ describe('web e2e: usage dashboard (settings section)', () => {
     scaffold = await launchWebScaffold({
       replayFixture: FIXTURE,
       paceMs: 15,
-      replayProviders: ROSTER,
     })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)

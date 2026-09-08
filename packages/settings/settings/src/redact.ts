@@ -121,7 +121,7 @@ function walk(node: SchemaNode | undefined, value: unknown, path: string[], secr
       // Fail closed: a secret reachable only through a container this walker
       // cannot name (union, intersection, transform) must not cross the wire
       // verbatim. The schema author re-declares it on a supported container.
-      if (node !== undefined && declaresSecret(node)) {
+      if (declaresSecret(node)) {
         throw new Error(
           `settings: a role('secret') field sits behind an unsupported container at "${path.join('.') || '<root>'}"; `
           + 'declare it directly on an object, dict, or array so redaction can reach it',

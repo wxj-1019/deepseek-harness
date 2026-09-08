@@ -149,14 +149,14 @@ export class NotificationCenterService extends TypertRemoteService {
    * @returns the frozen snapshot list.
    */
   @Remote('list')
-  async list(): Promise<NotificationListResult> {
+  list(): Promise<NotificationListResult> {
     const table = this.requireTable()
     const items = [...table.entries()]
       .map(([, record]) => record)
       .sort((left, right) => right.createdAt - left.createdAt)
       .map(snapshotEntry)
     Object.freeze(items)
-    return { ok: true, value: Object.freeze({ items }) }
+    return Promise.resolve({ ok: true, value: Object.freeze({ items }) })
   }
 
   /**
