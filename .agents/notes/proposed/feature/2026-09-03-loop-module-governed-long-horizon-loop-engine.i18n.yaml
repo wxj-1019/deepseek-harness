@@ -1,0 +1,6 @@
+# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
+# side as of the last confirmed-consistent state. Both languages carry equal authority;
+# after editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-09-03-loop-module-governed-long-horizon-loop-engine.md
+2026-09-03-loop-module-governed-long-horizon-loop-engine.md: e329401d9ff4f1ef0958ac1d5cd876a41b735829
+2026-09-03-loop-module-governed-long-horizon-loop-engine.zh.md: 8e197ce8c4bdeed52ee5980fe729a1ca835c82f2

@@ -27,6 +27,7 @@ English | [中文](README.zh.md)
 
 Add `dsh-mcp-client` when the model should call tools from an external MCP server as if they were native. One configuration entry per server is the entire setup: give the server a short unique name and a transport, and its tools appear as `mcp__<serverName>__<tool>`. Choose stdio when the server runs as a local program and Streamable HTTP when it runs as a service. If you already use MCP tool servers from another client, the same server rows work here.
 
+<a id="config"></a>
 ### Minimal configuration
 
 Add one entry per server; nothing else is required. After the harness starts, the server's tools appear in the model's tool list.

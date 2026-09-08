@@ -53,6 +53,7 @@ interface TeamMessageSource {
 }
 ```
 
+<a id="shared-task-dag"></a>
 ## 共享任务 DAG
 
 每条 task event 都存储完整快照。`revision` 是 compare-and-set 值，每次变更递增 1。`blockedBy` edge 必须指向未删除任务，并维持无环图。`writeScopes` 是规范化的提示性路径前缀，不是锁。
