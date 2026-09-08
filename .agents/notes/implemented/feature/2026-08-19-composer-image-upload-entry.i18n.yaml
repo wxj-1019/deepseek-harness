@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-19-composer-image-upload-entry.md
-2026-08-19-composer-image-upload-entry.md: 147c0cceb2b3b4e00aa0bf41289c2d292fd53a6f
-2026-08-19-composer-image-upload-entry.zh.md: fbb1db297bda54cdd88db5a5374a8ded5834e945
+2026-08-19-composer-image-upload-entry.md: 045d33532d6e7fdb8c48c240b5451cae233c83f8
+2026-08-19-composer-image-upload-entry.zh.md: 22aa7e1088b288303de657fe692e77e88eff7993

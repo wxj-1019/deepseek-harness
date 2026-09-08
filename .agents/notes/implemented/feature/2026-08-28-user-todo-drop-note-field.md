@@ -17,3 +17,9 @@ The `user_todo` domain stays at schema version 1. Records load through the spec'
 ## Alternatives considered
 
 Deleting only the editor while keeping the host field was rejected: a field no code can write is dead weight, and the pre-release stance prefers deleting the seam over carrying a shim. Bumping the domain to version 2 was rejected as unnecessary once parse semantics already accept old media.
+
+## Consequences
+
+- Stored records that still carry `note` load cleanly with the value stripped by the non-strict parse; no migration, no domain bump, and no writer needs the field again.
+- The expanded detail card shows the item's full persisted content — title, due, links, open-session affordance, creation date — with one editor fewer, and the model-visible catalog line drops the `(note: ...)` segment.
+- The locale dictionaries and both README pairs lost the note surface in the same change, so no consumer reads a field the seam no longer carries.

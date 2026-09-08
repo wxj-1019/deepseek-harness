@@ -23,7 +23,7 @@ GLM-5.3-flash        32   96     12    5.6K    210  28% ▏
 （现有按会话明细表，样式对齐）
 ```
 
-## Decisions
+## Decision
 
 - **D1 — one tab, three sections.** The statistics render inside the existing Usage conversation view: summary strip, per-model table, per-session table. No new view entry, no routing change.
 - **D2 — ledger schema v0 → v1.** `UsageLedgerRecord` gains `models?: Record<string, UsageLedgerBuckets>` (per-model four buckets plus requests; merge-extensible map keyed by the provider model id) and `firstAt?: number`. The domain version bumps and v0 rows are dropped, per the pre-release stance. Existing totals buckets stay top-level so current consumers keep their shape.
@@ -45,3 +45,10 @@ GLM-5.3-flash        32   96     12    5.6K    210  28% ▏
 - **Aggregating in the host (a `summary` RPC)** was rejected: the row list is small, the client already holds it, and a second read path would double the invariant surface for no transfer saving.
 - **Rendering costs instead of tokens** was rejected for D6's reason, and a wrong price table is worse than none.
 - **A separate statistics plugin** was rejected: the ledger seam is one capability and the view already owns its only consumer.
+
+## Consequences
+
+- The domain bump drops v0 ledger rows once: totals, per-model, and per-day slices accumulate afresh from the upgrade rather than partially interpreting pre-bump rows.
+- Model and day statistics exist only for usage recorded after the upgrade; the summary strip's totals stay complete because the top-level buckets kept their shape.
+- Cost reporting appears only where the deployment explicitly configured a price table; the unconfigured case renders tokens, requests, and cache-hit rates with no cost column.
+- Aggregation runs per client snapshot in `view.ts`, so the host stays a dumb accumulator and a stale snapshot renders stale statistics at no extra RPC cost.

@@ -15,6 +15,12 @@ The first-party commit rail rendered lane changes as straight diagonal lines, co
 - **Ref pills tier.** The HEAD target fills with the accent (the checked-out branch reads at a glance), tags take a warm outline, other refs keep the subtle inset pill.
 - **Surface.** The view sits on a near-opaque rounded panel with the aqua glass recipe's inset top highlight; hashes move to label-secondary (from tertiary, which vanished on the wallpaper).
 
+## Alternatives considered
+
+- Absolute-pixel SVG geometry was rejected: row height is dynamic, so a fixed-height coordinate system clips or reconnects lanes whenever the row size changes; the stretched viewBox keeps rows connecting at their shared border.
+- Semantic state colors per lane were rejected: on a graph red reads as failure, not branch identity, so lanes use the neutral chart hues and only the HEAD pill carries accent meaning.
+- Keeping the rail on the transparent aqua surface was rejected: the wallpaper competed with thin strokes; the near-opaque panel restores contrast without new surface tokens.
+
 ## Consequences
 
 - Row height still drives nothing but the stretch; the assignment algorithm is unchanged.

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-hygiene-convergence-and-rail-promotion.md
-2026-09-04-hygiene-convergence-and-rail-promotion.md: 465eae25f68c46d498dda1bc0a91800c5f1b192e
-2026-09-04-hygiene-convergence-and-rail-promotion.zh.md: 86c0dceab8a20b7f5a49e5acaa744e9c953cc24b
+2026-09-04-hygiene-convergence-and-rail-promotion.md: 477ff05948b29887f9af9284d7e36c6f9b6d5132
+2026-09-04-hygiene-convergence-and-rail-promotion.zh.md: a3bc53afb55d4ae07b7d760541a819120f05fad6

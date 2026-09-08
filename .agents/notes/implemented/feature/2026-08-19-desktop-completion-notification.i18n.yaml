@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-19-desktop-completion-notification.md
-2026-08-19-desktop-completion-notification.md: 6293c34e2aae6565b313fc0d0da5b679de727141
+2026-08-19-desktop-completion-notification.md: b746501387092dee6c6ea7b050c92fd7c9df318a
 2026-08-19-desktop-completion-notification.zh.md: 2799be35f7c2e7df845644c3df89bbedb0a8256c

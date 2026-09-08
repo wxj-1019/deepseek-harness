@@ -12,6 +12,11 @@ Every cell of the usage dashboard's token-activity heatmap rendered with a trans
 
 Pick the level class from a module-level array indexed by the computed level — `[css.heatmapLevel0, …, css.heatmapLevel4][level]` — the same pattern used for enumerated style variants elsewhere in the codebase. A bounds guard maps an out-of-range level to no extra class.
 
+## Alternatives considered
+
+- Building the key dynamically (`css['heatmapLevel' + level]`) was rejected: it is the same missing-export failure one level down — the mapping has no such key, so the class would silently vanish again.
+- Keeping concatenation behind a runtime fallback class was rejected: a uniform fallback hides the bug instead of making the exported enumerated mapping the single source of truth.
+
 ## Consequences
 
 - Cells with data render their intensity color; zero days render the level-0 inset gray, so the grid reads as a lattice with the active days highlighted.
