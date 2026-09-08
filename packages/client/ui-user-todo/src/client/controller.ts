@@ -8,14 +8,14 @@
  */
 
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { RemoteMirrorController } from '@deepseek-ai/dsh-client-store'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
   LinkedWorkspaceId,
-  UserTodoFailure,
   UserTodoId,
   UserTodoItemNotFound,
   UserTodoListResult,
+  UserTodoListValue,
   UserTodoRecord,
   UserTodoRejected,
   UserTodoSessionLinkWithoutWorkspace,
@@ -24,10 +24,6 @@ import type {
   UserTodoWorkspaceNotFound,
 } from '@deepseek-ai/dsh-user-todo/types'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-/** Every verb's business union: an opaque success value or a typed rejection. */
-type UserTodoBusinessResult =
-  | { readonly ok: true; readonly value: unknown }
-  | UserTodoRejected<UserTodoFailure>
 
 type PutFailure =
   | UserTodoTitleBlank
@@ -70,81 +66,20 @@ export interface UserTodoState {
   error: string | null
 }
 
-/**
- * Turn a rejected call into display text; transports reject with anything.
- * @param error - the rejection value.
- * @returns the message to show.
- */
-function messageOf(error: unknown): string {
-  /* v8 ignore next -- transports reject with Errors; the String arm satisfies the unknown type */
-  return error instanceof Error ? error.message : String(error)
-}
-
 /** One shared controller for the whole client (the list is user-global). */
-export class UserTodoController implements HostObservable<UserTodoState> {
-  /** The snapshot the panel renders from (uSES-safe store). */
-  readonly store: SnapshotStore<UserTodoState>
-
-  constructor(private readonly remote: UserTodosRemoteFace) {
-    this.store = createSnapshotStore<UserTodoState>({
-      status: 'cold', items: [], error: null,
-    })
+export class UserTodoController
+  extends RemoteMirrorController<UserTodoState, UserTodosRemoteFace, UserTodoListValue>
+  implements HostObservable<UserTodoState> {
+  constructor(remote: UserTodosRemoteFace) {
+    super(remote, { status: 'cold', items: [], error: null })
   }
 
-  /** @returns the current published state. */
-  getSnapshot(): UserTodoState {
-    return this.store.getSnapshot()
+  protected read(remote: UserTodosRemoteFace): Promise<RemoteResult<UserTodoListResult>> {
+    return remote.list()
   }
 
-  /**
-   * Subscribe to state revisions.
-   * @param listener - called on every store update.
-   * @returns the unsubscribe disposer.
-   */
-  subscribe(listener: () => void): () => void {
-    return this.store.subscribe(listener)
-  }
-
-  /** @returns whether the list has never been read. */
-  get cold(): boolean {
-    return this.getSnapshot().status === 'cold'
-  }
-
-  /**
-   * Read the whole list once; a failure keeps the last good items.
-   * @returns resolution when the read settles.
-   */
-  async resync(): Promise<void> {
-    // Only the first read advertises a loading state; later reads converge
-    // silently so an open panel never flashes a spinner on top of data.
-    const firstRead = this.cold
-    if (firstRead) {
-      this.store.update((state) => {
-        state.status = 'loading'
-        state.error = null
-      })
-    }
-    try {
-      const response = await this.remote.list()
-      if (!response.ok) throw new Error(response.error.message)
-      const items = response.value.value.items
-      this.store.update((state) => {
-        state.status = 'ready'
-        state.items = Object.freeze(items.map(item => ({ ...item })))
-        state.error = null
-      })
-    } catch (error) {
-      this.store.update((state) => {
-        state.status = 'error'
-        state.error = messageOf(error)
-      })
-    }
-  }
-
-  /** Read-once entry for first open: `resync` unless already read. */
-  ensure(): Promise<void> {
-    if (!this.cold && this.getSnapshot().status !== 'error') return Promise.resolve()
-    return this.resync()
+  protected applyReady(state: UserTodoState, value: UserTodoListValue): void {
+    state.items = Object.freeze(value.items.map(item => ({ ...item })))
   }
 
   /**
@@ -219,20 +154,5 @@ export class UserTodoController implements HostObservable<UserTodoState> {
    */
   async remove(id: UserTodoId): Promise<string | undefined> {
     return this.mutate(remote => remote.delete({ id }))
-  }
-
-  /** Run one verb, then converge the mirror with the Host's post-write state. */
-  private async mutate<R extends UserTodoBusinessResult>(
-    run: (remote: UserTodosRemoteFace) => Promise<RemoteResult<R>>,
-  ): Promise<string | undefined> {
-    try {
-      const response = await run(this.remote)
-      if (!response.ok) return response.error.message
-      if (!response.value.ok) return `code:${response.value.error.code}`
-    } catch (error) {
-      return messageOf(error)
-    }
-    await this.resync()
-    return undefined
   }
 }

@@ -12,11 +12,17 @@ kind: "package-library"
 
 ## 目录
 
+- [远程镜像](#remote-mirrors)
 - [模型体验](#model-experience)
 - [已知限制与暂缓事项](#known-limitations-and-deferred-work)
 - [开发备注](#dev-note)
 
 -----
+
+<a id="remote-mirrors"></a>
+## 远程镜像
+
+`RemoteMirrorController`（从 `./remote-mirror` 导出）是 Client 面板经由生成的 Remote face 镜像 Host 持有列表的共享骨架。它负责 cold/loading/ready/error 快照生命周期、只读一次的 `ensure`、失败时保留上一份可用列表的 `resync`，以及在向 Host 收敛之前把传输失败与业务失败映射为展示文本的动词包装。各面板包以各自的 Remote face 与列表载荷子类化它，并实现 `read` 与 `applyReady`；行为分歧的动词（例如把错误发布到自有字段的评审决策）留在子类中。
 
 <a id="model-experience"></a>
 ## 模型体验

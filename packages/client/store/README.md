@@ -12,11 +12,17 @@ React-free observable and snapshot-store primitives shared by Client controllers
 
 ## Table of Contents
 
+- [Remote Mirrors](#remote-mirrors)
 - [Model Experience](#model-experience)
 - [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
 - [Dev Note](#dev-note)
 
 -----
+
+<a id="remote-mirrors"></a>
+## Remote Mirrors
+
+`RemoteMirrorController` (exported from `./remote-mirror`) is the shared skeleton for Client panels that mirror a Host-owned list through a generated Remote face. It owns the cold/loading/ready/error snapshot lifecycle, the read-once `ensure`, a `resync` that keeps the last good list on failure, and a verb wrapper that maps transport and business failures to display text before converging from the Host. Panel packages subclass it with their Remote face and list payload, then implement `read` and `applyReady`; divergent verbs (for example a review decision that publishes its own error field) stay in the subclass.
 
 <a id="model-experience"></a>
 ## Model Experience

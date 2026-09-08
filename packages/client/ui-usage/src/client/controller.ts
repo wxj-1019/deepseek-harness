@@ -6,10 +6,10 @@
  */
 
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { RemoteMirrorController } from '@deepseek-ai/dsh-client-store'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-import type { UsageLedgerListResult, UsageLedgerPrice, UsageLedgerRecord } from '@deepseek-ai/dsh-usage-ledger/types'
+import type { UsageLedgerListResult, UsageLedgerListValue, UsageLedgerPrice, UsageLedgerRecord } from '@deepseek-ai/dsh-usage-ledger/types'
 
 /** The one Remote call this controller needs, matching the generated face. */
 export interface UsageLedgerRemoteFace {
@@ -30,84 +30,23 @@ export interface UsageState {
   error: string | null
 }
 
-/**
- * Turn a rejected call into display text; transports reject with anything.
- * @param error - the rejection value.
- * @returns the message to show.
- */
-function messageOf(error: unknown): string {
-  /* v8 ignore next -- transports reject with Errors; the String arm satisfies the unknown type */
-  return error instanceof Error ? error.message : String(error)
-}
-
 /** One shared controller for the whole client (the ledger is user-global). */
-export class UsageLedgerController implements HostObservable<UsageState> {
-  /** The snapshot the section renders from (uSES-safe store). */
-  readonly store: SnapshotStore<UsageState>
-
-  constructor(private readonly remote: UsageLedgerRemoteFace) {
-    this.store = createSnapshotStore<UsageState>({
-      status: 'cold', rows: [], pricing: null, error: null,
-    })
+export class UsageLedgerController
+  extends RemoteMirrorController<UsageState, UsageLedgerRemoteFace, UsageLedgerListValue>
+  implements HostObservable<UsageState> {
+  constructor(remote: UsageLedgerRemoteFace) {
+    super(remote, { status: 'cold', rows: [], pricing: null, error: null })
   }
 
-  /** @returns the current published state. */
-  getSnapshot(): UsageState {
-    return this.store.getSnapshot()
+  protected read(remote: UsageLedgerRemoteFace): Promise<RemoteResult<UsageLedgerListResult>> {
+    return remote.list()
   }
 
-  /**
-   * Subscribe to state revisions.
-   * @param listener - called on every store update.
-   * @returns the unsubscribe disposer.
-   */
-  subscribe(listener: () => void): () => void {
-    return this.store.subscribe(listener)
-  }
-
-  /** @returns whether the ledger has never been read. */
-  get cold(): boolean {
-    return this.getSnapshot().status === 'cold'
-  }
-
-  /**
-   * Read the whole ledger once; a failure keeps the last good rows.
-   * @returns resolution when the read settles.
-   */
-  async resync(): Promise<void> {
-    // Only the first read advertises a loading state; later reads converge
-    // silently so an open section never flashes a spinner over data.
-    const firstRead = this.cold
-    if (firstRead) {
-      this.store.update((state) => {
-        state.status = 'loading'
-        state.error = null
-      })
-    }
-    try {
-      const response = await this.remote.list()
-      if (!response.ok) throw new Error(response.error.message)
-      this.store.update((state) => {
-        state.status = 'ready'
-        state.rows = Object.freeze(
-          response.value.value.items.map(row => ({ sessionId: row.sessionId, record: { ...row.record } })),
-        )
-        // An empty table prices nothing: normalize it to unconfigured.
-        const pricing = response.value.value.pricing
-        state.pricing = pricing !== undefined && Object.keys(pricing).length > 0 ? pricing : null
-        state.error = null
-      })
-    } catch (error) {
-      this.store.update((state) => {
-        state.status = 'error'
-        state.error = messageOf(error)
-      })
-    }
-  }
-
-  /** Read-once entry for first render: `resync` unless already read. */
-  ensure(): Promise<void> {
-    if (!this.cold && this.getSnapshot().status !== 'error') return Promise.resolve()
-    return this.resync()
+  protected applyReady(state: UsageState, value: UsageLedgerListValue): void {
+    state.rows = Object.freeze(
+      value.items.map(row => ({ sessionId: row.sessionId, record: { ...row.record } })),
+    )
+    // An empty table prices nothing: normalize it to unconfigured.
+    state.pricing = value.pricing !== undefined && Object.keys(value.pricing).length > 0 ? value.pricing : null
   }
 }

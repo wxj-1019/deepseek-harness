@@ -23,6 +23,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@deepseek-ai/dsh-typert-protocol": "workspace:^",
     "immer": "^10.1.1",
     "zustand": "~4.4.7"
   },

@@ -7,7 +7,7 @@
  */
 
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { mirrorErrorMessage, RemoteMirrorController } from '@deepseek-ai/dsh-client-store'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
   ComponentLibraryListResult,
@@ -38,83 +38,23 @@ export interface ComponentLibraryState {
   reviewError: string | null
 }
 
-/**
- * Turn a rejected call into display text; transports reject with anything.
- * @param error - the rejection value.
- * @returns the message to show.
- */
-function messageOf(error: unknown): string {
-  /* v8 ignore next -- transports reject with Errors; the String arm satisfies the unknown type */
-  return error instanceof Error ? error.message : String(error)
-}
+/** Payload inside the list call's success value. */
+type ComponentLibraryListValue = { readonly items: readonly ComponentRecord[] }
 
 /** One shared controller for the whole client (the library is user-global). */
-export class ComponentLibraryController implements HostObservable<ComponentLibraryState> {
-  /** Card projection the slot renderer binds as useComponentLibrary. */
-  readonly store: SnapshotStore<ComponentLibraryState>
-
-  constructor(private readonly remote: ComponentLibraryRemoteFace) {
-    this.store = createSnapshotStore<ComponentLibraryState>({
-      status: 'cold', items: [], query: '', error: null, reviewError: null,
-    })
+export class ComponentLibraryController
+  extends RemoteMirrorController<ComponentLibraryState, ComponentLibraryRemoteFace, ComponentLibraryListValue>
+  implements HostObservable<ComponentLibraryState> {
+  constructor(remote: ComponentLibraryRemoteFace) {
+    super(remote, { status: 'cold', items: [], query: '', error: null, reviewError: null })
   }
 
-  /** @returns the current published state. */
-  getSnapshot(): ComponentLibraryState {
-    return this.store.getSnapshot()
+  protected read(remote: ComponentLibraryRemoteFace): Promise<RemoteResult<ComponentLibraryListResult>> {
+    return remote.list()
   }
 
-  /**
-   * Subscribe to state revisions.
-   * @param listener - called on every store update.
-   * @returns the unsubscribe disposer.
-   */
-  subscribe(listener: () => void): () => void {
-    return this.store.subscribe(listener)
-  }
-
-  /**
-   * Whether the library has never been read.
-   * @returns true while no list read has started.
-   */
-  get cold(): boolean {
-    return this.getSnapshot().status === 'cold'
-  }
-
-  /**
-   * Read the whole library once; a failure keeps the last good rows.
-   * @returns resolution when the read settles.
-   */
-  async resync(): Promise<void> {
-    // Only the first read advertises a loading state; later reads converge
-    // silently so an open card never flashes a spinner over data.
-    const firstRead = this.cold
-    if (firstRead) {
-      this.store.update((state) => {
-        state.status = 'loading'
-        state.error = null
-      })
-    }
-    try {
-      const response = await this.remote.list()
-      if (!response.ok) throw new Error(response.error.message)
-      this.store.update((state) => {
-        state.status = 'ready'
-        state.items = Object.freeze(response.value.value.items.map(record => ({ ...record })))
-        state.error = null
-      })
-    } catch (error) {
-      this.store.update((state) => {
-        state.status = 'error'
-        state.error = messageOf(error)
-      })
-    }
-  }
-
-  /** Read-once entry for first render: `resync` unless already read. */
-  ensure(): Promise<void> {
-    if (!this.cold && this.getSnapshot().status !== 'error') return Promise.resolve()
-    return this.resync()
+  protected applyReady(state: ComponentLibraryState, value: ComponentLibraryListValue): void {
+    state.items = Object.freeze(value.items.map(record => ({ ...record })))
   }
 
   /**
@@ -146,7 +86,7 @@ export class ComponentLibraryController implements HostObservable<ComponentLibra
       if (!result.ok) throw new Error(result.error.code)
     } catch (error) {
       this.store.update((state) => {
-        state.reviewError = messageOf(error)
+        state.reviewError = mirrorErrorMessage(error)
       })
       return
     }

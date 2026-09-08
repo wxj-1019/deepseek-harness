@@ -23,6 +23,12 @@ export type {
   StoreHandle, StoreInstance, StoreSpec,
 } from './contract.ts'
 
+// Host-mirrored panel controller skeleton shared by the surface packages.
+export {
+  mirrorErrorMessage, RemoteMirrorController,
+  type MirrorReadResult, type MirrorState, type MirrorStatus, type MirrorVerbResult,
+} from './remote-mirror.ts'
+
 /** Writable snapshot store (bare data face; React selector hooks are synthesized in ui-renderer). */
 export interface SnapshotStore<T> extends ObservableSnapshot<T> {
   /**

@@ -1998,6 +1998,9 @@ importers:
 
   packages/client/store:
     dependencies:
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: workspace:^
+        version: link:../../typert/protocol
       immer:
         specifier: ^10.1.1
         version: 10.2.0
