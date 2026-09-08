@@ -41,3 +41,20 @@ apps/web/dist/
 worktrees/
 .agents/worktrees/
 .typert-*/
+# Generated emit must never sit beside sources; lib/ and lib/types own build
+# output. Sources are TypeScript-only, so no hand-written .js lives under src/.
+packages/*/*/src/**/*.js
+packages/*/*/src/**/*.js.map
+packages/*/*/src/**/*.d.ts.map
+packages/*/*/src/**/*.d.ts
+!packages/**/src/css-modules.d.ts
+!packages/client/ui-renderer/src/client/use-sync-external-store.d.ts
+!packages/fs/tool-fs-search/src/ripgrep.d.ts
+!packages/web/tool-web/src/turndown-plugin-gfm.d.ts
+vendor/*/src/**/*.js
+vendor/*/src/**/*.js.map
+vendor/*/src/**/*.d.ts
+vendor/*/src/**/*.d.ts.map
+# Local tooling residue
+.zcode-tmp-*
+.seedream/
