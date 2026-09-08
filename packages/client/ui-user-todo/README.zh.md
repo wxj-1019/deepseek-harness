@@ -1,6 +1,13 @@
+---
+description: "用户待办存储域之上的浏览器侧每日待办抽屉与页头按钮。"
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-client-ui-user-todo
 
 [English](README.md) | 中文
+
+## 概述
 
 Web 今日待办功能的属主包：帧右缘一个常驻的细长入口（`shell.overlay` 占用者），点击后从右侧滑出今日面板，数据来自 [`user-todo`](../../todo/user-todo/README.zh.md) 存储域，经生成的 `userTodos` Remote 命名空间读写。全局只有一个 controller 实例；其快照经注入的 hooks 座位供给面板，业务组件只持有查看状态。
 
@@ -10,15 +17,36 @@ Web 今日待办功能的属主包：帧右缘一个常驻的细长入口（`she
 
 关闭路径是触发按钮的开合与面板外的指针 dismiss；抽屉位于点击穿透的覆盖层中，自行恢复指针事件。样式只用 token；文案走本包自己的 `userTodo` locale 命名空间。决策记录见[用户今日待办 Agent Note](../../../.agents/notes/implemented/feature/2026-08-27-user-daily-todo.zh.md)。
 
-## Model Experience
+## 目录
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
+
+-----
+
+<a id="model-experience"></a>
+## 模型体验
 
 None，本包向人类渲染用户-owned 应用数据，不触及任何 prompt、消息、schema、流或工具结果。
 
-#### KV Cache effect
+#### KV Cache 影响
 
 None；本包从不组装或发送 provider 请求。
 
-## Known Limitations and Deferred Work
+## 已知限制与延期工作
+
+<a id="known-limitations-and-deferred-work"></a>
 
 - **单面板状态** —— 打开状态属于各挂载点，第二个浏览器窗口初始为收起态；一旦打开，推送事件会让两者保持收敛。
 - **会话标签退化为短 id** —— 宿主投影出持久标题之前，选择器选项显示前八位 id 字符；投影可用后标签随之更新。
+
+<a id="dev-note"></a>
+### 开发备注
+
+<details>
+<summary>维护者的工作上下文——点击展开</summary>
+
+按天分桶与顺延是对 createdAt/completedAt 的客户端派生；宿主只存扁平条目集合。
+
+</details>

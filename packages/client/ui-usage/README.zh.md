@@ -1,6 +1,13 @@
+---
+description: "用量台账存储域之上的浏览器侧用量仪表盘：总览条、按模型表、按会话表与热力图。"
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-client-ui-usage
 
 [English](README.md) | 中文
+
+## 概述
 
 Web 用量面板功能的属主包：会话顶栏里的“用量 / Usage”标签（轨迹右边），数据来自 [`usage-ledger`](../../session/usage-ledger/README.zh.md) 存储域，经生成的 `usageLedger` Remote 命名空间读写。一个 controller 支撑整个标签页；其快照经注入的 hooks 座位供给仪表盘，业务组件只持有展示状态。
 
@@ -8,16 +15,37 @@ Web 用量面板功能的属主包：会话顶栏里的“用量 / Usage”标�
 
 样式只用 token；文案走本包自己的 `usage` locale 命名空间。
 
-## Model Experience
+## 目录
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
+
+-----
+
+<a id="model-experience"></a>
+## 模型体验
 
 None，本包向人类渲染用户拥有的应用数据，不触及任何 prompt、消息、schema、流或工具结果。
 
-#### KV Cache effect
+#### KV Cache 影响
 
 None；本包从不组装或发送 provider 请求。
 
-## Known Limitations and Deferred Work
+## 已知限制与延期工作
+
+<a id="known-limitations-and-deferred-work"></a>
 
 - **外部会话的行退化为短 id** —— 标题只对当前窗口列表中的会话可解析；其他 profile 会话的行回退为短 id。
 - **无重置** —— v0 的台账没有重置动词，标签页因此不提供清除控件。
 - **趋势与热力图读取天×模型交叉切片** —— 切片形状出现之前的存量行只贡献总量，在新样本到来前对按天视图不可见。
+
+<a id="dev-note"></a>
+### 开发备注
+
+<details>
+<summary>维护者的工作上下文——点击展开</summary>
+
+全部聚合是 view.ts 中的纯函数，按快照记忆化；usage-panel web 旅程以无 key 方式钉住打开页签的 golden。
+
+</details>

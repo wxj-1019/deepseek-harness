@@ -1,6 +1,13 @@
+---
+description: "Vision-model routing: reroute image-bearing sessions to a configured vision scheme through the llm seam."
+kind: "package-reference"
+---
+
 # `@deepseek-ai/dsh-llm-vision-route`
 
 English | [中文](README.zh.md)
+
+## Summary
 
 Function plugin that routes image-bearing requests to a deployment-configured vision model through the agent loop's `agent/pre-step` and `agent/request` waterfalls. It does not wrap `ctx.llm.stream()` and never mutates messages: the loop logs the effective provider/model in `request/header` and each `assistant/message` source, so routing stays reconstructable from the session log.
 
@@ -22,6 +29,15 @@ The host image preflight (`dsh-host-apiproxy`'s prompt admission) and the `read_
 
 The separately published `./invariant` companion is intentionally empty: routing owns no durable event relationship — the loop logs every effective provider/model through channels the agent package validates.
 
+## Table of Contents
+
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
+
+-----
+
+<a id="model-experience"></a>
 ## Model Experience
 
 ### Vision-route request switching
@@ -40,6 +56,18 @@ Routed requests preserve the conversation prefix and are eligible for provider c
 
 ## Known Limitations and Deferred Work
 
+<a id="known-limitations-and-deferred-work"></a>
+
 - **Routing is session-persistent after the first image** — a later request always carries the image in its message history, so a text-only session model cannot serve the session again; switch the session to an image-capable model instead.
 - **The vision route is one provider/model pair** — the routed model must declare image input in its catalog entry or route profile; there is no per-session vision override.
 - **Capability is a declaration, not a probe** — a model that declares image input but whose endpoint refuses images fails at the adapter boundary, matching the general pi-ai contract.
+
+<a id="dev-note"></a>
+### Dev Note
+
+<details>
+<summary>Working context for maintainers — click to expand</summary>
+
+Routing is session-persistent once engaged and reads its scheme from the vision-model settings namespace; the settings golden pins the nav shape.
+
+</details>

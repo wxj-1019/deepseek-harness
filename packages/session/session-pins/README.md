@@ -1,6 +1,13 @@
+---
+description: "Durable pinned-session id set in its own storage domain; user-facing only."
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-session-pins
 
 English | [中文](README.zh.md)
+
+## Summary
 
 The user's pinned-session set: a durable set of session ids in its own [`storage-domain`](../../storage/storage-domain/README.md) domain `session_pins`, edited from the web session-header star and the sidebar pinned section ([`dsh-client-ui-session-pins`](../../client/ui-session-pins/README.md)) through the generated `sessionPins` Remote namespace. The set is user-facing only — nothing here enters a session log, a model request, or any tool schema.
 
@@ -8,10 +15,23 @@ A pin is a reference only: the session id is the table key and `pinnedAt` (host-
 
 An archived pinned session keeps its pin (archiving is visibility, not membership); the sidebar pinned section hides archived rows so the section reflects what the browser actually shows.
 
+## Table of Contents
+
+- [Configuration](#configuration)
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
+
+-----
+
+<a id="configuration"></a>
 ## Configuration
 
 The service takes no composition config: nothing about the set is deployment-varying.
 
+-----
+
+<a id="model-experience"></a>
 ## Model Experience
 
 None, as the domain is user-owned application data that never reaches a request assembly; the model never sees pins and the projection vocabulary gains no member.
@@ -22,6 +42,18 @@ None; the package never assembles or sends provider requests.
 
 ## Known Limitations and Deferred Work
 
+<a id="known-limitations-and-deferred-work"></a>
+
 - **No compare-and-set** — pin/unpin race only with themselves across windows; a lost race converges on the next refetch.
 - **Session deletion does not cascade** — a deleted session's pin stays stored and simply stops rendering; a deletion primitive that prunes sidecars is separately deferred work.
 - **Pin order is append-only** — there is no manual reorder; pins list oldest first.
+
+<a id="dev-note"></a>
+### Dev Note
+
+<details>
+<summary>Working context for maintainers — click to expand</summary>
+
+Pins are references only: a pin naming neither a live session nor a persisted log is rejected at write time.
+
+</details>

@@ -1,6 +1,13 @@
+---
+description: "Browser-side daily-todo drawer and header button over the user-todo storage domain."
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-client-ui-user-todo
 
 English | [中文](README.zh.md)
+
+## Summary
 
 Web daily-todo feature owner: a slim always-visible tab on the right edge of the frame (a `shell.overlay` occupant) that slides the today panel out as a right-side drawer over the [`user-todo`](../../todo/user-todo/README.md) storage domain through the generated `userTodos` Remote namespace. One controller backs every mount; its snapshot feeds the panel through the injected hooks seat, and the business component holds only viewing state.
 
@@ -10,6 +17,15 @@ While the mount is alive, items whose due instant passes fire a desktop notifica
 
 Escape path is the trigger toggle and outside-pointer dismissal; the drawer lives in the click-through overlay layer and opts back into pointer events itself. Styling uses tokens only; copy goes through the package's own `userTodo` locale namespace. The decision record is the [user daily todo Agent Note](../../../.agents/notes/implemented/feature/2026-08-27-user-daily-todo.md).
 
+## Table of Contents
+
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
+
+-----
+
+<a id="model-experience"></a>
 ## Model Experience
 
 None, as this package renders user-owned application data for a human and touches no prompt, message, schema, stream, or tool result.
@@ -20,5 +36,17 @@ None; the package never assembles or sends provider requests.
 
 ## Known Limitations and Deferred Work
 
+<a id="known-limitations-and-deferred-work"></a>
+
 - **Single-panel state** — open state lives per mount, so a second browser window starts closed even when the first has the panel open; pushed events keep both converged once open.
 - **Session labels degrade to short ids** — until the host projects a durable title, a picker option reads as its first eight id characters; the label follows the projection once available.
+
+<a id="dev-note"></a>
+### Dev Note
+
+<details>
+<summary>Working context for maintainers — click to expand</summary>
+
+Day bucketing and carry-over are client-side derivations over createdAt/completedAt; the host stores a flat item set.
+
+</details>

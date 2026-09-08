@@ -1,6 +1,13 @@
+---
+description: "Durable cross-session daily todo list for the harness user, with opt-in model-visible projection."
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-user-todo
 
 English | [中文](README.zh.md)
+
+## Summary
 
 The user's daily todo list: one flat durable set of task items in its own [`storage-domain`](../../storage/storage-domain/README.md) `user_todo`, edited from the web right-edge todo drawer ([`dsh-client-ui-user-todo`](../../client/ui-user-todo/README.md)) through the generated `userTodos` Remote namespace. The list is user-facing only — nothing here enters a session log, a model request, or any tool schema.
 
@@ -8,10 +15,23 @@ One item carries a required non-blank title, `done` with its `completedAt` stamp
 
 Day semantics live entirely in the client: the Host stores no per-day bookkeeping, so "today" always follows the viewing browser's clock. Open items carry over from whichever day they were created, and completed items stay on their completion day. Session links are validated at write time against the [workspace registry](../../workspace/workspace/README.md) — the named session must sit in the linked workspace's accounted sessions — and a stale id is rejected loudly instead of stored.
 
+## Table of Contents
+
+- [Configuration](#configuration)
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
+
+-----
+
+<a id="configuration"></a>
 ## Configuration
 
 The service takes no composition config: nothing about the list is deployment-varying.
 
+-----
+
+<a id="model-experience"></a>
 ## Model Experience
 
 ### User-todos catalog projection
@@ -30,7 +50,19 @@ The catalog rides a persistent user message, so it extends the conversation pref
 
 ## Known Limitations and Deferred Work
 
+<a id="known-limitations-and-deferred-work"></a>
+
 - **No compare-and-set** — single-user edits race only with themselves across devices; a lost multi-window race converges on the next refetch rather than surfacing a conflict.
 - **Session links are not lifecycle-fenced** — deleting a linked session leaves the reference in place, mirroring how the workspace registry keeps sessions it cannot revalidate.
 - **History is a client concern** — earlier completions are durable and surfaced by the web panel's history section; a CLI or other surface would own its own projection.
 - **The projection is deployment-wide and digest-baseline** — when enabled it reaches every agent, and the comparison baseline is the last logged catalog (compaction shadowing of an older catalog is not detected; the replacement republishes). Reminders themselves are a client-side watcher: they fire only while a browser window holding the panel mount is open and the site already holds notification permission.
+
+<a id="dev-note"></a>
+### Dev Note
+
+<details>
+<summary>Working context for maintainers — click to expand</summary>
+
+The domain stays at schema version 1; the non-strict parse strips unknown keys, so removed fields vanish silently on load.
+
+</details>

@@ -1,6 +1,13 @@
+---
+description: "识图模型路由：经 llm 接缝把带图会话转接到配置的识图方案。"
+kind: "package-reference"
+---
+
 # `@deepseek-ai/dsh-llm-vision-route`
 
 [English](README.md) | 中文
+
+## 概述
 
 功能插件：通过 agent 循环的 `agent/pre-step` 与 `agent/request` 瀑布，把携带图片的请求路由到部署配置的识图模型。它不包装 `ctx.llm.stream()`，也从不修改消息：循环在 `request/header` 和每条 `assistant/message` 的 source 中记录实际生效的 provider/model，因此路由始终可从会话日志重建。
 
@@ -22,6 +29,15 @@ vision-model:
 
 单独发布的 `./invariant` 伴生插件刻意保持为空：路由不拥有任何持久事件关系——循环通过 agent 包校验的通道记录每次生效的 provider/model。
 
+## 目录
+
+- [模型体验](#model-experience)
+- [已知限制与延期工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
+
+-----
+
+<a id="model-experience"></a>
 ## 模型体验
 
 ### 识图路由的请求切换
@@ -34,12 +50,24 @@ vision-model:
 
 被路由的会话从第一个携带图片的回合起，请求都计入识图提供方。纯文本会话不受影响。
 
-#### KV 缓存影响
+#### KV Cache 影响
 
 被路由的请求保留对话前缀，在识图提供方的规则下可复用其缓存；路由的 provider/model 变化可能在首个图片回合处拆分缓存身份。
 
-## 已知限制与待办
+## 已知限制与延期工作
+
+<a id="known-limitations-and-deferred-work"></a>
 
 - **首个图片之后路由为会话级持久**——后续请求的消息历史始终携带该图片，纯文本会话模型无法再次服务该会话；请将会话切换到支持图片的模型。
 - **识图路由是单个 provider/model 对**——被路由的模型必须在目录条目或路由档案中声明图片输入；没有按会话的识图覆盖。
 - **能力是声明而非探测**——声明支持图片但端点拒绝图片的模型会在适配器边界失败，与 pi-ai 的通用契约一致。
+
+<a id="dev-note"></a>
+### 开发备注
+
+<details>
+<summary>维护者的工作上下文——点击展开</summary>
+
+路由一旦接合即会话持久，并从 vision-model 设置命名空间读取方案；设置 golden 钉住导航形状。
+
+</details>
