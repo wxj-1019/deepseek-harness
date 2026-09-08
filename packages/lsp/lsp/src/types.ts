@@ -3,7 +3,7 @@
  * {@link LspError} taxonomy and the {@link LspProviderId} brand factory are runtime and live in
  * `index.ts`. Positions and ranges are zero-based UTF-16, matching the protocol; the model-facing
  * tool owns the one-based cursor convention. The seam exposes no protocol types, process or document
- * controls, or generic JSON-RPC escape hatch — only the four semantic operations.
+ * controls, or generic JSON-RPC escape hatch — only the closed semantic-operation union.
  * @module @deepseek-ai/dsh-lsp/types
  */
 
@@ -38,9 +38,9 @@ export interface LspRange {
 }
 
 /**
- * A caller's normalized query. Every field is required: `workspaceRoot` is caller-supplied,
- * `languageId` comes from the provider registration (not here), and consumers own timeouts and
- * result limits — so no field needs implementation defaulting and there is no `resolve()` step.
+ * A caller's normalized query. `operation` and `workspaceRoot` are always required; each remaining
+ * field is required by the operations that read it and ignored elsewhere, so no field needs
+ * implementation defaulting and there is no `resolve()` step.
  */
 export interface LspQueryRequest {
   /** Which semantic query to run. */
@@ -186,7 +186,7 @@ export interface LspProvider {
 
 /**
  * The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query
- * execution; exposes exactly the four operations and no protocol escape hatch.
+ * execution; exposes the closed semantic-operation union and no protocol escape hatch.
  */
 export interface LspService {
   /**

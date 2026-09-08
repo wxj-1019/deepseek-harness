@@ -12,6 +12,11 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures 
 | [scope.md](scope.md) | scoped registration identity, dispatch carriers, and the owned `Scope` context |
 | [typert.md](typert.md) | Remote invocation descriptors, lookup/Context declarations, Typert registries, and the Host Gateway/Client API boundaries |
 | [goal.md](goal.md) | persisted goal identity, lifecycle snapshots, activation, change records, and round attribution |
+| [component-library.md](component-library.md) | the learned-component store: reviewed records, ranked matches, gallery reads, and the `component-library/changed` refetch signal |
+| [notifications.md](notifications.md) | the notification center: one flat durable entry set with entry-owned read state and init-time collectors |
+| [session-pins.md](session-pins.md) | the pinned-session reference set: live-or-persisted validation and the user-facing pin list |
+| [usage-ledger.md](usage-ledger.md) | per-session token-usage accumulation over the provider's disjoint input/cache-read/cache-write/output buckets |
+| [user-todo.md](user-todo.md) | the user's durable cross-session daily todo list, with opt-in model-visible projection |
 | [schedule.md](schedule.md) | Session-local reminder records, durable transitions, active views, and ordinary-conversation delivery |
 | [todo.md](todo.md) | the todo package's whole-list item type, durable event ownership, projection, and open-turn invariant |
 | [commands.md](commands.md) | the human-command registry service: definitions, adapter discovery, direct invocation, results, and parsing views |
@@ -35,7 +40,7 @@ One page per subsystem of the DeepSeek Harness: what it is, the data structures 
 | [code-runtime.md](code-runtime.md) | the code-execution seam: `CodeRunRequest`/`Result`, binding namespaces, captured logs, the `CodeRunFailure` taxonomy |
 | [extensions.md](extensions.md) | versioned dynamic Cordis Plugins and Packages, Host/Client activation, approval, runtime inspection, and lifecycle teardown |
 | [filesystem.md](filesystem.md) | the filesystem seam: `FsTarget`, read/write/edit outcomes, observed-file state, `FsErrorCode` |
-| [lsp.md](lsp.md) | the LSP navigation seam: `LspQueryRequest`/`Result`, `LspProvider`/`Service`, four operations, `LspError` |
+| [lsp.md](lsp.md) | the LSP navigation seam: `LspQueryRequest`/`Result`, `LspProvider`/`Service`, the closed operation union, `LspError` |
 | [skills.md](skills.md) | the skill service: discovery priority, `SkillSummary`/`SkillDefinition`, session-prefix catalog, model-facing `skill` loading |
 | [compaction.md](compaction.md) | the compaction seam: the `compaction/*` session events, `CompactionResult`, the `CompactionEngine` interface |
 | [subagent.md](subagent.md) | the subagent seam: the named-provider registry, `SubagentStartRequest`/`Result`/`Run`, the start-time-vs-runtime capability split |

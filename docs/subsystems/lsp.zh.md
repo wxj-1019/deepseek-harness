@@ -8,15 +8,22 @@ LSP seam 是一个[能力 seam](../../.agents/notes/implemented/architecture/202
 
 ## 操作与坐标
 
-seam 与模型恰好公开 4 项语义查询；该联合是闭合的，因此新增一项查询会通过编译强制要求同步修改 seam、提供方和工具。位置与范围采用从零开始的 UTF-16 坐标，与协议一致；面向模型的工具采用从 1 开始的光标约定，并在输入和输出时进行转换。
+seam 与模型公开一个闭合的语义操作联合；新增成员会通过编译强制要求同步修改 seam、提供方和工具。光标类操作需要位置，`documentSymbol` 与 `diagnostics` 读取整个文件，`workspaceSymbol` 按查询文本搜索，`rename` 与 `formatting` 返回工作区编辑计划。位置与范围采用从零开始的 UTF-16 坐标，与协议一致；面向模型的工具采用从 1 开始的光标约定，并在输入和输出时进行转换。
 
 ```ts type-equiv
 /**
- * The four semantic queries the seam and model expose. A closed union: adding an operation is a
- * compile-enforced change across the seam, providers, and the tool. Symbols and call hierarchy are
- * not operations here; they need different schemas.
+ * The semantic queries the seam and model expose. A closed union: adding an operation is a
+ * compile-enforced change across the seam, providers, and the tool. Cursor operations
+ * (`goToDefinition`, `findReferences`, `goToImplementation`, `hover`) require a position;
+ * `documentSymbol` and `diagnostics` read a whole file; `workspaceSymbol` searches by query text;
+ * `rename` returns a normalized workspace-edit plan the model applies with its file-edit tools;
+ * `formatting` returns the same plan shape for one document; the call-hierarchy operations chain
+ * a prepare request with their direction request and normalize to one shared call-row shape.
  */
-type LspOperation = 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
+type LspOperation =
+  | 'goToDefinition' | 'findReferences' | 'goToImplementation' | 'hover'
+  | 'documentSymbol' | 'workspaceSymbol' | 'diagnostics' | 'rename' | 'formatting'
+  | 'incomingCalls' | 'outgoingCalls'
 ```
 
 ```ts type-equiv
@@ -39,23 +46,29 @@ interface LspRange {
 
 ## 请求
 
-每个字段都是必填项：`workspaceRoot` 由调用方提供，`languageId` 来自提供方注册而非请求，超时与结果上限由消费方决定。因此没有字段需要由实现提供默认值，也不存在 `resolve()` 步骤。提供方收到调用方请求和派生的 `languageId`；后者只用于同步瞬态文档，从不参与选择。
+`operation` 与 `workspaceRoot` 始终必填；其余字段由读取它的操作决定必填与否，在其他操作下被忽略，因此没有字段需要由实现提供默认值，也不存在 `resolve()` 步骤。提供方收到调用方请求和派生的 `languageId`；后者只用于同步瞬态文档，从不参与选择。
 
 ```ts type-equiv
 /**
- * A caller's normalized query. Every field is required: `workspaceRoot` is caller-supplied,
- * `languageId` comes from the provider registration (not here), and consumers own timeouts and
- * result limits — so no field needs implementation defaulting and there is no `resolve()` step.
+ * A caller's normalized query. `operation` and `workspaceRoot` are always required; each remaining
+ * field is required by the operations that read it and ignored elsewhere, so no field needs
+ * implementation defaulting and there is no `resolve()` step.
  */
 interface LspQueryRequest {
   /** Which semantic query to run. */
   readonly operation: LspOperation
   /** The source file to query (relative to `workspaceRoot` or absolute; the provider canonicalizes). */
-  readonly filePath: string
-  /** The zero-based UTF-16 cursor position to query at. */
-  readonly position: LspPosition
+  readonly filePath?: string
+  /** The zero-based UTF-16 cursor position to query at; required by cursor operations only. */
+  readonly position?: LspPosition
   /** The workspace root the provider resolves against and indexes; required, never defaulted. */
   readonly workspaceRoot: string
+  /** The query text for `workspaceSymbol`; ignored elsewhere. */
+  readonly query?: string
+  /** The new identifier for `rename`; ignored elsewhere. */
+  readonly newName?: string
+  /** Indentation options for `formatting`; ignored elsewhere. */
+  readonly formatting?: LspFormattingOptions
 }
 ```
 
@@ -73,7 +86,7 @@ interface LspProviderQuery extends LspQueryRequest {
 
 ## 结果
 
-这是一个闭合的可辨识联合：导航操作规范化为 `locations`，`hover` 规范化为内容或 `null`。消费方使用 `switch` 对 `kind` 做穷尽处理，因此新增分支会使编译失败，直到完成处理。`findReferences` 始终包含声明；提供方在内部强制保证这一点，因此调用方没有对应 flag。`locations` 变体携带 `resolvedWorkspaceUri`，即提供方的规范工作区 `file:` URI。调用方相对化位置 URI 时应使用这一坐标，而不是对可能经过符号链接的请求根目录应用宿主平台路径规则。
+这是一个闭合的可辨识联合：导航操作规范化为 `locations`，`hover` 规范化为内容或 `null`，`documentSymbol` 与 `workspaceSymbol` 规范化为 `symbols`，`diagnostics` 规范化为 `diagnostics`，`rename` 与 `formatting` 规范化为一份 `workspaceEdit` 计划，调用层次操作规范化为 `calls`。消费方使用 `switch` 对 `kind` 做穷尽处理，因此新增分支会使编译失败，直到完成处理。`findReferences` 始终包含声明；提供方在内部强制保证这一点，因此调用方没有对应 flag。`locations` 变体携带 `resolvedWorkspaceUri`，即提供方的规范工作区 `file:` URI。调用方相对化位置 URI 时应使用这一坐标，而不是对可能经过符号链接的请求根目录应用宿主平台路径规则。
 
 ```ts type-equiv
 /** One resolved location: a document URI and the range within it. */
@@ -109,6 +122,10 @@ interface LspHover {
 type LspQueryResult =
   | { readonly kind: 'locations'; readonly locations: readonly LspLocation[]; readonly resolvedWorkspaceUri: string }
   | { readonly kind: 'hover'; readonly hover: LspHover | null }
+  | { readonly kind: 'symbols'; readonly symbols: readonly LspSymbolInfo[] }
+  | { readonly kind: 'diagnostics'; readonly diagnostics: readonly LspDiagnostic[] }
+  | { readonly kind: 'workspaceEdit'; readonly edits: readonly LspFileEdits[] }
+  | { readonly kind: 'calls'; readonly calls: readonly LspCallRow[] }
 ```
 
 ## 提供方与服务
@@ -140,7 +157,7 @@ interface LspProvider {
 ```ts type-equiv
 /**
  * The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query
- * execution; exposes exactly the four operations and no protocol escape hatch.
+ * execution; exposes the closed semantic-operation union and no protocol escape hatch.
  */
 interface LspService {
   /**
@@ -176,7 +193,7 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 
 ### `ctx.lsp` — `LspService`
 
-The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes exactly the four operations and no protocol escape hatch.
+The LSP capability seam (`ctx.lsp`). Owns provider registration/selection and normalized query execution; exposes the closed semantic-operation union and no protocol escape hatch.
 
 ```ts cordis-catalog
 /**

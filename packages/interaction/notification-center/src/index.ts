@@ -180,6 +180,7 @@ export class NotificationCenterService extends TypertRemoteService {
 
   /**
    * Mark every unread entry read in one sweep.
+   * @param _request - reserved empty ack request.
    * @returns the ack.
    */
   @Remote('markAllRead')
@@ -198,6 +199,7 @@ export class NotificationCenterService extends TypertRemoteService {
 
   /**
    * Delete every read entry (unread entries survive).
+   * @param _request - reserved empty ack request.
    * @returns the ack.
    */
   @Remote('clearRead')
