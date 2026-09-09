@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
+import { RemoteError, type RemoteFailure } from '@deepseek-ai/dsh-typert-protocol'
 import { mirrorErrorMessage, RemoteMirrorController } from '../src/index.ts'
 
 interface TestState {
@@ -10,11 +10,12 @@ interface TestState {
 
 type ListOk = { readonly ok: true; readonly value: { readonly ok: true; readonly value: { readonly items: readonly string[] } } }
 type AddOk = { readonly ok: true; readonly value: { readonly ok: true; readonly value: { readonly done: true } } }
-type TransportFailed = { readonly ok: false; readonly error: RemoteError }
+type AddRejected = { readonly ok: true; readonly value: { readonly ok: false; readonly error: { readonly code: string } } }
+type TransportFailed = { readonly ok: false; readonly error: RemoteFailure }
 
 interface TestRemoteFace {
   list: () => Promise<ListOk | TransportFailed>
-  add: (request: { readonly id: string }) => Promise<AddOk | TransportFailed>
+  add: (request: { readonly id: string }) => Promise<AddOk | AddRejected | TransportFailed>
 }
 
 class TestController extends RemoteMirrorController<TestState, TestRemoteFace, { readonly items: readonly string[] }> {
@@ -38,13 +39,13 @@ class TestController extends RemoteMirrorController<TestState, TestRemoteFace, {
 type ListResponse = Awaited<ReturnType<TestRemoteFace['list']>>
 type AddResponse = Awaited<ReturnType<TestRemoteFace['add']>>
 
-const okList = (items: readonly string[]): ListResponse =>
-  ({ ok: true, value: { ok: true, value: { items } } })
+const okList = (items: readonly string[]): Promise<ListResponse> =>
+  Promise.resolve({ ok: true, value: { ok: true, value: { items } } })
 
-const okAdd = (): AddResponse =>
-  ({ ok: true, value: { ok: true, value: { done: true } } })
+const okAdd = (): Promise<AddResponse> =>
+  Promise.resolve({ ok: true, value: { ok: true, value: { done: true } } })
 
-const transportFail = (message: string): { readonly ok: false; readonly error: RemoteError } =>
+const transportFail = (message: string): TransportFailed =>
   ({ ok: false, error: new RemoteError('gateway/internal', message, {}) })
 
 describe('RemoteMirrorController', () => {
@@ -128,10 +129,11 @@ describe('RemoteMirrorController', () => {
   it('mutate returns code:<code> on a business rejection', async () => {
     const controller = new TestController({
       list: vi.fn(() => okList(['a'])),
-      add: vi.fn(() => Promise.resolve({
-        ok: true,
-        value: { ok: false as const, error: { code: 'item-not-found' } },
-      })),
+      add: vi.fn((): Promise<AddOk | AddRejected | TransportFailed> =>
+        Promise.resolve({
+          ok: true,
+          value: { ok: false, error: { code: 'item-not-found' } },
+        })),
     })
     await controller.ensure()
     await expect(controller.add('b')).resolves.toBe('code:item-not-found')
