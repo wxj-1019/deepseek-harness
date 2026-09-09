@@ -85,20 +85,15 @@ export function parseLspArgs(args: LspToolArgs): LspToolInput {
     throw new Error(`operation must be one of ${LSP_OPERATIONS.join(', ')}`)
   }
   const operation = args.operation
-  // Per-operation validation: cursor operations need a file and one-based
-  // coordinates; outline and diagnostics need only the file; the workspace
-  // search needs query text; rename needs a file, position, and new name.
-  if (isCursorOperation(operation)) {
-    if (args.file_path === undefined || args.file_path.trim().length === 0) {
-      throw new Error('file_path must be a non-empty string')
-    }
-    return { operation, filePath: args.file_path, position: toPosition(args) }
+  // Per-operation validation: rename needs a file, position, and new name;
+  // outline/diagnostics/formatting need only the file; the workspace search
+  // needs query text; the remaining cursor and call-hierarchy operations need
+  // a file and one-based coordinates.
+  if (operation === 'rename') {
+    return { operation, filePath: requireFilePath(args), position: toPosition(args), newName: args.new_name ?? '', apply: args.apply === true }
   }
-  if (operation === 'documentSymbol' || operation === 'diagnostics') {
-    if (args.file_path === undefined || args.file_path.trim().length === 0) {
-      throw new Error('file_path must be a non-empty string')
-    }
-    return { operation, filePath: args.file_path }
+  if (operation === 'documentSymbol' || operation === 'diagnostics' || operation === 'formatting') {
+    return { operation, filePath: requireFilePath(args) }
   }
   if (operation === 'workspaceSymbol') {
     if (args.query === undefined || args.query.trim().length === 0) {
@@ -106,16 +101,15 @@ export function parseLspArgs(args: LspToolArgs): LspToolInput {
     }
     return { operation, query: args.query }
   }
+  return { operation, filePath: requireFilePath(args), position: toPosition(args) }
+}
+
+/** The non-blank `file_path`, or a throw when it is missing or blank. */
+function requireFilePath(args: LspToolArgs): string {
   if (args.file_path === undefined || args.file_path.trim().length === 0) {
     throw new Error('file_path must be a non-empty string')
   }
-  return {
-    operation,
-    filePath: args.file_path,
-    position: toPosition(args),
-    newName: args.new_name ?? '',
-    apply: args.apply === true,
-  }
+  return args.file_path
 }
 
 /** Whether a string is one of the operations. */

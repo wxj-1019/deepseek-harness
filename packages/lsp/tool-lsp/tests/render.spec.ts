@@ -28,6 +28,22 @@ describe('parseLspArgs', () => {
     }
   })
 
+  it('routes rename through its own branch, keeping the new name and apply flag', () => {
+    const input = parseLspArgs({ operation: 'rename', file_path: 'a.ts', line: 3, character: 5, new_name: 'run2', apply: true })
+    expect(input).toEqual({
+      operation: 'rename', filePath: 'a.ts', position: { line: 2, character: 4 }, newName: 'run2', apply: true,
+    })
+    const defaulted = parseLspArgs({ operation: 'rename', file_path: 'a.ts', line: 3, character: 5 })
+    expect(defaulted).toMatchObject({ newName: '', apply: false })
+  })
+
+  it('routes formatting without a cursor and call hierarchy with one', () => {
+    expect(parseLspArgs({ operation: 'formatting', file_path: 'a.ts' }))
+      .toEqual({ operation: 'formatting', filePath: 'a.ts' })
+    expect(parseLspArgs({ operation: 'incomingCalls', file_path: 'a.ts', line: 3, character: 5 }))
+      .toEqual({ operation: 'incomingCalls', filePath: 'a.ts', position: { line: 2, character: 4 } })
+  })
+
   it('rejects an unknown operation', () => {
     expect(() => parseLspArgs({ operation: 'nope', file_path: 'a.ts', line: 1, character: 1 }))
       .toThrow(/operation must be one of/)
