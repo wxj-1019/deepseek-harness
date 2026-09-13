@@ -61,10 +61,7 @@ function emitPreviewPage(): Plugin {
       // A build that failed before generateBundle has no page to splice.
       if (bootstrapFile === undefined) return
       const page = await readFile(src('./dist/index.html'), 'utf8')
-      const anchor = page.indexOf('<script type="module"')
-      if (anchor === -1) throw new Error('vite: built index.html lost its module entry tag')
-      const tag = `<script type="module" crossorigin src="./${bootstrapFile}"></script>`
-      await writeFile(src('./dist/preview.html'), `${page.slice(0, anchor)}${tag}${page.slice(anchor)}`)
+      await writeFile(src('./dist/preview.html'), await spliceModuleScript(page, bootstrapFile))
     },
   }
 }
@@ -107,6 +104,18 @@ function scanComponentStories(): ComponentStory[] {
     }
   }
   return out.sort((left, right) => left.id.localeCompare(right.id))
+}
+
+/**
+ * Splice one module script tag ahead of the page's first module script.
+ * Both pages share every chunk; the spliced tag is the only difference from
+ * the bare build output.
+ */
+async function spliceModuleScript(page: string, fileName: string): Promise<string> {
+  const anchor = page.indexOf('<script type="module"')
+  if (anchor === -1) throw new Error('vite: built page lost its module entry tag')
+  const tag = `<script type="module" crossorigin src="./${fileName}"></script>`
+  return `${page.slice(0, anchor)}${tag}${page.slice(anchor)}`
 }
 
 /** Generate the virtual module: record-id keyed lazy loaders over the stories. */
@@ -169,10 +178,7 @@ function componentStories(): Plugin {
       // error surfaces instead of masking it with a missing-entry claim.
       if (storiesFile === undefined) return
       const page = await readFile(src('./dist/index.html'), 'utf8')
-      const anchor = page.indexOf('<script type="module"')
-      if (anchor === -1) throw new Error('vite: built index.html lost its module entry tag')
-      const tag = `<script type="module" crossorigin src="./${storiesFile}"></script>`
-      await writeFile(src('./dist/index.html'), `${page.slice(0, anchor)}${tag}${page.slice(anchor)}`)
+      await writeFile(src('./dist/index.html'), await spliceModuleScript(page, storiesFile))
     },
   }
 }

@@ -16,8 +16,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Context, Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-// Type-only side-effect import: pulls the settings Context merge into this program.
+// Type-only side-effect imports: pull the settings Context merge and the
+// webserver merge (the optional records-feed route) into this program.
 import type {} from '@deepseek-ai/dsh-settings'
+import type {} from '@deepseek-ai/dsh-host-webserver'
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
 import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
 import type { SkillProviderControl } from '@deepseek-ai/dsh-skill'
@@ -218,6 +220,27 @@ export class ComponentLibraryService extends TypertRemoteService {
       await domain.close()
     }, 'component-library.domainClose')
     this.table = domain.table('components')
+
+    // Optional web surface: a read-only records feed for the standalone
+    // gallery page. The app's RPC face stays the primary consumer; this
+    // route only exists when the composition carries a web server.
+    this.ctx.inject(['webServer'], (webCtx) => {
+      webCtx.effect(() => webCtx.webServer.register({
+        kind: 'prefix',
+        path: '/component-library/api',
+        handler: (req, res) => {
+          const send = (status: number, body: string): void => {
+            res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' })
+            res.end(body)
+          }
+          const path = new URL(req.url ?? '/', 'http://localhost').pathname
+          if (path === '/component-library/api/list' && (req.method === 'GET' || req.method === 'HEAD')) {
+            return void send(200, JSON.stringify({ items: this.snapshotAll() }))
+          }
+          send(404, JSON.stringify({ error: 'not found' }))
+        },
+      }), 'component-library: /component-library/api route')
+    })
 
     const settingsScope = this.ctx.settings.register(COMPONENT_LIBRARY_SETTINGS_NAMESPACE, ComponentLibrarySettingsSchema)
     this.settings = settingsScope.get()
