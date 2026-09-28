@@ -1,6 +1,100 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/storage/component-library/README.md
-README.md: 4f3efa06c65a7decafd24a891fc749b8aa04cfab
-README.zh.md: 980f26752eb60b1bb6ee3aa3d63bff0b2078db68
+/:
+  en: 6faa769f33630d56
+  zh: 993aa4a309a1be8c
+/deepseek-ai-dsh-component-library:
+  en: 1b880658de32c26d
+  zh: 0d48ccfbac77f959
+/deepseek-ai-dsh-component-library/summary:
+  en: 7ea45f5da49cb7c3
+  zh: facc1c329605e51a
+/deepseek-ai-dsh-component-library/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 744490fe9a414704
+/deepseek-ai-dsh-component-library/use-this-package:
+  en: 20fbcc71e8f2474a
+  zh: 07b8d98cecf9d4bd
+/deepseek-ai-dsh-component-library/use-this-package/configuration:
+  en: 73790dfbc916c585
+  zh: 86ba54b12db4af4f
+/deepseek-ai-dsh-component-library/use-this-package/observable-behavior:
+  en: 90bdd6122e3386b3
+  zh: 85821bcd859adf43
+/deepseek-ai-dsh-component-library/understand-the-implementation:
+  en: 35a4632ac04a7788
+  zh: dcdafc1a5d7221a3
+/deepseek-ai-dsh-component-library/understand-the-implementation/design-concept:
+  en: 9213a324382fc7c3
+  zh: a50d07f9227abefc
+/deepseek-ai-dsh-component-library/understand-the-implementation/query-ranking:
+  en: b5ac512f25f9a61c
+  zh: 065d6008bbe38f13
+/deepseek-ai-dsh-component-library/understand-the-implementation/source-map:
+  en: a3ad26b818b161a1
+  zh: ddbf4ec1f79d49ed
+/deepseek-ai-dsh-component-library/further-exploration:
+  en: 1b484d248e506e77
+  zh: d7775c043117c223
+/deepseek-ai-dsh-component-library/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-component-library/model-experience/system-prompt-section:
+  en: 64229c3a69218ef5
+  zh: 6d5a34c492cfd632
+/deepseek-ai-dsh-component-library/model-experience/system-prompt-section/what-the-model-sees:
+  en: 628e92354107944e
+  zh: d9f0016e25b7e4d2
+/deepseek-ai-dsh-component-library/model-experience/system-prompt-section/token-effect:
+  en: a4c5b4a65d943f18
+  zh: 7d0ce16fab7ed42f
+/deepseek-ai-dsh-component-library/model-experience/system-prompt-section/kv-cache-effect:
+  en: e836ec836b2624c1
+  zh: 05643d1986de1dff
+/deepseek-ai-dsh-component-library/model-experience/tool-schemas:
+  en: 3039bc5e7a796b21
+  zh: 6b7a9eaf69c9ea53
+/deepseek-ai-dsh-component-library/model-experience/tool-schemas/what-the-model-sees:
+  en: 569c5ef646f96482
+  zh: f07afc9228c4f6d1
+/deepseek-ai-dsh-component-library/model-experience/tool-schemas/token-effect:
+  en: d4125cf53316117f
+  zh: 8b03a5abe3e1ad4a
+/deepseek-ai-dsh-component-library/model-experience/tool-schemas/kv-cache-effect:
+  en: daf8faf62ca9b777
+  zh: 82614a728f51b1d1
+/deepseek-ai-dsh-component-library/model-experience/tool-call-results:
+  en: 9f92ff587dec916a
+  zh: 9937e2a13f34f183
+/deepseek-ai-dsh-component-library/model-experience/tool-call-results/what-the-model-sees:
+  en: 1d9d4d94b8ede5e2
+  zh: 6193892a61eb5595
+/deepseek-ai-dsh-component-library/model-experience/tool-call-results/token-effect:
+  en: 2898c03de9a68fae
+  zh: 5dcf7287bc159122
+/deepseek-ai-dsh-component-library/model-experience/tool-call-results/kv-cache-effect:
+  en: c71c48043cdf2a91
+  zh: 98e626326ce00348
+/deepseek-ai-dsh-component-library/model-experience/skill-body:
+  en: b6ca3a43f161d308
+  zh: 8421b1dd92e9cf05
+/deepseek-ai-dsh-component-library/model-experience/skill-body/what-the-model-sees:
+  en: 07c9e32b2d688e04
+  zh: ed9d04609dbe3199
+/deepseek-ai-dsh-component-library/model-experience/skill-body/token-effect:
+  en: b96627ac28dba52c
+  zh: 5c99780d24144adc
+/deepseek-ai-dsh-component-library/model-experience/skill-body/kv-cache-effect:
+  en: e9160920533e9356
+  zh: 289408546816e2ef
+/deepseek-ai-dsh-component-library/known-limitations-and-deferred-work:
+  en: a46b6996a25b9c0b
+  zh: 1d92a653d206dda3
+/deepseek-ai-dsh-component-library/known-limitations-and-deferred-work/dev-note:
+  en: 3195c22a4f3a7bc8
+  zh: bd838cdb2b5ed42d
+/deepseek-ai-dsh-component-library/known-limitations-and-deferred-work/dev-note/future-conversation-view-and-snapshot-coverage:
+  en: 88a5994281565739
+  zh: 586604ae1b82699e

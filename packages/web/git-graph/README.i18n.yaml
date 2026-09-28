@@ -1,6 +1,46 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/web/git-graph/README.md
-README.md: 9f5cc187312df6365bfda7fb797179dd5a4f1ccb
-README.zh.md: c790a7f0f990914a45cbf210857e14404315eb3f
+/:
+  en: d0165ca3d48465a5
+  zh: bb2455ae5bf3093a
+/deepseek-ai-dsh-git-graph:
+  en: bf5a42512136ae4d
+  zh: 11608965078dd501
+/deepseek-ai-dsh-git-graph/summary:
+  en: 8273a8e456efbc95
+  zh: 5fd1d83a6267c42d
+/deepseek-ai-dsh-git-graph/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 744490fe9a414704
+/deepseek-ai-dsh-git-graph/use-this-package:
+  en: 4b5ccd3ee6bb4a46
+  zh: f87a5c2d34ce29aa
+/deepseek-ai-dsh-git-graph/use-this-package/route-contract:
+  en: 90c98ee5c83d8abe
+  zh: 67cc92d96cf788e3
+/deepseek-ai-dsh-git-graph/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: c5500056b41ce570
+/deepseek-ai-dsh-git-graph/understand-the-implementation/design-concept:
+  en: e3cc46d813c2a927
+  zh: 61fb15d0126d73db
+/deepseek-ai-dsh-git-graph/understand-the-implementation/source-map:
+  en: b49a3d8b84671eba
+  zh: 12fbfc878bcfe6b0
+/deepseek-ai-dsh-git-graph/further-exploration:
+  en: 89a16880f434be76
+  zh: 987a2c15e41acb52
+/deepseek-ai-dsh-git-graph/model-experience:
+  en: a15e876fe9a04fa4
+  zh: 05077fdc29346e2b
+/deepseek-ai-dsh-git-graph/model-experience/kv-cache-effect:
+  en: 47f982e326fe77fd
+  zh: 47f982e326fe77fd
+/deepseek-ai-dsh-git-graph/known-limitations-and-deferred-work:
+  en: f2a7e936e9be2b6c
+  zh: 1d4de9485a5f4b30
+/deepseek-ai-dsh-git-graph/known-limitations-and-deferred-work/dev-note:
+  en: 927b35a8d11b08f0
+  zh: e5f6f285c8b01a3c

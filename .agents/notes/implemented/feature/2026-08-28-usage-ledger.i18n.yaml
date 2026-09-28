@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-28-usage-ledger.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-28-usage-ledger.md
-2026-08-28-usage-ledger.md: c35e9098fd7e539c080b2f041a077279d453bb97
-2026-08-28-usage-ledger.zh.md: a8c7c00acff072f9aad5a5cbfeab274d2372c722
+/agent-note-the-usage-ledger-and-the-usage-settings-section:
+  en: 8ba37968f2470eb9
+  zh: 8e0ea2ea10f6e65e
+/agent-note-the-usage-ledger-and-the-usage-settings-section/problem:
+  en: f8be49a7d54dc0ef
+  zh: 0231d159818f68e6
+/agent-note-the-usage-ledger-and-the-usage-settings-section/decision:
+  en: 021c62810d9bb30b
+  zh: 8888f5b65c55b4fd
+/agent-note-the-usage-ledger-and-the-usage-settings-section/alternatives-considered:
+  en: a9076cbc72d102f9
+  zh: 10bd56b1c8e6ae44
+/agent-note-the-usage-ledger-and-the-usage-settings-section/consequences:
+  en: 68acecb2501b76a2
+  zh: cd952bf1c10ab192
+/agent-note-the-usage-ledger-and-the-usage-settings-section/risks:
+  en: de8f72b3a1c5bd0c
+  zh: 58993ec390d36ed9

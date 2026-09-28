@@ -1,6 +1,10 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for session-pins.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/session-pins.md
-session-pins.md: 2f104af6e4759a7a4b03b0d004ce1220476081c9
-session-pins.zh.md: d85ab52e5e84416eb7045d88146011ff5d4f73c2
+/pinned-sessions:
+  en: 769391b9944e9a10
+  zh: e4a91eb6c75fd40f
+/pinned-sessions/service-behavior:
+  en: 6085cd540e8a7af6
+  zh: 39a206aaf9c2b6b4

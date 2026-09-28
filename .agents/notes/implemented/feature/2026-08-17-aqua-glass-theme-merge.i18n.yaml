@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-17-aqua-glass-theme-merge.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-17-aqua-glass-theme-merge.md
-2026-08-17-aqua-glass-theme-merge.md: 3e01e0d51fbebf62c53e36ed4d47ef5532c31c41
-2026-08-17-aqua-glass-theme-merge.zh.md: 2ed2b94b9a0bda1f3acca6206defda19b26224fd
+/agent-note-aqua-glass-theme-merged-onto-the-durable-seams:
+  en: e5beec2af553120a
+  zh: 71f3b6c0262e88c9
+/agent-note-aqua-glass-theme-merged-onto-the-durable-seams/problem:
+  en: 3d53e95d558c8f1f
+  zh: 802b8cbe4d0bff0a
+/agent-note-aqua-glass-theme-merged-onto-the-durable-seams/decision:
+  en: fc38b2abba8bf65e
+  zh: 7a53e1c6b8ee6c15
+/agent-note-aqua-glass-theme-merged-onto-the-durable-seams/decision~2:
+  en: cae14f0c13ab3384
+  zh: 371bb2cf4c4af0d6
+/agent-note-aqua-glass-theme-merged-onto-the-durable-seams/alternatives-considered:
+  en: 962f15b36010b6a5
+  zh: 3e91826c37f4417c
+/agent-note-aqua-glass-theme-merged-onto-the-durable-seams/consequences:
+  en: 320505f3c255a2ca
+  zh: 2d49909cc20be290

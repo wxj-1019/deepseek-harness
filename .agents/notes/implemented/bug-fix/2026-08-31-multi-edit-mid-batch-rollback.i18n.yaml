@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-31-multi-edit-mid-batch-rollback.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-31-multi-edit-mid-batch-rollback.md
-2026-08-31-multi-edit-mid-batch-rollback.md: a60cc8ea2e2353683d2d134abedde32f18083576
-2026-08-31-multi-edit-mid-batch-rollback.zh.md: 5337ecae92e132869ab2e7dd09c25ddf89d3f08c
+/agent-note-multi-edit-rolls-back-written-files-when-a-mid-batch-write-fails:
+  en: 671d201e45cd3e53
+  zh: d0caff1bc610caa1
+/agent-note-multi-edit-rolls-back-written-files-when-a-mid-batch-write-fails/problem:
+  en: bb724a5ae303b0c3
+  zh: 7520d35542526f5f
+/agent-note-multi-edit-rolls-back-written-files-when-a-mid-batch-write-fails/decision:
+  en: 787d3d8fdfc09572
+  zh: 96a0022a0e48a018
+/agent-note-multi-edit-rolls-back-written-files-when-a-mid-batch-write-fails/alternatives-considered:
+  en: d9d58eccdd05879b
+  zh: cd43a107a39c83c8
+/agent-note-multi-edit-rolls-back-written-files-when-a-mid-batch-write-fails/consequences:
+  en: 0000d0df99be8751
+  zh: 6dffb088f43b10b8

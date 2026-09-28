@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-24-history-page-raw-event-bound.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-24-history-page-raw-event-bound.md
-2026-08-24-history-page-raw-event-bound.md: 5671868f6f85846d33938907a70b94e12c36d598
-2026-08-24-history-page-raw-event-bound.zh.md: 65982bd0589503e10e08e2b037a58f79ff52210d
+/agent-note-history-pages-are-bounded-by-raw-event-count:
+  en: a92ed4804309e5b2
+  zh: 20583c26b0ff4c7b
+/agent-note-history-pages-are-bounded-by-raw-event-count/problem:
+  en: 3bf9f9125ad1fd98
+  zh: cbb3038e5a72d0a5
+/agent-note-history-pages-are-bounded-by-raw-event-count/decision:
+  en: da0a73bb9d19d74f
+  zh: 0b9322aeb418aa3e
+/agent-note-history-pages-are-bounded-by-raw-event-count/alternatives-considered:
+  en: aeb144daee841e1e
+  zh: fa3d8450b37efa36
+/agent-note-history-pages-are-bounded-by-raw-event-count/consequences:
+  en: 29f8c932d7eba59d
+  zh: db1b0beca6ec5986

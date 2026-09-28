@@ -35,6 +35,7 @@ When the outgoing change adds or changes a resource-owning or asynchronous test,
 Before selecting evidence, read the `dev-checks` section of `$DSH_HOME/settings.yaml` (default `~/.dsh/settings.yaml`; every key defaults to on when the file or section is absent; `CI=true` ignores the file). A `false` key removes its lane from local selection: `e2e` (`pnpm run test:e2e`), `coverage` (`pnpm run test:coverage`), `snapshot` (`pnpm run test:snapshot`), `docSync` (`pnpm run doc-sync`), `buildHygiene` (build + hygiene + built-artifact smokes), and `prePushTypecheck` (the lefthook pre-push typecheck). The routine entry points enforce the same toggles through `scripts/dev-check-run.ts`, so a direct `pnpm run` skips too; a malformed section fails loud there, so surface that error instead of working around it. Report each skipped lane as `skipped per dev-checks settings (local-only)` — a toggle is never evidence, and CI runs every lane regardless. Explicit full runs (`check:all`), CI gate modes, and `test:snapshot:record/refresh` do not consult the toggles.
 
 - **Package or script behavior:** run the owning Vitest file or focused test name. Add adjacent package tests when a shared contract changes; leave repository-wide coverage to CI unless the change is genuinely cross-cutting or the user requests it.
+- **Remote mock typing:** unbuilt `any` is an explicit local fallback, not strict evidence. Run `pnpm run typecheck` before handing off Remote/mock changes; rebuild missing, stale, or partial generated declarations before diagnosing remaining errors. Keep the exception in the [test proxy](../../../packages/test-support/remote-mock/README.md#remote-proxy), never in production Remote types, ambient flags, or copied signatures.
 - **Documentation, Agent Notes, catalogs, or doc-linked comments:** run `pnpm run doc-sync`; run full lint when the documentation workflow requires it.
 - **Model-, editor-, CLI-, or terminal-visible output:** run the focused keyless snapshot or real runnable-example scenario that owns the output.
 - **Expected-output placement:** a test whose selected recorded Session generation is replay input and expected persisted output belongs under top-level `snapshots/`, with `snapshot.yml` naming its shipped `dsh` profile and composition/header pin. Canonical parent files are `session[.vN].jsonl`, children are `session.<ordinal>[.vN].jsonl`, and the harness selects the highest generation per role. ARIA, geometry, generator, CLI, and unit expectations without that Session round trip stay beside their owning test under `tests/expected/`; do not place them in `snapshots/` or give them a `*.snapshot.ts` owner. Use the owning `test:expected`, `test:web`, or `test` lane.
@@ -43,6 +44,14 @@ Before selecting evidence, read the `dev-checks` section of `$DSH_HOME/settings.
 - **Real provider or agent behavior:** run the relevant `pnpm run test:e2e` target when credentials are available; never print secrets.
 
 Do not manually repeat a passing check merely because commit or push follows. In particular, do not run typecheck immediately before pushing solely to duplicate the pre-push hook.
+
+Pass Vitest file and name filters directly after the script name with `pnpm run`; do not insert a standalone `--`, which reaches Vitest and can disable `-t` filtering. For example, this command runs one headless snapshot scenario:
+
+```sh
+pnpm run test:snapshot snapshots/session/headless.snapshot.ts -t 'cordis-inspect-jsdoc'
+```
+
+This applies to these pnpm scripts; npm and other launchers retain their own argument-forwarding syntax. Check the reported selected test count before treating a filtered run as focused evidence.
 
 ### Focus unit coverage on the affected source
 

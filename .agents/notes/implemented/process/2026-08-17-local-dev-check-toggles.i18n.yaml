@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-17-local-dev-check-toggles.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-17-local-dev-check-toggles.md
-2026-08-17-local-dev-check-toggles.md: 9de72906b899bc3624ae3af6318289f82a214a48
-2026-08-17-local-dev-check-toggles.zh.md: 4eac92981feae7074061f76961fda90874f6a5f6
+/agent-note-local-dev-check-toggles:
+  en: 360d971a6fa5ad74
+  zh: fcc013c0ff75fd42
+/agent-note-local-dev-check-toggles/problem:
+  en: 60f1cf31fcfd58cd
+  zh: 90ae065ab503283f
+/agent-note-local-dev-check-toggles/decision:
+  en: ee95605b848908a3
+  zh: fd2ee0452798c2fc
+/agent-note-local-dev-check-toggles/alternatives-considered:
+  en: 22068407c7a334e4
+  zh: 690fadf7beec72ce
+/agent-note-local-dev-check-toggles/consequences:
+  en: 2250feefdd6ea308
+  zh: ae0f4b4247a29246

@@ -4,7 +4,8 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { ManualCompactionError, manualCompactionFailureText } from '@deepseek-ai/dsh-compaction'
+import { CommandDefinitionId } from '@deepseek-ai/dsh-commands/brand'
+import { ManualCompactionError } from '@deepseek-ai/dsh-compaction'
 import type { CommandInvocation, CommandResult } from '@deepseek-ai/dsh-commands'
 
 export const name = 'command-compact'
@@ -14,7 +15,37 @@ const USAGE = 'Usage: /compact (no arguments)'
 
 /** Convert expected capability failures into concise human-only outcomes. */
 function expectedFailure(error: ManualCompactionError): CommandResult {
-  return { kind: 'error', text: manualCompactionFailureText(error) }
+  switch (error.code) {
+    case 'busy':
+      return {
+        kind: 'error',
+        text: 'Compaction is unavailable because this process has an active compaction, or the agent is not idle.',
+      }
+    case 'cancelled':
+      return { kind: 'error', text: 'Compaction cancelled.' }
+    case 'changed':
+      return {
+        kind: 'error',
+        text: 'The history selected for compaction changed before it could be replaced. The attempt is recorded in the session log.',
+      }
+    case 'summary':
+      return {
+        kind: 'error',
+        text: 'Compaction could not produce a useful summary. The attempt is recorded in the session log.',
+      }
+    case 'commit':
+      return {
+        kind: 'error',
+        text: 'Compaction did not finish cleanly; some session history may have changed. Inspect the current session state before retrying.',
+      }
+    case 'persistence':
+      return {
+        kind: 'error',
+        text: 'Compaction finished, but the session could not be saved.',
+      }
+    /* v8 ignore next 2 -- ManualCompactionErrorCode is closed and every member is handled above */
+    default: return assertNever(error.code)
+  }
 }
 
 /** Execute one argument-free manual compaction request. */
@@ -61,6 +92,7 @@ export function apply(ctx: Context): void {
     // invocation can enter while already-started handler promises quiesce.
     yield async () => { await Promise.allSettled(active) }
     yield ctx.commands.register({
+      definitionId: CommandDefinitionId('@deepseek-ai/dsh-command-compact'),
       name: 'compact',
       description: 'Compact older conversation history',
       handler,

@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-08-shared-remote-mirror-panel-controller.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-08-shared-remote-mirror-panel-controller.md
-2026-09-08-shared-remote-mirror-panel-controller.md: 744750d6182ac460d78a3b94ed209ae9329bedcc
-2026-09-08-shared-remote-mirror-panel-controller.zh.md: 6e68d0e6d2ad8acfb982366e22c682d2a081d0fe
+/agent-note-shared-remote-mirror-controller-for-host-mirrored-panels:
+  en: b60bec6c8badb3d5
+  zh: d6e5d98bb7088baf
+/agent-note-shared-remote-mirror-controller-for-host-mirrored-panels/problem:
+  en: b01ebb3c8ec07d73
+  zh: 1cd7119d67d26d57
+/agent-note-shared-remote-mirror-controller-for-host-mirrored-panels/decision:
+  en: 04e6ceed1d57a5d7
+  zh: fc866daf56be0944
+/agent-note-shared-remote-mirror-controller-for-host-mirrored-panels/verification:
+  en: c43eed97053a4c39
+  zh: 4a037682199b740f
+/agent-note-shared-remote-mirror-controller-for-host-mirrored-panels/alternatives-considered:
+  en: 8af3a30b09390128
+  zh: bab3a1e28371e9a5
+/agent-note-shared-remote-mirror-controller-for-host-mirrored-panels/consequences:
+  en: 769bf9372d128a96
+  zh: 9a35ce97a9de7c7b

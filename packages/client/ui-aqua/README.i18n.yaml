@@ -1,6 +1,31 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-aqua/README.md
-README.md: 686d216dd1a62a68637a7b2038e08057f5a9f2ff
-README.zh.md: bf2f0cde5101dd7e41b33d65325a6c4c7dfeeacc
+/:
+  en: 009195212da91549
+  zh: a8e2723d5be6505e
+/deepseek-ai-dsh-client-ui-aqua:
+  en: bda0f312fc02512e
+  zh: 940b155cd28420d4
+/deepseek-ai-dsh-client-ui-aqua/summary:
+  en: 9ea124e8acb0e12e
+  zh: 24780ef6debd1da9
+/deepseek-ai-dsh-client-ui-aqua/table-of-contents:
+  en: 3e1cb4657bcbc768
+  zh: 75634af3445fde1d
+/deepseek-ai-dsh-client-ui-aqua/surfaces-that-opt-in:
+  en: c7c0260dcf7cf78a
+  zh: 3a483ce618837f77
+/deepseek-ai-dsh-client-ui-aqua/model-experience:
+  en: 51f2b79208f37c38
+  zh: 123f545449ba7ea2
+/deepseek-ai-dsh-client-ui-aqua/model-experience/kv-cache-effect:
+  en: ca75c51c89c2c9b0
+  zh: de54f3467ef3b9be
+/deepseek-ai-dsh-client-ui-aqua/known-limitations-and-deferred-work:
+  en: b1513c856dfd6e4c
+  zh: 1b897999eefafe63
+/deepseek-ai-dsh-client-ui-aqua/known-limitations-and-deferred-work/dev-note:
+  en: b85bf027f247947e
+  zh: 8cb4ec7d0119ee6c

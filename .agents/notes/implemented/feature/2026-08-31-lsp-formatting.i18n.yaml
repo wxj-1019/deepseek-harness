@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-31-lsp-formatting.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-31-lsp-formatting.md
-2026-08-31-lsp-formatting.md: 11221fa1912c2f09eb8adef211ec9579a6c4774b
-2026-08-31-lsp-formatting.zh.md: ed54642e5bc72449297fe1586095b73585dd9b3c
+/agent-note-lsp-formatting-rides-the-existing-edit-plan-channel:
+  en: 03d393c45f204587
+  zh: 40ae9c6ae2d6406a
+/agent-note-lsp-formatting-rides-the-existing-edit-plan-channel/problem:
+  en: 7f156145f5b482b6
+  zh: ef9606740b7eb77d
+/agent-note-lsp-formatting-rides-the-existing-edit-plan-channel/decision:
+  en: 75b416a764637dcf
+  zh: 8f3bf65cf5ef07a3
+/agent-note-lsp-formatting-rides-the-existing-edit-plan-channel/alternatives-considered:
+  en: 3707352a70bdcfd9
+  zh: b483e4bb025a31dd
+/agent-note-lsp-formatting-rides-the-existing-edit-plan-channel/consequences:
+  en: 081cb607be7726c3
+  zh: adcf4de2b70d342f

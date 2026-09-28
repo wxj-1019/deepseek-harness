@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-27-remove-vision-model-settings-page.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-08-27-remove-vision-model-settings-page.md
-2026-08-27-remove-vision-model-settings-page.md: 2431377f5e1f12630aba422b3e8815d6d3b7afc8
-2026-08-27-remove-vision-model-settings-page.zh.md: e1fb3cbd9493f10278b4e3e5bfb81e70df774217
+/agent-note-remove-the-vision-model-settings-page:
+  en: cffe1dd3f2ff9ace
+  zh: db4a3a19cfeaee0c
+/agent-note-remove-the-vision-model-settings-page/problem:
+  en: 117a8ba1c5f2a2fa
+  zh: 55ff226fcd2e9dc5
+/agent-note-remove-the-vision-model-settings-page/decision:
+  en: 6091a52ac89c9c28
+  zh: 40a92cf8d053080d
+/agent-note-remove-the-vision-model-settings-page/alternatives-considered:
+  en: a29b57986464f3a3
+  zh: 5eaab3c6c97ae86c
+/agent-note-remove-the-vision-model-settings-page/consequences:
+  en: 2d080761d3c49e25
+  zh: 927de1dfb5a0b784

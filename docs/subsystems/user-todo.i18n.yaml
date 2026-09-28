@@ -1,6 +1,10 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for user-todo.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/user-todo.md
-user-todo.md: 53113d74dc3ff31560880ecc31facccafc6146de
-user-todo.zh.md: 2d108738677faf1225df63d9d09b127a00ba92c8
+/user-todo:
+  en: b48771e5b1a8dffe
+  zh: 7d3329ba850f6abf
+/user-todo/service-behavior:
+  en: 1c9005fa1aeed923
+  zh: 4bff584efde26707

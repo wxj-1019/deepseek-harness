@@ -1,6 +1,70 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for component-library-plugin.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/component-library-plugin.md
-component-library-plugin.md: d068ed86ef9613d754fb494cc21de183cdadaad7
-component-library-plugin.zh.md: 08f5605191f1713755fa2a7df9cb0a574eb492b6
+/component-library-plugin-design:
+  en: 2cc1fe13d4855514
+  zh: 202a6ee2d0ef3869
+/component-library-plugin-design/1-goal-and-scope:
+  en: 7fb219ab2f2114c4
+  zh: cd874fcef5a7ba05
+/component-library-plugin-design/2-architecture-overview:
+  en: 844cb8fc7ae76ff0
+  zh: 5f533dc38a0db585
+/component-library-plugin-design/3-packages:
+  en: 97a22600b1892307
+  zh: 342e81b29863ffef
+/component-library-plugin-design/4-data-model:
+  en: d0b2856114ef73d6
+  zh: 8978feda8076a6b2
+/component-library-plugin-design/4-data-model/component-record-one-per-learned-component:
+  en: ddbf5118ca856f7d
+  zh: 0e236113f80aab86
+/component-library-plugin-design/4-data-model/storage-domain-schema:
+  en: 6bf7b6af22507e9c
+  zh: 86ad975501c958f1
+/component-library-plugin-design/4-data-model/style-token-inventory-generation-constraint-corpus:
+  en: 00f3098ee0dd79eb
+  zh: 03e240c72ed741a1
+/component-library-plugin-design/5-the-learning-pipeline:
+  en: 65d3ea99a146b110
+  zh: fdb87b9db2e61017
+/component-library-plugin-design/5-the-learning-pipeline/5-1-static-scan-cold-start:
+  en: c9b40531a2cd201e
+  zh: c3cc5efb82ab2a15
+/component-library-plugin-design/5-the-learning-pipeline/5-2-continuous-learning-watch:
+  en: ecb508c48b8d73d9
+  zh: d09cb16e5ef444fb
+/component-library-plugin-design/5-the-learning-pipeline/5-3-model-driven-learning:
+  en: 64d3ed336668fd5d
+  zh: c28b8d3dfe4ec9fd
+/component-library-plugin-design/6-model-facing-tools:
+  en: 5b712550e80f29f5
+  zh: 7230bfd1a51de9a7
+/component-library-plugin-design/6-model-facing-tools/component-query:
+  en: 0fedd9463f5892df
+  zh: c6f94eefe84d1361
+/component-library-plugin-design/6-model-facing-tools/component-record:
+  en: a91ffa702ad21955
+  zh: b16b49c06bfc9195
+/component-library-plugin-design/6-model-facing-tools/6-3-model-guidance:
+  en: 410face1593c6e6b
+  zh: 3b468143c0403173
+/component-library-plugin-design/7-skills-channel:
+  en: 191122d021f57e68
+  zh: 1f569670b326e1c0
+/component-library-plugin-design/8-client-panel:
+  en: b56965e904e2c4eb
+  zh: 2ceae696932149f0
+/component-library-plugin-design/9-implementation-plan:
+  en: 48b6a3f5f69712bb
+  zh: 05d686b2d4372ee6
+/component-library-plugin-design/10-testing-policy:
+  en: 8a92c065922d291d
+  zh: 65a420d3056f92b3
+/component-library-plugin-design/11-risks-and-mitigations:
+  en: 15c3291cbdb637ab
+  zh: d826c29f28b83795
+/component-library-plugin-design/12-acceptance-criteria:
+  en: bf347aa1493716a9
+  zh: 7fe6aae31510b90a

@@ -394,8 +394,8 @@ Mount in [`dsh-base`)](../../../../packages/bundle/base/README.md) mirroring goa
 - [claude-code-goal-loop](https://github.com/gyujeongion/claude-code-goal-loop) — verified-step goal loop with rollback snapshots and a stuck-handler.
 - [Durable agents with Temporal](https://temporal.io/blog/building-durable-agents-with-temporal-and-ai-sdk-by-vercel) — the event-history-as-source-of-truth lineage the session log already occupies.
 - The dsh ecosystem — [dsh-TUI](https://github.com/ccch1mneyyy/dsh-TUI), [dsh-gungnir](https://www.npmjs.com/package/dsh-gungnir), and LoopX's `dsh_goal_mode` adapter: the third-party surface the loop domain serves.
-- [Goal subsystem)](../../../../docs/subsystems/goal.md) and [same-session goal-round-driver)](../../implemented/feature/2026-07-19-same-session-goal-round-driver.md) — the durability, reservation, and fence patterns this design extends.
-- [Ralph tool)](../../implemented/feature/2026-07-19-fresh-agent-ralph-workflow-tool.md) — the fresh-agent report vocabulary and its deferred evaluator/budget work, which the loop engine takes over.
+- [Goal subsystem)](../../../../docs/subsystems/goal.md) and [same-session goal-round-driver)](../../archived/feature/2026-07-19-same-session-goal-round-driver.md) — the durability, reservation, and fence patterns this design extends.
+- [Ralph tool)](../../archived/feature/2026-07-19-fresh-agent-ralph-workflow-tool.md) — the fresh-agent report vocabulary and its deferred evaluator/budget work, which the loop engine takes over.
 - [Agent Teams)](../../implemented/feature/2026-08-05-agent-teams.md) — the task-snapshot and full-snapshot-event precedent.
 - [Session projection mandatory seam)](../../implemented/architecture/2026-08-19-session-projection-mandatory-seam.md) — the `loops` projection registration pattern.
 - [Session log version mechanism)](../../implemented/architecture/2026-08-10-session-log-version-mechanism.md) — why additive event kinds need no format bump.

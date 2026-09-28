@@ -1,6 +1,10 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for component-library.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/component-library.md
-component-library.md: 6b0bd46ef2acfdab5ee5bf438088362e919365a7
-component-library.zh.md: 287f541bc2b389799162904e0d35f929fd2e2252
+/component-library:
+  en: bf0655b859cccac0
+  zh: 7ea049f50459d6cd
+/component-library/service-behavior:
+  en: ab41fd032abebc97
+  zh: 5ca971fe70ff33e2

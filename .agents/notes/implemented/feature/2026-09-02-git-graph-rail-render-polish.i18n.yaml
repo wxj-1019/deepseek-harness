@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-02-git-graph-rail-render-polish.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-02-git-graph-rail-render-polish.md
-2026-09-02-git-graph-rail-render-polish.md: fbe3066da5e5ed875a6df73e76cef71bb280c839
-2026-09-02-git-graph-rail-render-polish.zh.md: 4647bcf20e8735ab7e6f56d9a369904e00e1ee0d
+/agent-note-git-graph-rail-rendering-stretched-viewbox-curves-and-a-chart-hue-palette:
+  en: 1c7c5e10cf117b6c
+  zh: dc8c651c0539c625
+/agent-note-git-graph-rail-rendering-stretched-viewbox-curves-and-a-chart-hue-palette/problem:
+  en: f17d6b2402f887a3
+  zh: 0e8bb335b1861cef
+/agent-note-git-graph-rail-rendering-stretched-viewbox-curves-and-a-chart-hue-palette/decision:
+  en: 3ad37ecd469f3daf
+  zh: c03f7055c33af2a9
+/agent-note-git-graph-rail-rendering-stretched-viewbox-curves-and-a-chart-hue-palette/alternatives-considered:
+  en: 5037b645b414612f
+  zh: a8a84f45382e7c7f
+/agent-note-git-graph-rail-rendering-stretched-viewbox-curves-and-a-chart-hue-palette/consequences:
+  en: abcde18ff0291a09
+  zh: 6673784b1f92e8bd

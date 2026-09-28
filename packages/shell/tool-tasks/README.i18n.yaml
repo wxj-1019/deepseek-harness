@@ -1,6 +1,49 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/shell/tool-tasks/README.md
-README.md: a0045a70d67bf45c141afd964b4edcf79e9cb078
-README.zh.md: e39a3055fd4417e16f23d9048ae097d0514fc3aa
+/:
+  en: 8b80b0b20d006bc7
+  zh: d2738b1ed405130a
+/deepseek-ai-dsh-tool-tasks:
+  en: 3bdc8d3fffc619b4
+  zh: 5749ea0b0b41e158
+/deepseek-ai-dsh-tool-tasks/summary:
+  en: 6308c03bf2f076ad
+  zh: 4c682c85a619d22f
+/deepseek-ai-dsh-tool-tasks/table-of-contents:
+  en: b4683d2a53256fda
+  zh: 705ecbe0b6cabec6
+/deepseek-ai-dsh-tool-tasks/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-tool-tasks/model-experience/guidance:
+  en: 248ac7774b42c03b
+  zh: 4a99f97d00abf2d9
+/deepseek-ai-dsh-tool-tasks/model-experience/guidance/what-the-model-sees:
+  en: aa47d2e2bba0d386
+  zh: e0a05aaebf2a9b85
+/deepseek-ai-dsh-tool-tasks/model-experience/guidance/token-effect:
+  en: ef9d39d9bc70dcbc
+  zh: 22df729bebfc1baa
+/deepseek-ai-dsh-tool-tasks/model-experience/guidance/kv-cache-effect:
+  en: 027a7740b251bf20
+  zh: e05a961bffe1a255
+/deepseek-ai-dsh-tool-tasks/model-experience/tool-schema:
+  en: e4c7376d4f29dbd5
+  zh: 6b7a9eaf69c9ea53
+/deepseek-ai-dsh-tool-tasks/model-experience/tool-schema/what-the-model-sees:
+  en: a8d7664ab6db307e
+  zh: 0944b51396b2995e
+/deepseek-ai-dsh-tool-tasks/model-experience/tool-schema/token-effect:
+  en: 0f92cda17951e2bf
+  zh: bac558c70c9f8336
+/deepseek-ai-dsh-tool-tasks/model-experience/tool-schema/kv-cache-effect:
+  en: c1983ccac240ffed
+  zh: 2531167ceb72a8d2
+/deepseek-ai-dsh-tool-tasks/known-limitations-and-deferred-work:
+  en: f026064dc49e73d8
+  zh: 6f97357a42b1a3bf
+/deepseek-ai-dsh-tool-tasks/known-limitations-and-deferred-work/dev-note:
+  en: 9d96f38c9d95dee7
+  zh: a3fa5fce8b2630db

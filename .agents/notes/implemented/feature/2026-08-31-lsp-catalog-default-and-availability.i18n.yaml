@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-31-lsp-catalog-default-and-availability.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-31-lsp-catalog-default-and-availability.md
-2026-08-31-lsp-catalog-default-and-availability.md: 24e836f51b008734418ec33f94e8090b322a62cc
-2026-08-31-lsp-catalog-default-and-availability.zh.md: 293dc8e54153636da2b727964ea86046b66bf3dd
+/agent-note-lsp-language-catalog-defaults-on-and-annotates-availability:
+  en: 8caba687354844b4
+  zh: fe474152d55ac138
+/agent-note-lsp-language-catalog-defaults-on-and-annotates-availability/problem:
+  en: f1dc072946469b97
+  zh: 2937632a1f3b7889
+/agent-note-lsp-language-catalog-defaults-on-and-annotates-availability/decision:
+  en: 6b2abed9a05353c0
+  zh: f4e8e59d1f6dd437
+/agent-note-lsp-language-catalog-defaults-on-and-annotates-availability/alternatives-considered:
+  en: f5872b3abfa8b4ca
+  zh: dd4be656c97e573e
+/agent-note-lsp-language-catalog-defaults-on-and-annotates-availability/consequences:
+  en: e8b43afb607f8a81
+  zh: cf3cb24353f50416

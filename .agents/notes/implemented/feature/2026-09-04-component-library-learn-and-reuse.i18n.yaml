@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-04-component-library-learn-and-reuse.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-component-library-learn-and-reuse.md
-2026-09-04-component-library-learn-and-reuse.md: 26d6a98dfe68baadfc76e8f24f5b546df09f2220
-2026-09-04-component-library-learn-and-reuse.zh.md: 5d66bb20f31a5daa358ee94f56204710bcc75d49
+/agent-note-component-library-learns-the-checkout-s-ui-components-for-model-reuse:
+  en: 943e3c987222baa1
+  zh: 4d16435770c64de6
+/agent-note-component-library-learns-the-checkout-s-ui-components-for-model-reuse/problem:
+  en: 9ed172fa3d501c6b
+  zh: 0055a761ba30fcc0
+/agent-note-component-library-learns-the-checkout-s-ui-components-for-model-reuse/decision:
+  en: e8130ac5380fa26e
+  zh: aa63c57a037211df
+/agent-note-component-library-learns-the-checkout-s-ui-components-for-model-reuse/alternatives-considered:
+  en: 1ef894410d576a6a
+  zh: 7768b9f80087f8be
+/agent-note-component-library-learns-the-checkout-s-ui-components-for-model-reuse/consequences:
+  en: cdf0e97cb2b5943e
+  zh: 82045a30a66cf88d

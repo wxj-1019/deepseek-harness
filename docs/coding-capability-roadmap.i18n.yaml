@@ -1,6 +1,118 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for coding-capability-roadmap.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/coding-capability-roadmap.md
-coding-capability-roadmap.md: 79b41a12430e6311e1111e3ba974e16c59c42238
-coding-capability-roadmap.zh.md: ba36d0e71fc5001de98ad7f618ca42824865c9c3
+/dsh-coding-capability-execution-plan:
+  en: b630c60d3bc8603e
+  zh: 9d9618193a27f311
+/dsh-coding-capability-execution-plan/1-goal-and-scope:
+  en: 74d76e469df6d3c7
+  zh: bdc968603c4630e5
+/dsh-coding-capability-execution-plan/2-baseline:
+  en: 5037699ac559e5ed
+  zh: e37b4e7b2c122bd8
+/dsh-coding-capability-execution-plan/3-known-gap-inventory:
+  en: 0f0b1735687594d8
+  zh: f5dbb954b927cf1d
+/dsh-coding-capability-execution-plan/4-market-benchmark-and-gap-translation:
+  en: b505af2a783c296e
+  zh: d71328721373ee27
+/dsh-coding-capability-execution-plan/4-market-benchmark-and-gap-translation/competitive-position-and-non-goals:
+  en: d32de9d63b427fe6
+  zh: a776256061f6ffbe
+/dsh-coding-capability-execution-plan/5-success-measures:
+  en: 35d29e8dd5ce71d8
+  zh: 717a5adb5f5c41f4
+/dsh-coding-capability-execution-plan/6-priority-model:
+  en: 99f6db86ea8ab704
+  zh: e34acffbf5d3e530
+/dsh-coding-capability-execution-plan/7-phased-roadmap:
+  en: 81d26ae36a624bb0
+  zh: 85d16e4c04efc6a0
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-0-baseline-contract-consistency-and-coverage-inventory-1-week:
+  en: 92bf88407ab2e6de
+  zh: 3feb14aed1bffab6
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-1-structured-test-and-build-diagnostics-2-4-weeks:
+  en: 2bf545d4c1313b2f
+  zh: 7f5aa66448708482
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-2-workspace-edit-transaction-and-semantic-refactoring-3-5-weeks:
+  en: d534ed32fc944f61
+  zh: 9aa7dd6182b8bf62
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-3-structured-git-and-conflict-workflows-2-4-weeks:
+  en: 53385ec78a8f4df9
+  zh: ee76e770252ed70a
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-4-project-dependency-and-workspace-understanding-3-4-weeks:
+  en: b6d0f02ddd43b7ea
+  zh: 3a267a21187cb3cf
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-5-runtime-reliability-and-resource-control-3-4-weeks:
+  en: e3b132772c9263ae
+  zh: b883e65c36ebacb9
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-6-product-operability-approval-and-platform-surface-2-3-weeks:
+  en: 6f0127dc7db77955
+  zh: fe42f423f9c3ecd2
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-7-dap-debugger-capability-6-10-weeks:
+  en: 9d3b421119fdaf88
+  zh: ac817e40d3829070
+/dsh-coding-capability-execution-plan/7-phased-roadmap/phase-8-ecosystem-and-multi-agent-expansion-follow-up-work:
+  en: 86b6625e4ca824d6
+  zh: 576435556e5790f8
+/dsh-coding-capability-execution-plan/8-cross-cutting-design-rules:
+  en: 9f45264c2715b99d
+  zh: 3a63295c1b2409bd
+/dsh-coding-capability-execution-plan/9-test-and-release-strategy:
+  en: 37cc527b75af9db5
+  zh: 2f602456e08ffa7e
+/dsh-coding-capability-execution-plan/10-risk-register:
+  en: 6d5b1919069b3ee3
+  zh: 5716d719b67e8d0b
+/dsh-coding-capability-execution-plan/11-issue-and-pr-decomposition:
+  en: 78899f30756e99ac
+  zh: e4cff532e78cfaf9
+/dsh-coding-capability-execution-plan/12-immediate-execution-checklist:
+  en: 965cfc65b4c88edf
+  zh: 5e0da13118cf3997
+/dsh-coding-capability-execution-plan/13-suggested-package-layout:
+  en: 28b15d199f98f94f
+  zh: 0033834317709261
+/dsh-coding-capability-execution-plan/14-example-result-fields:
+  en: d756d4c5046cee8b
+  zh: 19678daa84a5a94f
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint:
+  en: e308d30a4425d48c
+  zh: 1074fe3948caeecf
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/check-workflow:
+  en: 7c223ea913c749c9
+  zh: 0ab0f3ec169a58e2
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/review-workflow:
+  en: 2987e638bfdd8348
+  zh: 1dc096bebd493ac3
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/verified-follow-up-actions:
+  en: 435e44f1841fa70d
+  zh: 4fa212e2240b036f
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/stage-aware-tool-catalog:
+  en: e410941aafc5c3c0
+  zh: 188d672acca12c6f
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/project-inspection-and-change-set-delivery:
+  en: a79316dafe7be161
+  zh: 7091d68b7cee6030
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/local-resume-and-handoff:
+  en: 5da84d58fa05cd41
+  zh: 4daeed169dfa8b11
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/runtime-budget-and-rewrite-contracts:
+  en: 9b5f09694ba4319a
+  zh: 407778e879f5381b
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/market-oriented-acceptance-targets:
+  en: 423b926a68573a45
+  zh: 3c4b45f7803e664e
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/test-ownership-matrix:
+  en: 3afa49569de94719
+  zh: cdab1cf61f723c6d
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/competitive-implementation-conclusions:
+  en: 3ef04f7ae1b8690e
+  zh: 8ca4042062223466
+/dsh-coding-capability-execution-plan/15-market-oriented-implementation-blueprint/verification-and-delivery:
+  en: 18076ad1d22947e6
+  zh: e73c7aca4a72ff3f
+/dsh-coding-capability-execution-plan/16-phase-review-questions:
+  en: f7ceb9611aebec37
+  zh: c2446addbe8efa43

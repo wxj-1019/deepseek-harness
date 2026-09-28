@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-21-web-settings-trio.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-21-web-settings-trio.md
-2026-08-21-web-settings-trio.md: aea449765e052d140faa9a1a5fd164bacfb61669
-2026-08-21-web-settings-trio.zh.md: b3a7e5edb4aae0fd964c93a2bd1ad51556479104
+/agent-note-mcp-settings-card-boot-progress-text-and-per-route-retry-control:
+  en: 3d7d27f632540e71
+  zh: ab31bb10334afb4b
+/agent-note-mcp-settings-card-boot-progress-text-and-per-route-retry-control/problem:
+  en: 3e071518fb6d035a
+  zh: 255529e9ce420d34
+/agent-note-mcp-settings-card-boot-progress-text-and-per-route-retry-control/decision:
+  en: 9dfd4fc57b6cc5c2
+  zh: cbbdeb4bb1389f40
+/agent-note-mcp-settings-card-boot-progress-text-and-per-route-retry-control/consequences:
+  en: 49c9f76fd7469399
+  zh: 528f4970917f9cd9
+/agent-note-mcp-settings-card-boot-progress-text-and-per-route-retry-control/alternatives-considered:
+  en: 3330bc98e937f162
+  zh: be212d9ab7cca163

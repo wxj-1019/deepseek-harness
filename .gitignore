@@ -1,5 +1,8 @@
 CLAUDE.local.md
 .env
+apps/desktop/.env.windows
+apps/desktop/.env.macos
+apps/desktop/*.p12
 node_modules/
 lib/
 *.tsbuildinfo
@@ -27,8 +30,9 @@ tmp/
 .idea
 mise.toml
 dist-exe/
-python/sdk-runtime/src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-*
-python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/
+/dist/
+apps/desktop/.desktop-build/
+python/sdk-runtime/src/deepseek_harness_runtime/runtime/
 python/**/__pycache__/
 python/**/.pytest_cache/
 packages/**/__pycache__/
@@ -41,20 +45,4 @@ apps/web/dist/
 worktrees/
 .agents/worktrees/
 .typert-*/
-# Generated emit must never sit beside sources; lib/ and lib/types own build
-# output. Sources are TypeScript-only, so no hand-written .js lives under src/.
-packages/*/*/src/**/*.js
-packages/*/*/src/**/*.js.map
-packages/*/*/src/**/*.d.ts.map
-packages/*/*/src/**/*.d.ts
-!packages/**/src/css-modules.d.ts
-!packages/client/ui-renderer/src/client/use-sync-external-store.d.ts
-!packages/fs/tool-fs-search/src/ripgrep.d.ts
-!packages/web/tool-web/src/turndown-plugin-gfm.d.ts
-vendor/*/src/**/*.js
-vendor/*/src/**/*.js.map
-vendor/*/src/**/*.d.ts
-vendor/*/src/**/*.d.ts.map
-# Local tooling residue
-.zcode-tmp-*
-.seedream/
+native/system/test/bin/

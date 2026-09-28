@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-06-component-library-stories-live-preview.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-06-component-library-stories-live-preview.md
-2026-09-06-component-library-stories-live-preview.md: 478e12659019f470795cf8b815701c723afc7dde
-2026-09-06-component-library-stories-live-preview.zh.md: 57f1b410200a233d687595161c1f8fc20f977495
+/agent-note-component-library-stories-live-preview-in-the-gallery:
+  en: 95c0d09a4495bfad
+  zh: d322b2dd25e172f9
+/agent-note-component-library-stories-live-preview-in-the-gallery/problem:
+  en: 252503122299dc32
+  zh: dc6928a7be28a13f
+/agent-note-component-library-stories-live-preview-in-the-gallery/decision:
+  en: 54887bf315328320
+  zh: cae4a1b3d4fb5876
+/agent-note-component-library-stories-live-preview-in-the-gallery/alternatives-considered:
+  en: addd1e239c4c4817
+  zh: b1d67aad4498db34
+/agent-note-component-library-stories-live-preview-in-the-gallery/consequences:
+  en: 507fb7893d67d67e
+  zh: 1e64f3e253a2bf8a

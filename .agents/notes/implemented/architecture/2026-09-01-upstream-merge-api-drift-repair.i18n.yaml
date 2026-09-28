@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-01-upstream-merge-api-drift-repair.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-01-upstream-merge-api-drift-repair.md
-2026-09-01-upstream-merge-api-drift-repair.md: 6108eb49e7a014ec5209ab08bd99da0cab3460ec
-2026-09-01-upstream-merge-api-drift-repair.zh.md: b9c45f8658bf77aa1d8f47ba770e154f65a81bdb
+/agent-note-upstream-merge-api-drift-repair-and-the-runtime-package-migration:
+  en: 6eae87f20de90f03
+  zh: 3d1dc0bcf2eaaef3
+/agent-note-upstream-merge-api-drift-repair-and-the-runtime-package-migration/problem:
+  en: d835fdfbd920eb6c
+  zh: 13fead149852d984
+/agent-note-upstream-merge-api-drift-repair-and-the-runtime-package-migration/decision:
+  en: 6906fe85e21d5d52
+  zh: 9c6064ca05b6438e
+/agent-note-upstream-merge-api-drift-repair-and-the-runtime-package-migration/alternatives-considered:
+  en: 90dc5073fd0c012b
+  zh: 630ee4b47724c8b2
+/agent-note-upstream-merge-api-drift-repair-and-the-runtime-package-migration/consequences:
+  en: c2a650eea79e5bbf
+  zh: 06859abf77cf32a1

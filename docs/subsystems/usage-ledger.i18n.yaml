@@ -1,6 +1,10 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for usage-ledger.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/usage-ledger.md
-usage-ledger.md: 3de0b5939adf8a05a2e33133db1902750c1e4464
-usage-ledger.zh.md: ff2533ee05a198993853f955c00fb68b16ab56c4
+/usage-ledger:
+  en: 2c0b44d43fe7603c
+  zh: afe5cd7f5f8240c6
+/usage-ledger/service-behavior:
+  en: 43a475cc1cc44699
+  zh: 2ab0685a1a944c58

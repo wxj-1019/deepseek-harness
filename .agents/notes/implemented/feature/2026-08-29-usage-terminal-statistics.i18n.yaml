@@ -1,6 +1,25 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-29-usage-terminal-statistics.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-29-usage-terminal-statistics.md
-2026-08-29-usage-terminal-statistics.md: 462a4187037391876c5b17c2020aa0101f2a01f6
-2026-08-29-usage-terminal-statistics.zh.md: f984818832008c85790fef403803ba53bdc019f1
+/agent-note-terminal-style-usage-statistics:
+  en: c3d5de6a9caeaf92
+  zh: f3b17d6b7e5cb553
+/agent-note-terminal-style-usage-statistics/problem:
+  en: 4f370984cfcc5cf1
+  zh: 996eec1997919f40
+/agent-note-terminal-style-usage-statistics/style-definition-the-zcode-look:
+  en: ea3c9cc6e5b5b96a
+  zh: 75a90d1177f282a7
+/agent-note-terminal-style-usage-statistics/decision:
+  en: 3b1041aadf3195f4
+  zh: 2058bc1748adb98a
+/agent-note-terminal-style-usage-statistics/work-plan:
+  en: f48ec0e6493a75fe
+  zh: 99b7d3f4d50a89e6
+/agent-note-terminal-style-usage-statistics/alternatives-considered:
+  en: 4f6911129842de0e
+  zh: dd6b62956e98b17f
+/agent-note-terminal-style-usage-statistics/consequences:
+  en: 2c2da80bc71af685
+  zh: e5e85c50eb6b9850

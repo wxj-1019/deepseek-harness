@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-17-vision-model-routing.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-17-vision-model-routing.md
-2026-08-17-vision-model-routing.md: 0ec5bbf81c7c063f92de7102b339458d35a8f6dd
-2026-08-17-vision-model-routing.zh.md: d8b9a6324b903d9b6a2d77351a5b4fef4cb10985
+/agent-note-vision-model-routing-for-image-bearing-requests:
+  en: 6792a33d0ca7951a
+  zh: 2767984a2a38b0d9
+/agent-note-vision-model-routing-for-image-bearing-requests/problem:
+  en: 19b039b3b211f334
+  zh: 016f28672f026e29
+/agent-note-vision-model-routing-for-image-bearing-requests/decision:
+  en: c98f3ae34be85e29
+  zh: c6e04d22dd349d73
+/agent-note-vision-model-routing-for-image-bearing-requests/alternatives-considered:
+  en: ca9046df31440c94
+  zh: 67dc6710e4e9ea23
+/agent-note-vision-model-routing-for-image-bearing-requests/consequences:
+  en: 5681c67620438c36
+  zh: 41efcd080722e801
+/agent-note-vision-model-routing-for-image-bearing-requests/testing:
+  en: c494887dc4db66fd
+  zh: e86230d2d5ced400

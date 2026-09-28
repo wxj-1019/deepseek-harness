@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-06-component-library-watch-scope-review-guard-panel-feedback.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-06-component-library-watch-scope-review-guard-panel-feedback.md
-2026-09-06-component-library-watch-scope-review-guard-panel-feedback.md: 5015882fdd80dc0640b6b8141957a250772f5713
-2026-09-06-component-library-watch-scope-review-guard-panel-feedback.zh.md: 2269b6031a5f4c5431e89f727d389bbf59c1b20f
+/agent-note-component-library-watch-scope-review-guard-panel-feedback-and-manifest-claimed-pkg:
+  en: 43e5787978d5c81c
+  zh: a8f60e525d677ec2
+/agent-note-component-library-watch-scope-review-guard-panel-feedback-and-manifest-claimed-pkg/problem:
+  en: 86c1f5411bb96d47
+  zh: 429263e0770fb60c
+/agent-note-component-library-watch-scope-review-guard-panel-feedback-and-manifest-claimed-pkg/decision:
+  en: 114dabdfe1769e93
+  zh: 527e19487ca08cfc
+/agent-note-component-library-watch-scope-review-guard-panel-feedback-and-manifest-claimed-pkg/alternatives-considered:
+  en: 035b5146aec0401b
+  zh: 63608d474d1b5252
+/agent-note-component-library-watch-scope-review-guard-panel-feedback-and-manifest-claimed-pkg/consequences:
+  en: cecaeabb21365cae
+  zh: 57c623c13f6985bc
+/agent-note-component-library-watch-scope-review-guard-panel-feedback-and-manifest-claimed-pkg/testing:
+  en: 8dd5a0b65c92dcc1
+  zh: 45b6f9838b8f30ff

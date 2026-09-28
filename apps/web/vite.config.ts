@@ -1,17 +1,18 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
-import { dirname, relative, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import { clientBuildEnvironmentDefines } from '../../scripts/client-build-environment.ts'
+import { productWebBundleIsolation } from './product-isolation.ts'
 
 const src = (rel: string): string => fileURLToPath(new URL(rel, import.meta.url))
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const STANDALONE_ERROR = 'apps/web is not a standalone application: bare Vite cannot inject window.__DSH_BOOT__. '
   + 'From a repository checkout, run `pnpm dsh web`; an installed package uses `dsh web`. '
-  + 'For client-plugin HMR, run `pnpm dsh web` together with `pnpm run dev:web`.'
+  + 'For client-plugin HMR, run `pnpm run dev:web`, which starts `dsh web` and the rebuild watchers together.'
 const DEFAULT_CLIENT_TITLE = 'DSH Local Build'
 
 /** Escape build-time text before placing it in the HTML title element. */
@@ -26,6 +27,20 @@ function clientDocumentTitle(): Plugin {
     name: 'dsh-client-document-title',
     transformIndexHtml(html) {
       return html.replace('<title>DSH Local Build</title>', `<title>${title}</title>`)
+    },
+  }
+}
+
+/** Keep the redistribution license beside the bundled brand font. */
+function brandFontLicense(): Plugin {
+  return {
+    name: 'dsh-brand-font-license',
+    async generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'assets/fonts/Montserrat-OFL.txt',
+        source: await readFile(src('../../packages/client/ui-theme/src/styles/Montserrat-OFL.txt')),
+      })
     },
   }
 }
@@ -49,136 +64,34 @@ function rejectStandaloneServe(): Plugin {
  */
 function emitPreviewPage(): Plugin {
   let bootstrapFile: string | undefined
+  let write = true
+  let written = false
+  let outputDirectory = ''
   return {
     name: 'dsh-emit-preview-page',
+    configResolved(config) {
+      write = config.build.write
+      outputDirectory = resolve(config.root, config.build.outDir)
+    },
+    buildStart() {
+      bootstrapFile = undefined
+      written = false
+    },
     generateBundle(_options, bundle) {
+      if (!write) return
       for (const item of Object.values(bundle)) {
         if (item.type === 'chunk' && item.isEntry && item.name === 'bootstrap') bootstrapFile = item.fileName
       }
       if (bootstrapFile === undefined) throw new Error('vite: preview bootstrap entry missing from the bundle')
     },
+    writeBundle() { written = true },
     async closeBundle() {
-      // A build that failed before generateBundle has no page to splice.
-      if (bootstrapFile === undefined) return
-      const page = await readFile(src('./dist/index.html'), 'utf8')
-      await writeFile(src('./dist/preview.html'), await spliceModuleScript(page, bootstrapFile))
-    },
-  }
-}
-
-/**
- * One discovered component story: a `tests/stories/*.stories.tsx` file and
- * the library record id its `story.record` declares.
- */
-interface ComponentStory {
-  readonly id: string
-  readonly absolutePath: string
-}
-
-/** The `story.record` id declaration every story file must carry. */
-const STORY_RECORD = /record:\s*['"`]([^'"`]+)['"`]/
-
-/**
- * Scan the client packages for component stories. Stories live under each
- * package's `tests/stories/` — outside the src coverage gate and outside the
- * client bundle channels; this build is the only place they compile.
- */
-function scanComponentStories(): ComponentStory[] {
-  const clientRoot = resolve(repoRoot, 'packages/client')
-  const out: ComponentStory[] = []
-  for (const pkg of readdirSync(clientRoot)) {
-    const storiesDir = resolve(clientRoot, pkg, 'tests', 'stories')
-    let names: string[]
-    try {
-      names = readdirSync(storiesDir)
-    } catch {
-      continue // no stories directory in this package
-    }
-    for (const name of names.filter(file => file.endsWith('.stories.tsx')).sort()) {
-      const absolutePath = resolve(storiesDir, name)
-      const record = STORY_RECORD.exec(readFileSync(absolutePath, 'utf8'))?.[1]
-      if (record === undefined) {
-        throw new Error(`vite: component story ${relative(repoRoot, absolutePath)} declares no story.record id`)
-      }
-      out.push({ id: record, absolutePath })
-    }
-  }
-  return out.sort((left, right) => left.id.localeCompare(right.id))
-}
-
-/**
- * Splice one module script tag ahead of the page's first module script.
- * Both pages share every chunk; the spliced tag is the only difference from
- * the bare build output.
- */
-async function spliceModuleScript(page: string, fileName: string): Promise<string> {
-  const anchor = page.indexOf('<script type="module"')
-  if (anchor === -1) throw new Error('vite: built page lost its module entry tag')
-  const tag = `<script type="module" crossorigin src="./${fileName}"></script>`
-  return `${page.slice(0, anchor)}${tag}${page.slice(anchor)}`
-}
-
-/** Generate the virtual module: record-id keyed lazy loaders over the stories. */
-function generateStoriesModule(stories: readonly ComponentStory[]): string {
-  const loaders = stories.map((story) => {
-    const rel = relative(src('./'), story.absolutePath).split('\\').join('/')
-    const importPath = rel.startsWith('.') ? rel : `./${rel}`
-    return `  ${JSON.stringify(story.id)}: () => import(${JSON.stringify(importPath)}),`
-  })
-  // Plain JavaScript: a virtual module has no extension, so no TS transform runs.
-  return `// Generated by dsh-component-stories — do not edit.
-const loaders = {
-${loaders.join('\n')}
-}
-export function has(id) {
-  return id in loaders
-}
-export function ids() {
-  return Object.keys(loaders)
-}
-export async function mount(id, container) {
-  const loader = loaders[id]
-  if (loader === undefined) throw new Error(\`component stories: no story for \${id}\`)
-  const mod = await loader()
-  return mod.story.mount(container)
-}
-`
-}
-
-const STORIES_VIRTUAL_ID = 'virtual:component-stories'
-const STORIES_RESOLVED_ID = '\0virtual:component-stories'
-
-/**
- * Compile the repo's component stories into one lazily-loading entry and
- * splice its script tag into the served index page, where the component
- * library gallery mounts live previews through `window.__DSH_STORIES__`.
- * Mirrors emitPreviewPage's second-input + page-splice technique.
- */
-function componentStories(): Plugin {
-  let storiesFile: string | undefined
-  return {
-    name: 'dsh-component-stories',
-    resolveId(id) {
-      if (id === STORIES_VIRTUAL_ID) return STORIES_RESOLVED_ID
-    },
-    buildStart() {
-      for (const story of scanComponentStories()) this.addWatchFile(story.absolutePath)
-    },
-    load(id) {
-      if (id !== STORIES_RESOLVED_ID) return
-      return generateStoriesModule(scanComponentStories())
-    },
-    generateBundle(_options, bundle) {
-      for (const item of Object.values(bundle)) {
-        if (item.type === 'chunk' && item.isEntry && item.name === 'stories') storiesFile = item.fileName
-      }
-    },
-    async closeBundle() {
-      // A failed build never reaches generateBundle; stay quiet so the real
-      // error surfaces instead of masking it with a missing-entry claim.
-      if (storiesFile === undefined) return
-      const page = await readFile(src('./dist/index.html'), 'utf8')
-      await writeFile(src('./dist/index.html'), await spliceModuleScript(page, storiesFile))
+      if (!write || !written || bootstrapFile === undefined) return
+      const page = await readFile(resolve(outputDirectory, 'index.html'), 'utf8')
+      const anchor = page.indexOf('<script type="module"')
+      if (anchor === -1) throw new Error('vite: built index.html lost its module entry tag')
+      const tag = `<script type="module" crossorigin src="./${bootstrapFile}"></script>`
+      await writeFile(resolve(outputDirectory, 'preview.html'), `${page.slice(0, anchor)}${tag}${page.slice(anchor)}`)
     },
   }
 }
@@ -258,7 +171,10 @@ export default defineConfig({
   // Relative asset URLs: preview.html mounts the same output under any base
   // directory, and the served index resolves identically from the site root.
   base: './',
-  plugins: [rejectStandaloneServe(), clientDocumentTitle(), react(), emitPreviewPage(), componentStories()],
+  plugins: [
+    rejectStandaloneServe(), clientDocumentTitle(), brandFontLicense(), react(), emitPreviewPage(),
+    productWebBundleIsolation(src('../..'), src('.')),
+  ],
   build: {
     // The worker bootstrap holds its page at top-level await; Vite's default
     // `modules` target (es2020-era) rejects that syntax.

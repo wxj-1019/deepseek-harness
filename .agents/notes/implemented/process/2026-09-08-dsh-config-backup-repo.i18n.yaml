@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-08-dsh-config-backup-repo.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-08-dsh-config-backup-repo.md
-2026-09-08-dsh-config-backup-repo.md: c5315c6169684364fc3d884759e27f1c8246c4bd
-2026-09-08-dsh-config-backup-repo.zh.md: 8db99ac5d82f328f51bbec5e4885592a378cf22a
+/agent-note-dsh-config-backup-repo-for-machine-local-profiles:
+  en: 18c23fc5c57ac6fa
+  zh: 0fb2bd884c057d8c
+/agent-note-dsh-config-backup-repo-for-machine-local-profiles/problem:
+  en: 657e6072789a3a74
+  zh: c280cd00895ae423
+/agent-note-dsh-config-backup-repo-for-machine-local-profiles/decision:
+  en: 6e5caa373d369c66
+  zh: 689d1fb1285b8354
+/agent-note-dsh-config-backup-repo-for-machine-local-profiles/alternatives-considered:
+  en: f6550c8cb89c08ef
+  zh: e748a0fa86595f3c
+/agent-note-dsh-config-backup-repo-for-machine-local-profiles/consequences:
+  en: c8b13a2bb9137fae
+  zh: 4943db1ec01ae3a8

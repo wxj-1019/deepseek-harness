@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-28-user-todo-drop-note-field.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-28-user-todo-drop-note-field.md
-2026-08-28-user-todo-drop-note-field.md: da0309bec540fd9feafceb859aeccb38cf6368d7
-2026-08-28-user-todo-drop-note-field.zh.md: 5e9df3ce652ca8f4340bb36d3ded5722c727f52d
+/agent-note-user-todo-note-field-removed:
+  en: 5127e6119d1161ba
+  zh: 889b426f9999a1be
+/agent-note-user-todo-note-field-removed/problem:
+  en: 093c123cc473f90e
+  zh: 75c0557efdfccc0f
+/agent-note-user-todo-note-field-removed/decision:
+  en: c26a4610f0fe51b0
+  zh: 4b695d0ce32b4de3
+/agent-note-user-todo-note-field-removed/alternatives-considered:
+  en: c7d7dc83623767d9
+  zh: 83819e1c5feaf332
+/agent-note-user-todo-note-field-removed/consequences:
+  en: 6b73f92ef6de8c15
+  zh: 514866a5820162b3

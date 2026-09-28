@@ -1,6 +1,37 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-15-web-client-background.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-15-web-client-background.md
-2026-08-15-web-client-background.md: 22bb3510f68f89df639cd07441669bd380a83fc0
-2026-08-15-web-client-background.zh.md: 0a4c9ec071a1efb4dba78181b3248cf683ca1028
+/agent-note-user-configurable-background-for-the-web-client:
+  en: 5d5f9b990bd1f764
+  zh: 632435a13597a879
+/agent-note-user-configurable-background-for-the-web-client/problem:
+  en: 6b1b1464715ddce6
+  zh: a744e36329f5e201
+/agent-note-user-configurable-background-for-the-web-client/decision:
+  en: 93fda554a46ba225
+  zh: eb2d4640f4e3e5ce
+/agent-note-user-configurable-background-for-the-web-client/settings-model:
+  en: 585046816f31570f
+  zh: ae3bd27ece235efc
+/agent-note-user-configurable-background-for-the-web-client/storage-and-upload-route:
+  en: 31a7998541d41cc0
+  zh: 66c0e46fc1b273d1
+/agent-note-user-configurable-background-for-the-web-client/rendering-pipeline:
+  en: 1f5fe2933c5ce773
+  zh: dd2370629c013e93
+/agent-note-user-configurable-background-for-the-web-client/settings-ui:
+  en: d6013af3cdf16131
+  zh: ad147c655448aaf9
+/agent-note-user-configurable-background-for-the-web-client/failure-behavior:
+  en: 1471cc8086619d26
+  zh: 3d1cb9e2ceeb2be8
+/agent-note-user-configurable-background-for-the-web-client/testing:
+  en: 60cc4e3b67a0971c
+  zh: e5db24585682b1ef
+/agent-note-user-configurable-background-for-the-web-client/alternatives-considered:
+  en: 7a1375b55a8dba61
+  zh: 0d23267b939ead6a
+/agent-note-user-configurable-background-for-the-web-client/consequences:
+  en: fdea222f7a024bc6
+  zh: 257e1b736e8965e0

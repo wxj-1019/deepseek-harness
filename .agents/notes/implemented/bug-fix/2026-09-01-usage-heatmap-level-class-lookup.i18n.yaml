@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-01-usage-heatmap-level-class-lookup.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-01-usage-heatmap-level-class-lookup.md
-2026-09-01-usage-heatmap-level-class-lookup.md: 0476f10b686feacaf722fd2d86010b8797e42257
-2026-09-01-usage-heatmap-level-class-lookup.zh.md: 2b0bfbdbab3f3f9805f48ffc093808c4105770a4
+/agent-note-usage-heatmap-cells-render-transparent-css-module-class-picked-by-string-concat:
+  en: a9ae343ce165f2d9
+  zh: 37b5cd54ee4f4f4e
+/agent-note-usage-heatmap-cells-render-transparent-css-module-class-picked-by-string-concat/problem:
+  en: aa686dfdb6543c25
+  zh: 2df02b413325a77a
+/agent-note-usage-heatmap-cells-render-transparent-css-module-class-picked-by-string-concat/decision:
+  en: 01b98054b5e1438c
+  zh: 27ba8e0a434968bd
+/agent-note-usage-heatmap-cells-render-transparent-css-module-class-picked-by-string-concat/alternatives-considered:
+  en: 47ae9dabb9f4d505
+  zh: fc90d1487d02aaf0
+/agent-note-usage-heatmap-cells-render-transparent-css-module-class-picked-by-string-concat/consequences:
+  en: 9a8095d58ed06d6f
+  zh: 8133fb7d87c0921b

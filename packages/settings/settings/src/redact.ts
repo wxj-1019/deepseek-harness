@@ -20,6 +20,7 @@ interface SchemaNode {
   dict?: Record<string, SchemaNode>
   /** `dict`/`array` element schema. */
   inner?: SchemaNode
+  list?: SchemaNode[]
 }
 
 /** One schema-declared secret position inside a redacted value. */
@@ -45,40 +46,6 @@ export interface RedactedValue {
 /** Whether a value is a plain data object the walker may recurse into. */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-/** Bound depth for the transitive secret scan. */
-const SECRET_SCAN_MAX_DEPTH = 24
-
-/**
- * Whether a schema fragment declares ANY `role('secret')` anywhere beneath it
- * (deep scan over every own property, so union/intersection/transform shapes
- * the walker cannot name are still covered).
- * @param node - a schema fragment to scan.
- * @returns true when a secret marker is reachable.
- */
-function declaresSecret(node: unknown): boolean {
-  return declaresSecretAt(node, 0)
-}
-
-function declaresSecretAt(node: unknown, depth: number): boolean {
-  if (depth > SECRET_SCAN_MAX_DEPTH || node === null || typeof node !== 'object') return false
-  const record = node as Record<string, unknown>
-  const meta = record.meta
-  if (meta !== null && typeof meta === 'object' && (meta as Record<string, unknown>).role === 'secret') {
-    return true
-  }
-  for (const value of Object.values(record)) {
-    if (value === null || typeof value !== 'object') continue
-    if (Array.isArray(value)) {
-      for (const entry of value) {
-        if (declaresSecretAt(entry, depth + 1)) return true
-      }
-      continue
-    }
-    if (declaresSecretAt(value, depth + 1)) return true
-  }
-  return false
 }
 
 function walk(node: SchemaNode | undefined, value: unknown, path: string[], secrets: RedactedSecret[]): unknown {
@@ -117,26 +84,20 @@ function walk(node: SchemaNode | undefined, value: unknown, path: string[], secr
       if (!Array.isArray(value)) return value
       return value.map((entry, index) => walk(node.inner, entry, [...path, String(index)], secrets))
     }
+    case 'union':
+    case 'intersect':
+      return (node.list ?? []).reduce((current, child) => walk(child, current, path, secrets), value)
+    case 'transform':
+      return walk(node.inner, value, path, secrets)
     default:
-      // Fail closed: a secret reachable only through a container this walker
-      // cannot name (union, intersection, transform) must not cross the wire
-      // verbatim. The schema author re-declares it on a supported container.
-      if (declaresSecret(node)) {
-        throw new Error(
-          `settings: a role('secret') field sits behind an unsupported container at "${path.join('.') || '<root>'}"; `
-          + 'declare it directly on an object, dict, or array so redaction can reach it',
-        )
-      }
       return value
   }
 }
 
 /**
  * Remove every `role('secret')` field a schema declares from a value. The
- * walker follows `object`, `dict`, and `array` containers; a secret must be
- * declared directly on a field reachable through those containers (a secret
- * buried inside a union branch or transform is not reachable and must not be
- * modeled that way). The input is never mutated.
+ * walker visits every union branch, conservatively removing any field declared
+ * secret by a branch. The input is never mutated.
  * @param schema - live schemastery schema describing the value.
  * @param value - the value to strip; `undefined` yields an empty record with
  *   object-property secret slots still enumerated.
@@ -145,5 +106,11 @@ function walk(node: SchemaNode | undefined, value: unknown, path: string[], secr
 export function redactSecrets(schema: z<never>, value: unknown): RedactedValue {
   const secrets: RedactedSecret[] = []
   const stripped = walk(schema, value, [], secrets)
-  return { value: stripped, secrets }
+  const positions = new Map<string, RedactedSecret>()
+  for (const secret of secrets) {
+    const key = JSON.stringify(secret.path)
+    const previous = positions.get(key)
+    positions.set(key, { ...secret, set: secret.set || previous?.set === true })
+  }
+  return { value: stripped, secrets: [...positions.values()] }
 }

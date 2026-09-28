@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-18-third-party-panel-glass.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-third-party-panel-glass.md
-2026-08-18-third-party-panel-glass.md: 46efdec6c65385959935856ada3cd20401edb37a
-2026-08-18-third-party-panel-glass.zh.md: e05386afc18ce8bec32b0ff5194f594dfbe84e76
+/agent-note-third-party-panel-glass-on-the-aqua-floating-mode:
+  en: 9afe6071f495801c
+  zh: 7c5840b1da1ae0da
+/agent-note-third-party-panel-glass-on-the-aqua-floating-mode/problem:
+  en: 5cd0e07c9f61ce3a
+  zh: b134143e8cdbd22f
+/agent-note-third-party-panel-glass-on-the-aqua-floating-mode/decision:
+  en: b52d5dd42d1817c4
+  zh: fc283f89692bbd28
+/agent-note-third-party-panel-glass-on-the-aqua-floating-mode/consequences:
+  en: a878d68f49601f14
+  zh: 0b8311f6f79d3cb5
+/agent-note-third-party-panel-glass-on-the-aqua-floating-mode/alternatives-considered:
+  en: 85647a9053b6c107
+  zh: a69a720f7322624e

@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-02-boot-resume-last-real-session.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-02-boot-resume-last-real-session.md
-2026-09-02-boot-resume-last-real-session.md: c078cff760361eca046c4b0c9c147c627f8a7673
-2026-09-02-boot-resume-last-real-session.zh.md: fd7860b5ac091682bfce9856ab754fc9ad3f4d87
+/agent-note-boot-resumes-the-last-real-session-instead-of-a-persisted-blank-shell:
+  en: a6a94ca77ff448c3
+  zh: 9898fa174f172932
+/agent-note-boot-resumes-the-last-real-session-instead-of-a-persisted-blank-shell/problem:
+  en: c6d688ad1704dbe8
+  zh: acfbfbcdd1f1f9bc
+/agent-note-boot-resumes-the-last-real-session-instead-of-a-persisted-blank-shell/decision:
+  en: 7f32d91d0a104ded
+  zh: 7c713df4faf96c9a
+/agent-note-boot-resumes-the-last-real-session-instead-of-a-persisted-blank-shell/alternatives-considered:
+  en: b1f17e69b72c9902
+  zh: 2ae433006e7420b5
+/agent-note-boot-resumes-the-last-real-session-instead-of-a-persisted-blank-shell/consequences:
+  en: 0503bdb4280f2b19
+  zh: ed610b3d128ff589

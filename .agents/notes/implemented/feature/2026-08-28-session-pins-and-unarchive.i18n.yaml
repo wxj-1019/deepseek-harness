@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-28-session-pins-and-unarchive.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-28-session-pins-and-unarchive.md
-2026-08-28-session-pins-and-unarchive.md: 640664a7d439012d7bd391506d41e7c224c9e229
-2026-08-28-session-pins-and-unarchive.zh.md: 2e27b08f253a2672be40d7bbaefec0682b0c98d9
+/agent-note-session-pins-and-the-unarchive-surface:
+  en: ddbe0ce60f4904a9
+  zh: a350336d6f00bfdb
+/agent-note-session-pins-and-the-unarchive-surface/problem:
+  en: f4e2522ca4ec1a27
+  zh: 9b5087382d183bb2
+/agent-note-session-pins-and-the-unarchive-surface/decision:
+  en: b414d93bb4156548
+  zh: 7e8ebb45494ddc14
+/agent-note-session-pins-and-the-unarchive-surface/alternatives-considered:
+  en: 3f008498ecdaa761
+  zh: 8ad3c8f4bedec7e3
+/agent-note-session-pins-and-the-unarchive-surface/consequences:
+  en: 74f0a6f97cc19034
+  zh: 0a287fb69c4a3a0f
+/agent-note-session-pins-and-the-unarchive-surface/risks:
+  en: 6e267a954f5fdead
+  zh: dca1bc7c0741974b

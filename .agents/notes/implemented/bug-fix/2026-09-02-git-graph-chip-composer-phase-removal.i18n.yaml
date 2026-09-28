@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-02-git-graph-chip-composer-phase-removal.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-02-git-graph-chip-composer-phase-removal.md
-2026-09-02-git-graph-chip-composer-phase-removal.md: 5fef9d7ae15d600110d6836eb4794c0ca10e081e
-2026-09-02-git-graph-chip-composer-phase-removal.zh.md: 713cc6e9003f7b04f418faf5f4364903e4a0a530
+/agent-note-git-graph-hero-chip-renders-again-the-merged-session-snapshot-dropped-composerphase:
+  en: bc7bbd8e76029942
+  zh: 4062650664779e5b
+/agent-note-git-graph-hero-chip-renders-again-the-merged-session-snapshot-dropped-composerphase/problem:
+  en: aeea8e2e8aeaa376
+  zh: dec9c65e4297f335
+/agent-note-git-graph-hero-chip-renders-again-the-merged-session-snapshot-dropped-composerphase/decision:
+  en: a354f20ed86a6a5f
+  zh: dd9764b6e7023275
+/agent-note-git-graph-hero-chip-renders-again-the-merged-session-snapshot-dropped-composerphase/alternatives-considered:
+  en: e1b1bcae939361d8
+  zh: 27c82c3847a0df09
+/agent-note-git-graph-hero-chip-renders-again-the-merged-session-snapshot-dropped-composerphase/consequences:
+  en: cd9e0a0f137d8cbf
+  zh: adec24a7c8f2c237

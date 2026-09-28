@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-08-catalog-registration-for-fork-remote-services.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-08-catalog-registration-for-fork-remote-services.md
-2026-09-08-catalog-registration-for-fork-remote-services.md: 3886fdbbc8c26cdc6a1c4eee14fb6524dd7b49df
-2026-09-08-catalog-registration-for-fork-remote-services.zh.md: 66d4b91915ede398a415d27d8cc72ab934a98651
+/agent-note-catalog-registration-for-fork-remote-services:
+  en: 16709507a9a949b5
+  zh: cea9835ab1c5212d
+/agent-note-catalog-registration-for-fork-remote-services/problem:
+  en: 1a95bcc975f3782b
+  zh: 7b481e01c3133810
+/agent-note-catalog-registration-for-fork-remote-services/decision:
+  en: 14975737e3b8cfc7
+  zh: 2fb7a68102dd8f52
+/agent-note-catalog-registration-for-fork-remote-services/consequences:
+  en: 23e88621e9e86a2a
+  zh: 25d8310acfc82746
+/agent-note-catalog-registration-for-fork-remote-services/alternatives-considered:
+  en: f7efb74e8035c344
+  zh: 7e51df5095e6bf5a

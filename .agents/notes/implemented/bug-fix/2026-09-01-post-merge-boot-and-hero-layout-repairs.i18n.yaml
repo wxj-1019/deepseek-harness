@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-01-post-merge-boot-and-hero-layout-repairs.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-01-post-merge-boot-and-hero-layout-repairs.md
-2026-09-01-post-merge-boot-and-hero-layout-repairs.md: 91d5fc5e8187eef3dfbc19e6320eaae37a472608
-2026-09-01-post-merge-boot-and-hero-layout-repairs.zh.md: b7b04b3cc611865b4857da7a59ff44bc917f4b09
+/agent-note-post-merge-repair-batch-settings-compat-export-remote-inject-grant-heroglow-brace-index-no-store:
+  en: 96315b7e8e531db6
+  zh: 54e7e425e72f9414
+/agent-note-post-merge-repair-batch-settings-compat-export-remote-inject-grant-heroglow-brace-index-no-store/problem:
+  en: 13bc399cf6ab9027
+  zh: cfc7d36edc567973
+/agent-note-post-merge-repair-batch-settings-compat-export-remote-inject-grant-heroglow-brace-index-no-store/decision:
+  en: 9c2a0776a0ac4498
+  zh: 5b23d70d269ab9a9
+/agent-note-post-merge-repair-batch-settings-compat-export-remote-inject-grant-heroglow-brace-index-no-store/alternatives-considered:
+  en: ffaed975ef2850cf
+  zh: 2dc3d36abf0871df
+/agent-note-post-merge-repair-batch-settings-compat-export-remote-inject-grant-heroglow-brace-index-no-store/verification:
+  en: b6d9ab85679e17be
+  zh: 93ca92f94a755f5b
+/agent-note-post-merge-repair-batch-settings-compat-export-remote-inject-grant-heroglow-brace-index-no-store/consequences:
+  en: 49899697e037eb3d
+  zh: a92831a7365a7443

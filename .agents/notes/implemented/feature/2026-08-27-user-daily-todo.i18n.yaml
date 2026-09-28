@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-27-user-daily-todo.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-27-user-daily-todo.md
-2026-08-27-user-daily-todo.md: 1f2c14a56aa1a2da7291a40c92d5745a7a6f86a6
-2026-08-27-user-daily-todo.zh.md: e9368f136d0f44960c8d3c2e5f8a4c3d16262397
+/agent-note-user-daily-todo-list:
+  en: 1c0af48051829646
+  zh: fc01c1cb8dcc330f
+/agent-note-user-daily-todo-list/problem:
+  en: 8bfc716a34e3c469
+  zh: a1804e0534a40824
+/agent-note-user-daily-todo-list/decision:
+  en: cdb3af87a248f02f
+  zh: 451aa47b33894d18
+/agent-note-user-daily-todo-list/alternatives-considered:
+  en: 447ea2e4d77079ab
+  zh: 21905d8b3da30ba7
+/agent-note-user-daily-todo-list/consequences:
+  en: cfa7ff323e7b3dcb
+  zh: 3e3b27d594ae8547
+/agent-note-user-daily-todo-list/risks:
+  en: 35c1dda36a184d4c
+  zh: bd0e4650911af3b3

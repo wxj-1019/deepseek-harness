@@ -1,6 +1,49 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/fs/tool-multi-edit/README.md
-README.md: bbd275a10ad656af1e5c367575cac73880c9c972
-README.zh.md: b736b7481d463345364e3263cd3f40bc231497c8
+/:
+  en: 028e9e64adaf2b33
+  zh: 1f862a1e5b0a9245
+/deepseek-ai-dsh-tool-multi-edit:
+  en: b497152966261c81
+  zh: 1e73f1e7802688be
+/deepseek-ai-dsh-tool-multi-edit/summary:
+  en: b116f695d0cd6381
+  zh: 2e8fec809f5402cd
+/deepseek-ai-dsh-tool-multi-edit/table-of-contents:
+  en: b4683d2a53256fda
+  zh: 705ecbe0b6cabec6
+/deepseek-ai-dsh-tool-multi-edit/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-tool-multi-edit/model-experience/guidance:
+  en: 248ac7774b42c03b
+  zh: 4a99f97d00abf2d9
+/deepseek-ai-dsh-tool-multi-edit/model-experience/guidance/what-the-model-sees:
+  en: 2d1c657c66655732
+  zh: 543a803cfdef1c99
+/deepseek-ai-dsh-tool-multi-edit/model-experience/guidance/token-effect:
+  en: 710961dbb64fdf14
+  zh: ee3d731d5ea70395
+/deepseek-ai-dsh-tool-multi-edit/model-experience/guidance/kv-cache-effect:
+  en: 1c3fac04b61042a4
+  zh: b4d2b42158e29f92
+/deepseek-ai-dsh-tool-multi-edit/model-experience/tool-schema:
+  en: e4c7376d4f29dbd5
+  zh: 6b7a9eaf69c9ea53
+/deepseek-ai-dsh-tool-multi-edit/model-experience/tool-schema/what-the-model-sees:
+  en: 0c9cd5e4147f96e8
+  zh: 6dfd5dea21a61165
+/deepseek-ai-dsh-tool-multi-edit/model-experience/tool-schema/token-effect:
+  en: b3fa7553522919d2
+  zh: bac558c70c9f8336
+/deepseek-ai-dsh-tool-multi-edit/model-experience/tool-schema/kv-cache-effect:
+  en: 5b9d79089402e1b0
+  zh: 2531167ceb72a8d2
+/deepseek-ai-dsh-tool-multi-edit/known-limitations-and-deferred-work:
+  en: 8537e7cccaf43913
+  zh: a7c3540ffe8d7cd3
+/deepseek-ai-dsh-tool-multi-edit/known-limitations-and-deferred-work/dev-note:
+  en: 616933e8ca27d06b
+  zh: 69fa5f800457576e

@@ -1,6 +1,49 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/mcp/mcp-servers/README.md
-README.md: cbc6f98d2309b813fd0fc83bbeb5b8b511261bc3
-README.zh.md: da73b47e9ed1c9227f2b53c457c166dab310a310
+/:
+  en: a04be1b4d91ccd90
+  zh: aad4fd69826e48ee
+/deepseek-ai-dsh-mcp-servers:
+  en: 26ff3179c6f820db
+  zh: 68a3ca7581f8c546
+/deepseek-ai-dsh-mcp-servers/summary:
+  en: c1765f205ae7bc15
+  zh: 13d01cc2c73bf56f
+/deepseek-ai-dsh-mcp-servers/table-of-contents:
+  en: fb5a8f8860a3e30a
+  zh: d3fff1605aae4105
+/deepseek-ai-dsh-mcp-servers/usage:
+  en: 5d3fd86f044c6bf5
+  zh: 66659cf1811252fe
+/deepseek-ai-dsh-mcp-servers/config:
+  en: b97534cec3b30121
+  zh: ad80ca8db43e23db
+/deepseek-ai-dsh-mcp-servers/behavior:
+  en: dfe87515b114f0a8
+  zh: e54b2e5cf709a1ef
+/deepseek-ai-dsh-mcp-servers/services-consumed:
+  en: d41f8a1a06ef75ee
+  zh: f41a8f1f09925969
+/deepseek-ai-dsh-mcp-servers/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-mcp-servers/model-experience/composed-mcp-server-tools:
+  en: 0a5e42e15ae37433
+  zh: 11b73700663c5b46
+/deepseek-ai-dsh-mcp-servers/model-experience/composed-mcp-server-tools/what-the-model-sees:
+  en: dc1116da641f8c44
+  zh: abf267ad82eb6b22
+/deepseek-ai-dsh-mcp-servers/model-experience/composed-mcp-server-tools/token-effect:
+  en: 8cdc1f6ddb570a88
+  zh: 8f6280d3467461aa
+/deepseek-ai-dsh-mcp-servers/model-experience/composed-mcp-server-tools/kv-cache-effect:
+  en: a0b4dde81e7e63f2
+  zh: e4d4221caaf361bf
+/deepseek-ai-dsh-mcp-servers/known-limitations-and-deferred-work:
+  en: 6de1f952c2dea6f4
+  zh: 3d1b69581a6e1c9e
+/deepseek-ai-dsh-mcp-servers/known-limitations-and-deferred-work/dev-note:
+  en: 6779d68fed3a3c7d
+  zh: 1d7d780841433d14

@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-19-composer-image-upload-entry.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-19-composer-image-upload-entry.md
-2026-08-19-composer-image-upload-entry.md: 045d33532d6e7fdb8c48c240b5451cae233c83f8
-2026-08-19-composer-image-upload-entry.zh.md: 22aa7e1088b288303de657fe692e77e88eff7993
+/agent-note-composer-image-upload-entry-on-the-web-surface:
+  en: fd74dfcc54c3f28b
+  zh: 4084388381460a3e
+/agent-note-composer-image-upload-entry-on-the-web-surface/problem:
+  en: d10727d5ce17d074
+  zh: 2d0d0be026062668
+/agent-note-composer-image-upload-entry-on-the-web-surface/decision:
+  en: 9043fb7306ad6398
+  zh: b26325a5f5a7b584
+/agent-note-composer-image-upload-entry-on-the-web-surface/alternatives-considered:
+  en: 22f3cf252c3aa3a5
+  zh: 55bf7e84794f4a78
+/agent-note-composer-image-upload-entry-on-the-web-surface/consequences:
+  en: 152d40bdd63de700
+  zh: 5b08a831046bb5fe

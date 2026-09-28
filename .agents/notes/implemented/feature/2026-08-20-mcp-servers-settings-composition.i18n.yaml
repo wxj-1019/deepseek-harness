@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-20-mcp-servers-settings-composition.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-20-mcp-servers-settings-composition.md
-2026-08-20-mcp-servers-settings-composition.md: a2f8de8d3075d3fcde9f54b656955ee8609c2219
-2026-08-20-mcp-servers-settings-composition.zh.md: 020c0433c2afef7417f8639696a4e52381025a19
+/agent-note-compose-mcp-servers-from-the-user-settings-document:
+  en: 96a9b9054eabe196
+  zh: c176f4ab615c63ff
+/agent-note-compose-mcp-servers-from-the-user-settings-document/problem:
+  en: 846970d31458220a
+  zh: 7ee0b16c1f06ab5e
+/agent-note-compose-mcp-servers-from-the-user-settings-document/decision:
+  en: ef768cd0d56aa3e7
+  zh: 817964add559a04a
+/agent-note-compose-mcp-servers-from-the-user-settings-document/consequences:
+  en: fd064b0fcae7f01d
+  zh: 64800322a30e668d
+/agent-note-compose-mcp-servers-from-the-user-settings-document/alternatives-considered:
+  en: b401b37d83750dc6
+  zh: e94b9dc460f59366

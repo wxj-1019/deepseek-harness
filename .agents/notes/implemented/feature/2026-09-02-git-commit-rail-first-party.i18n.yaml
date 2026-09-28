@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-02-git-commit-rail-first-party.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-02-git-commit-rail-first-party.md
-2026-09-02-git-commit-rail-first-party.md: b526fb6938cfec40e170c7bb458442d457ed4c51
-2026-09-02-git-commit-rail-first-party.zh.md: 0b37424addcb786008aaa044214a2710ea7d78ee
+/agent-note-git-commit-rail-becomes-a-first-party-web-feature:
+  en: d0321f394ca8e429
+  zh: 0c04b162fab4f0a6
+/agent-note-git-commit-rail-becomes-a-first-party-web-feature/problem:
+  en: 232d027a05a751b3
+  zh: c910758467a5d730
+/agent-note-git-commit-rail-becomes-a-first-party-web-feature/decision:
+  en: cd70a67f2ca36ceb
+  zh: 477d6d659b0b76b8
+/agent-note-git-commit-rail-becomes-a-first-party-web-feature/alternatives-considered:
+  en: 5eea722b1bc1c677
+  zh: b241a6b0d9d77179
+/agent-note-git-commit-rail-becomes-a-first-party-web-feature/consequences:
+  en: 3ce61128805459d9
+  zh: 186a1296bc7bb87a

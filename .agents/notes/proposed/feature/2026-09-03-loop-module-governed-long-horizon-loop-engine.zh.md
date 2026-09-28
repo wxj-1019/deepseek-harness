@@ -394,8 +394,8 @@ interface LoopMessageSource {
 - [claude-code-goal-loop](https://github.com/gyujeongion/claude-code-goal-loop) —— 带回滚快照与 stuck-handler 的验证步进 goal loop。
 - [用 Temporal 构建 durable agent](https://temporal.io/blog/building-durable-agents-with-temporal-and-ai-sdk-by-vercel) —— session log 已占据的"事件历史即事实来源"谱系。
 - dsh 生态 —— [dsh-TUI](https://github.com/ccch1mneyyy/dsh-TUI)、[dsh-gungnir](https://www.npmjs.com/package/dsh-gungnir)、LoopX 的 `dsh_goal_mode` 适配器：loop 领域服务的第三方表面。
-- [Goal 子系统)](../../../../docs/subsystems/goal.zh.md) 与[同会话 goal-round-driver)](../../implemented/feature/2026-07-19-same-session-goal-round-driver.zh.md) —— 本设计扩展的 durable、预留与围栏模式。
-- [Ralph 工具)](../../implemented/feature/2026-07-19-fresh-agent-ralph-workflow-tool.zh.md) —— fresh-agent 报告词汇及其延后的评估器/预算工作，由 loop 引擎接管。
+- [Goal 子系统)](../../../../docs/subsystems/goal.zh.md) 与[同会话 goal-round-driver)](../../archived/feature/2026-07-19-same-session-goal-round-driver.md) —— 本设计扩展的 durable、预留与围栏模式。
+- [Ralph 工具)](../../archived/feature/2026-07-19-fresh-agent-ralph-workflow-tool.md) —— fresh-agent 报告词汇及其延后的评估器/预算工作，由 loop 引擎接管。
 - [Agent Teams)](../../implemented/feature/2026-08-05-agent-teams.zh.md) —— 任务快照与全快照事件先例。
 - [Session 投影强制缝)](../../implemented/architecture/2026-08-19-session-projection-mandatory-seam.zh.md) —— `loops` 投影注册模式。
 - [Session log 版本机制)](../../implemented/architecture/2026-08-10-session-log-version-mechanism.zh.md) —— 为何加性事件种类无需格式 bump。

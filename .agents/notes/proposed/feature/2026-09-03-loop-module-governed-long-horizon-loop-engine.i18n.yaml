@@ -1,6 +1,82 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-03-loop-module-governed-long-horizon-loop-engine.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-09-03-loop-module-governed-long-horizon-loop-engine.md
-2026-09-03-loop-module-governed-long-horizon-loop-engine.md: e329401d9ff4f1ef0958ac1d5cd876a41b735829
-2026-09-03-loop-module-governed-long-horizon-loop-engine.zh.md: 8e197ce8c4bdeed52ee5980fe729a1ca835c82f2
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired:
+  en: 706f9fb26b20dfde
+  zh: f32527b5bdefe731
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/problem:
+  en: 0fc0cfd7dced3202
+  zh: 944a7620ee2d61d3
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/ecosystem-and-prior-art-survey:
+  en: 5a098462a830ceb6
+  zh: 5a9bba74239690d1
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/ecosystem-and-prior-art-survey/loop-engineering-as-a-design-field:
+  en: eae91679ffd18fcd
+  zh: 946a705ebdb57213
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/ecosystem-and-prior-art-survey/goal-mode-converged-across-the-commercial-harnesses:
+  en: ea53d0f0f33b09d8
+  zh: d49b9ff504ec689b
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/ecosystem-and-prior-art-survey/open-source-control-planes-and-goal-loops:
+  en: eed032e77ce044e4
+  zh: d9ab893c2f68ff3f
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/ecosystem-and-prior-art-survey/the-durable-execution-lineage:
+  en: 35a268a467ba8ee3
+  zh: 97767902585171db
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/ecosystem-and-prior-art-survey/the-dsh-ecosystem-today:
+  en: de71454aa0810937
+  zh: 7124879811217c3f
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal:
+  en: 986dd8097aac4d3d
+  zh: 2c89af85628555c5
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/concept-model:
+  en: 6cd08e25d52a7d0f
+  zh: e4217e8cf8b41491
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/relationship-to-existing-primitives:
+  en: b8f8831deed5ad5d
+  zh: 3326b1e8c6cc70ec
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/package-topology:
+  en: 0570909deb6d6271
+  zh: 3a7930a3a271ae80
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/domain-model:
+  en: 019c1f66587ddd50
+  zh: e5ecd2f1b7c5e119
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/durable-events-sessioneventmap-extensions:
+  en: 6fd042052f0a3835
+  zh: a22872ed0f23ec71
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/service-api-ctx-loops-loopservice:
+  en: 8139a00176a8e400
+  zh: 4f1ed9056766d7b0
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/the-driver-dsh-loop-round-driver:
+  en: 0abf4ced8184ba7c
+  zh: 919828328fa426c9
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/model-facing-surface-dsh-tool-loop:
+  en: 1632f8addfc381b9
+  zh: fe6e62b48033d74b
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/human-surface:
+  en: 280ee84974f3b0d3
+  zh: 9545a6d95e889ed8
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/configuration-no-hardcoded-tunables:
+  en: d71f57e7d468b4d8
+  zh: 5fc081584312f1b3
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/bundle-wiring:
+  en: 466f60a29e7b0951
+  zh: abfa1ef4bc2743dc
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/documentation-gates-and-tests:
+  en: d227e608eb0495e4
+  zh: d1dae59464484e79
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/proposal/delivery-phases:
+  en: bc7b58102a4644dd
+  zh: 05ee71c6beca87ff
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/alternatives-considered:
+  en: 1315f3ac7bfa8ed4
+  zh: a313f3489db82bac
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/acceptance-criteria:
+  en: cd041bace847d810
+  zh: 56b0798621179613
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/risks:
+  en: f1a0fe418a4de9f2
+  zh: 32b8dd43dec16089
+/agent-note-loop-module-a-governed-long-horizon-loop-engine-loopx-inspired/related:
+  en: 9cf422660a7f10ec
+  zh: 1c4824bb41ca96b1

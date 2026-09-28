@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-24-webview-composer-free-space-bug.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-24-webview-composer-free-space-bug.md
-2026-08-24-webview-composer-free-space-bug.md: 225861c018d9b3731b2c3d9b66b73ec25ee7db52
-2026-08-24-webview-composer-free-space-bug.zh.md: bc78e31d6dce9da3b7585ac18bced0d4cfd532b2
+/agent-note-composer-pinning-must-not-ride-main-axis-free-space:
+  en: 537d7041a7db045c
+  zh: 7a73acc6bce4edc6
+/agent-note-composer-pinning-must-not-ride-main-axis-free-space/problem:
+  en: 535b1515aa82fcf9
+  zh: f30b0e087e0030ba
+/agent-note-composer-pinning-must-not-ride-main-axis-free-space/decision:
+  en: cfc46b68a1343ca7
+  zh: 32ec40c01fb027b8
+/agent-note-composer-pinning-must-not-ride-main-axis-free-space/alternatives-considered:
+  en: 23977e973dbdbd5d
+  zh: 07ef7ff73033fe51
+/agent-note-composer-pinning-must-not-ride-main-axis-free-space/consequences:
+  en: 6f58590710505c7f
+  zh: ba4d95c79261b607

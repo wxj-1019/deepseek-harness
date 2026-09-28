@@ -1,6 +1,37 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/llm/llm-vision-route/README.md
-README.md: 85eb2c8a518d6fa84fff02a2e2ad970dbfd00e59
-README.zh.md: 88b23a8c4642129e305b8c767a9f1f9505c5c3f1
+/:
+  en: 2e6f3bcd8f17bf54
+  zh: 0b040156b5a2e3ea
+/deepseek-ai-dsh-llm-vision-route:
+  en: 2f6c10eb03f87052
+  zh: 5fd452ff0de01d7c
+/deepseek-ai-dsh-llm-vision-route/summary:
+  en: 6641d2f083ecc6d4
+  zh: 2ef275e8e54deb9f
+/deepseek-ai-dsh-llm-vision-route/table-of-contents:
+  en: b4683d2a53256fda
+  zh: 705ecbe0b6cabec6
+/deepseek-ai-dsh-llm-vision-route/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-llm-vision-route/model-experience/vision-route-request-switching:
+  en: 42a2e93a9dcd973b
+  zh: f8479fdbd1fcdae5
+/deepseek-ai-dsh-llm-vision-route/model-experience/vision-route-request-switching/what-the-model-sees:
+  en: 0ea1a9e004abcef6
+  zh: 70f577185450f624
+/deepseek-ai-dsh-llm-vision-route/model-experience/vision-route-request-switching/token-effect:
+  en: 1bbd95dee63e207c
+  zh: 33d7be5486f9584a
+/deepseek-ai-dsh-llm-vision-route/model-experience/vision-route-request-switching/kv-cache-effect:
+  en: d6a2dce4e9138794
+  zh: 18574b27ddac6d50
+/deepseek-ai-dsh-llm-vision-route/known-limitations-and-deferred-work:
+  en: e9db761a646a07bc
+  zh: f530b1860cec1fd7
+/deepseek-ai-dsh-llm-vision-route/known-limitations-and-deferred-work/dev-note:
+  en: 25acd702d18afb4a
+  zh: c3afe597fad326eb

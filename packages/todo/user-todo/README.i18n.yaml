@@ -1,6 +1,40 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/todo/user-todo/README.md
-README.md: 8e439ed29becf5148c08a6d5d83b0b51aa07987d
-README.zh.md: 39edbdcebc388e75c9ae8a749a56b944561b97da
+/:
+  en: 68167046abab6fac
+  zh: 83ed0f2319e5e182
+/deepseek-ai-dsh-user-todo:
+  en: 1330124209ebd7cd
+  zh: 7227b9d5da15f6c5
+/deepseek-ai-dsh-user-todo/summary:
+  en: 4630239f8c2a566f
+  zh: 9a035ca54b8473bb
+/deepseek-ai-dsh-user-todo/table-of-contents:
+  en: f655f2e399ab5001
+  zh: 19a48fb3cd90e32b
+/deepseek-ai-dsh-user-todo/configuration:
+  en: 971efc1ec7ae0ed5
+  zh: 0fefccefad1eb0f8
+/deepseek-ai-dsh-user-todo/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-user-todo/model-experience/user-todos-catalog-projection:
+  en: d04fe693d097d978
+  zh: a45eb2642652e902
+/deepseek-ai-dsh-user-todo/model-experience/user-todos-catalog-projection/what-the-model-sees:
+  en: d67c0fc74687dad1
+  zh: ba652a708f8a011a
+/deepseek-ai-dsh-user-todo/model-experience/user-todos-catalog-projection/token-effect:
+  en: 22a6cca7b5a73041
+  zh: f54dedcdb11eb7ae
+/deepseek-ai-dsh-user-todo/model-experience/user-todos-catalog-projection/kv-cache-effect:
+  en: cfadc20035039341
+  zh: b0168c605757a989
+/deepseek-ai-dsh-user-todo/known-limitations-and-deferred-work:
+  en: 98ff280ce817c435
+  zh: 11b7bdda3006f842
+/deepseek-ai-dsh-user-todo/known-limitations-and-deferred-work/dev-note:
+  en: 7bc19c2bef489336
+  zh: 305c6b76a999e1a2

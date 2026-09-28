@@ -1,6 +1,43 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-git-graph/README.md
-README.md: 5020e55a669b6e432d0e1277b6f5d1f7eee65b08
-README.zh.md: 42f216a25a89ea3e35275d26a06d0ed5692b0e93
+/:
+  en: 074a6775f20c5eda
+  zh: 1b3b65ac956b4990
+/deepseek-ai-dsh-client-ui-git-graph:
+  en: 7e25f8f50edf1133
+  zh: f30f4afb90e9d7c8
+/deepseek-ai-dsh-client-ui-git-graph/summary:
+  en: 30a50d9db543ffec
+  zh: c11e30888049f339
+/deepseek-ai-dsh-client-ui-git-graph/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 744490fe9a414704
+/deepseek-ai-dsh-client-ui-git-graph/use-this-package:
+  en: 37a0797aa4420a26
+  zh: 7e993759cbc8c61f
+/deepseek-ai-dsh-client-ui-git-graph/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: c5500056b41ce570
+/deepseek-ai-dsh-client-ui-git-graph/understand-the-implementation/design-concept:
+  en: f99ddde367a0cbff
+  zh: fbae973dad23a220
+/deepseek-ai-dsh-client-ui-git-graph/understand-the-implementation/source-map:
+  en: 316c591fd3bd358b
+  zh: db6452c4b6c38f46
+/deepseek-ai-dsh-client-ui-git-graph/further-exploration:
+  en: 4ebf434c554e0a5f
+  zh: 2d7e44acb94d9b51
+/deepseek-ai-dsh-client-ui-git-graph/model-experience:
+  en: cc8442218d596fe4
+  zh: d579c03f5fd1227f
+/deepseek-ai-dsh-client-ui-git-graph/model-experience/kv-cache-effect:
+  en: 47f982e326fe77fd
+  zh: 47f982e326fe77fd
+/deepseek-ai-dsh-client-ui-git-graph/known-limitations-and-deferred-work:
+  en: e9ba87fde7601e56
+  zh: 2e0e02f887790e2c
+/deepseek-ai-dsh-client-ui-git-graph/known-limitations-and-deferred-work/dev-note:
+  en: 927b35a8d11b08f0
+  zh: e5f6f285c8b01a3c

@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-08-18-bundle-dsh-better-sidebar.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-bundle-dsh-better-sidebar.md
-2026-08-18-bundle-dsh-better-sidebar.md: fe9abf8f39537efb6f4c9219f1aa2fcec985ac11
-2026-08-18-bundle-dsh-better-sidebar.zh.md: 81c72f4255e779f2ce2a0164c23f205241e84585
+/agent-note-bundle-dsh-better-sidebar-into-the-web-app-composition:
+  en: 677953d418f9cb9d
+  zh: a2a4d57da30989d1
+/agent-note-bundle-dsh-better-sidebar-into-the-web-app-composition/problem:
+  en: 007773cf68c80820
+  zh: 5c6ba5b385c1f110
+/agent-note-bundle-dsh-better-sidebar-into-the-web-app-composition/decision:
+  en: 96b41f01a61a4e5a
+  zh: dffe4f6debc98279
+/agent-note-bundle-dsh-better-sidebar-into-the-web-app-composition/consequences:
+  en: f22e8850d87b51e5
+  zh: 97d3b006463b5cd7
+/agent-note-bundle-dsh-better-sidebar-into-the-web-app-composition/alternatives-considered:
+  en: 06e9e5b060752e4d
+  zh: a2057dee2ab8d3ca

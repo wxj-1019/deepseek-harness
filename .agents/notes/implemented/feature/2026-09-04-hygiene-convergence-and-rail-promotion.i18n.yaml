@@ -1,6 +1,19 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-04-hygiene-convergence-and-rail-promotion.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-hygiene-convergence-and-rail-promotion.md
-2026-09-04-hygiene-convergence-and-rail-promotion.md: 477ff05948b29887f9af9284d7e36c6f9b6d5132
-2026-09-04-hygiene-convergence-and-rail-promotion.zh.md: a3bc53afb55d4ae07b7d760541a819120f05fad6
+/agent-note-post-merge-hygiene-convergence-and-the-git-rail-promotion:
+  en: e0bc5b5bbbca1dfd
+  zh: eddd54c9193f0940
+/agent-note-post-merge-hygiene-convergence-and-the-git-rail-promotion/problem:
+  en: d5a0359028231123
+  zh: edbc64934bd02760
+/agent-note-post-merge-hygiene-convergence-and-the-git-rail-promotion/decision:
+  en: 79d0296f75b90a69
+  zh: 115e9c71b6689042
+/agent-note-post-merge-hygiene-convergence-and-the-git-rail-promotion/alternatives-considered:
+  en: 731bb7bbb5fed32e
+  zh: 9cfa13b4b0101241
+/agent-note-post-merge-hygiene-convergence-and-the-git-rail-promotion/consequences:
+  en: 731cdeacf5480fec
+  zh: ebd7a7646dc61d40

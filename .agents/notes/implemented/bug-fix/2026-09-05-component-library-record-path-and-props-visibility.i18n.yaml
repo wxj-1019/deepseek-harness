@@ -1,6 +1,22 @@
-# Bilingual-pair consistency record (docs/i18n/README.md): the git blob hash of each
-# side as of the last confirmed-consistent state. Both languages carry equal authority;
-# after editing either side, bring the other along and re-record with:
+# Bilingual-pair consistency record for 2026-09-05-component-library-record-path-and-props-visibility.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-05-component-library-record-path-and-props-visibility.md
-2026-09-05-component-library-record-path-and-props-visibility.md: 547fd33f8e78d756f75142459cbfbacd4e3ab5fb
-2026-09-05-component-library-record-path-and-props-visibility.zh.md: 32ac6889d3c139c0c82d5eac182951dd20c7d684
+/agent-note-component-library-record-path-normalization-and-unresolved-props-visibility:
+  en: 8d9f85ae8b4c999d
+  zh: 88fd351488c6036b
+/agent-note-component-library-record-path-normalization-and-unresolved-props-visibility/problem:
+  en: b4b34c664a627caa
+  zh: 929af6332c59f30a
+/agent-note-component-library-record-path-normalization-and-unresolved-props-visibility/decision:
+  en: 96fb955243509b94
+  zh: db82022684d1b390
+/agent-note-component-library-record-path-normalization-and-unresolved-props-visibility/alternatives-considered:
+  en: 27e5263bbcb35269
+  zh: fab4cf778eb73cd8
+/agent-note-component-library-record-path-normalization-and-unresolved-props-visibility/consequences:
+  en: 737927d0d017c160
+  zh: 1285edfcd95a5288
+/agent-note-component-library-record-path-normalization-and-unresolved-props-visibility/testing:
+  en: d7544ee4e8d9654f
+  zh: 62e6b164e980d373
