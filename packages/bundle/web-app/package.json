@@ -203,7 +203,7 @@
     "@yeesy369/dsh-tool-browser": "^0.5.1",
     "@yeesy369/dsh-web-permission": "^0.4.1",
     "commander": "^15.0.0",
-    "dsh-better-sidebar": "^0.13.0",
+    "dsh-better-sidebar": "^0.24.1",
     "open": "^11.0.0"
   },
   "peerDependencies": {
