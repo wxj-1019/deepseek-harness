@@ -1,5 +1,5 @@
 ---
-description: "Component library settings card for browser operators: learned component count, search, and model-record review over the component_library domain's Remote face."
+description: "Component library conversation-view gallery for browser operators: a searchable Components tab over the component_library domain's Remote face, with per-component contracts and live-preview stories."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-`dsh-client-ui-component-library` renders two surfaces over the learned library: the component library card in the Plugins settings section's configurable tab (learned count, search, approve/discard review of model-contributed records) and the **Components** conversation-view gallery — a react-bits-style browsing tab with a searchable component list and a per-component contract pane (props table, raw props fallback, `--dsw-*` token chips, and the captured usage example). When a component has a story under its package's `tests/stories/`, the pane also mounts a live preview of the real component. The card reads through `@deepseek-ai/dsh-component-library`'s Remote face, loads lazily on first render, and converges on the pushed `component-library/changed` event and on connection resets. Compose it together with the Host package; alone it renders nothing.
+`dsh-client-ui-component-library` renders the **Components** conversation-view gallery over the learned library — a react-bits-style browsing tab with a searchable component list and a per-component contract pane (props table, raw props fallback, `--dsw-*` token chips, and the captured usage example). When a component has a story under its package's `tests/stories/`, the pane also mounts a live preview of the real component. The gallery reads through `@deepseek-ai/dsh-component-library`'s Remote face, loads lazily on first render, and converges on the pushed `component-library/changed` event and on connection resets. Compose it together with the Host package; alone it renders nothing.
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ Compose this package into the web client when the Host row `component-library` i
 
 ### Observable behavior
 
-The card appears in the Plugins settings tab only while the Host serves the `component-library` settings namespace. It loads the record list on first render, refreshes silently on every Host-side committed change, filters rows client-side by name, package, or jsdoc keyword, and shows approve/discard buttons on unreviewed model-contributed rows.
+The gallery appears as the **Components** tab in the conversation view. It loads the record list on first render, refreshes silently on every Host-side committed change, and filters rows client-side by name, package, or jsdoc keyword.
 
 -----
 
@@ -39,7 +39,7 @@ The card appears in the Plugins settings tab only while the Host serves the `com
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The browser half follows the settings-card convention: a slot registration on `settings.plugin.item` keyed `component-library`, a controller-owned snapshot store injected through the `hooks` compartment, and copy routed through the package's bilingual locale dictionary.
+The browser half follows the conversation-view convention: a slot registration on `conversation.view` ordered beside the Git rail, a controller-owned snapshot store injected through the `hooks` compartment, and copy routed through the package's bilingual locale dictionary.
 
 ### Source map
 
@@ -47,7 +47,6 @@ The browser half follows the settings-card convention: a slot registration on `s
 |---|---|
 | [`src/client/index.ts`](src/client/index.ts) | Browser plugin: locale registration, pushed-invalidation subscriptions, slot registration |
 | [`src/client/controller.ts`](src/client/controller.ts) | Remote-face projection: lazy list read, review writes, client-side filter |
-| [`src/client/ComponentLibraryCard.tsx`](src/client/ComponentLibraryCard.tsx) | Card component: summary count, search box, record rows, review controls |
 | [`src/client/ComponentLibraryGallery.tsx`](src/client/ComponentLibraryGallery.tsx) | Gallery tab: searchable component list and the per-component contract pane |
 | [`src/client/locales.ts`](src/client/locales.ts) | The bilingual copy dictionary and its LocaleNamespaceMap merge |
 | [`src/index.ts`](src/index.ts) | Host half (no registrations; the domain is owned by the Host package) |
@@ -81,7 +80,7 @@ None; the package never assembles or sends provider requests.
 
 These limits are current package constraints, not a task backlog.
 
-- **Search is client-side substring filtering** — the card filters the already-loaded list and never re-queries the Host; the ranked `query` Remote method serves the model tool, not this panel.
+- **Search is client-side substring filtering** — the gallery filters the already-loaded list and never re-queries the Host; the ranked `query` Remote method serves the model tool, not this panel.
 
 <a id="dev-note"></a>
 ### Dev Note
@@ -91,8 +90,8 @@ These limits are current package constraints, not a task backlog.
 
 This Dev Note is working context for maintainers: open questions and directions that are not decided. It is explicitly non-authoritative — shipped behavior, limits, and accepted rationale live in the sections above and the linked design document.
 
-#### Future: conversation view promotion
+#### Review surface
 
-The design document sketches promoting the library to a `conversation.view` browsing tab modeled on the Git commit-rail view; the settings card remains the review surface either way.
+The design document originally sketched a settings card as the model-record review surface; the conversation-view gallery is the shipped surface, and model-record review flows through the model tools and the Host-side quarantine.
 
 </details>

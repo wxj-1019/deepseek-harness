@@ -31,7 +31,7 @@ snapshotAll(): readonly ComponentRecord[]
 
 /**
  * Rank matches for one free-text query. Unreviewed model records stay
- * quarantined unless the settings namespace opts in; when included they
+ * quarantined unless the composition opts in; when included they
  * rank below every scanned match.
  * @param request - the query, optional package filter, optional limit.
  * @returns the ranked match list.

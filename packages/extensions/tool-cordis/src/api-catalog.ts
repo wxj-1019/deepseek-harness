@@ -687,6 +687,61 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'componentLibrary',
+    summary: 'Storage-domain owner of the component library.',
+    description: 'Storage-domain owner of the component library. Durable writes — scan, watch, model tool, panel review — each broadcast `component-library/changed` after the domain commits, which the panel uses to refetch.',
+    methods: [
+      {
+        signature: 'snapshotAll(): readonly ComponentRecord[]',
+        description: 'Read every durable record, most recently updated first.',
+        parameters: [],
+        returns: 'the frozen snapshot list.',
+      },
+      {
+        signature: 'rankMatches(request: ComponentLibraryQueryRequest): readonly ComponentMatch[]',
+        description: 'Rank matches for one free-text query. Unreviewed model records stay quarantined unless the composition opts in; when included they rank below every scanned match.',
+        parameters: [{ name: 'request', description: 'the query, optional package filter, optional limit.' }],
+        returns: 'the ranked match list.',
+      },
+      {
+        signature: 'async contribute(request: ComponentLibraryRecordRequest): Promise<ComponentLibraryRecordResult>',
+        description: 'Validate and store one model-contributed record: quarantined (`reviewed: false`) until a human approves it on the panel. The path is normalized into the scanner\'s repository-relative POSIX form, `pkg` must match the owning directory\'s manifest name (the scanner\'s own resolution), and a path that does not name a file under the client tree is a loud rejection. An id already covered by the scanner is also a loud rejection, not an overwrite.',
+        parameters: [{ name: 'request', description: 'the model\'s claim about the component it created.' }],
+        returns: 'the stored id, or `invalid-record`.',
+      },
+      {
+        signature: '@Remote(\'query\') query(request: ComponentLibraryQueryRequest): Promise<ComponentLibraryQueryResult>',
+        description: 'Ranked component retrieval for the panel and the skill body.',
+        parameters: [{ name: 'request', description: 'the query, optional package filter, optional limit.' }],
+        returns: 'the ranked matches.',
+      },
+      {
+        signature: '@Remote(\'summary\') summary(): Promise<ComponentLibrarySummaryResult>',
+        description: 'Library counts for the panel header.',
+        parameters: [],
+        returns: 'total, scanned, and pending-review counts.',
+      },
+      {
+        signature: '@Remote(\'list\') list(): Promise<ComponentLibraryListResult>',
+        description: 'Read every record, most recently updated first.',
+        parameters: [],
+        returns: 'the frozen snapshot list.',
+      },
+      {
+        signature: '@Remote(\'record\') record(request: ComponentLibraryRecordRequest): Promise<ComponentLibraryRecordResult>',
+        description: 'Store one model-contributed record (the panel-free write path of contribute).',
+        parameters: [{ name: 'request', description: 'the record claim.' }],
+        returns: 'the stored id, or `invalid-record`.',
+      },
+      {
+        signature: '@Remote(\'review\') async review(request: ComponentLibraryReviewRequest): Promise<ComponentLibraryReviewResult>',
+        description: 'Apply one panel review decision to a model-contributed record: `approve` marks the record reviewed and lifts the quarantine; `discard` deletes it. Scanned records are outside the review seam — they are born reviewed and authoritative, so their id is a loud rejection.',
+        parameters: [{ name: 'request', description: 'the record and the decision.' }],
+        returns: 'the ack, or `component-not-found` / `scanned-record`.',
+      },
+    ],
+  },
+  {
     key: 'computerUse',
     summary: 'Owns one optional provider registration in the shared computer-use service.',
     description: 'Owns one optional provider registration in the shared computer-use service.',
@@ -1535,6 +1590,37 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'notifications',
+    summary: 'Storage-domain owner of the notification center.',
+    description: 'Storage-domain owner of the notification center. One flat durable set of entries; read state lives on the entry. Collectors run at init from the authoritative event surfaces, so nothing here is a model request input.',
+    methods: [
+      {
+        signature: '@Remote(\'list\') list(): Promise<NotificationListResult>',
+        description: 'Read every entry, newest first.',
+        parameters: [],
+        returns: 'the frozen snapshot list.',
+      },
+      {
+        signature: '@Remote(\'markRead\') async markRead(request: NotificationMarkReadRequest): Promise<NotificationMarkReadResult>',
+        description: 'Mark one entry read. Absence is a loud business failure (a UI that races a clear must see it), mirroring the pins service\'s dead-id posture.',
+        parameters: [{ name: 'request', description: 'the entry to mark.' }],
+        returns: 'the ack or `notification-not-found`.',
+      },
+      {
+        signature: '@Remote(\'markAllRead\') async markAllRead(_request: NotificationMarkAllReadRequest): Promise<NotificationAckResult>',
+        description: 'Mark every unread entry read in one sweep.',
+        parameters: [{ name: '_request', description: 'reserved empty ack request.' }],
+        returns: 'the ack.',
+      },
+      {
+        signature: '@Remote(\'clearRead\') async clearRead(_request: NotificationClearReadRequest): Promise<NotificationAckResult>',
+        description: 'Delete every read entry (unread entries survive).',
+        parameters: [{ name: '_request', description: 'reserved empty ack request.' }],
+        returns: 'the ack.',
+      },
+    ],
+  },
+  {
     key: 'officeToPdf',
     summary: 'A provider lifetime owns all converters, queued calls, and temporary files.',
     description: 'A provider lifetime owns all converters, queued calls, and temporary files.',
@@ -1581,37 +1667,6 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Create an independent byte-bounded Session-log channel. Authorization and redaction precede reporting; the consumer owns shutdown and its outer deadline.',
         parameters: [{ name: 'options', description: 'transport, scope, resource, queue, and diagnostic settings selected by the consumer.' }],
         returns: 'the caller-owned channel, preserving complete accepted events within the request byte ceiling.',
-      },
-    ],
-  },
-  {
-    key: 'notifications',
-    summary: 'Storage-domain owner of the notification center.',
-    description: 'Storage-domain owner of the notification center. One flat durable set of entries; read state lives on the entry. Collectors run at init from the authoritative event surfaces, so nothing here is a model request input.',
-    methods: [
-      {
-        signature: '@Remote(\'list\') async list(): Promise<NotificationListResult>',
-        description: 'Read every entry, newest first.',
-        parameters: [],
-        returns: 'the frozen snapshot list.',
-      },
-      {
-        signature: '@Remote(\'markRead\') async markRead(request: NotificationMarkReadRequest): Promise<NotificationMarkReadResult>',
-        description: 'Mark one entry read. Absence is a loud business failure (a UI that races a clear must see it), mirroring the pins service\'s dead-id posture.',
-        parameters: [{ name: 'request', description: 'the entry to mark.' }],
-        returns: 'the ack or `notification-not-found`.',
-      },
-      {
-        signature: '@Remote(\'markAllRead\') async markAllRead(_request: NotificationMarkAllReadRequest): Promise<NotificationAckResult>',
-        description: 'Mark every unread entry read in one sweep.',
-        parameters: [{ name: '_request', description: 'reserved empty ack request.' }],
-        returns: 'the ack.',
-      },
-      {
-        signature: '@Remote(\'clearRead\') async clearRead(_request: NotificationClearReadRequest): Promise<NotificationAckResult>',
-        description: 'Delete every read entry (unread entries survive).',
-        parameters: [{ name: '_request', description: 'reserved empty ack request.' }],
-        returns: 'the ack.',
       },
     ],
   },
@@ -2169,7 +2224,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     description: 'Storage-domain owner of the pinned-session set. Pins are references only: a session is known when it is live or its log persists; a pin naming neither is rejected instead of parking a dead id.\n\nThe set is user-facing only — nothing here enters a session log or any model request.',
     methods: [
       {
-        signature: '@Remote(\'list\') async list(): Promise<SessionPinListResult>',
+        signature: '@Remote(\'list\') list(): Promise<SessionPinListResult>',
         description: 'Read every pinned session id in pin order (oldest pin first).',
         parameters: [],
         returns: 'the frozen snapshot list.',
@@ -3530,7 +3585,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     description: 'Storage-domain owner of the user\'s todo list. One flat durable set of items: day bucketing and carry-over are client-side view derivations over `createdAt`/`completedAt`, so the Host stores none of that bookkeeping.\n\nThe list is user-owned. When the deployment sets `modelVisible`, the service additionally projects the open items into each agent\'s pre-step as a full-replacement catalog message (the skill-catalog pattern), which is the only path where list content reaches a model request — and it is logged with the message itself, keeping the model-visible ⟺ logged rule.',
     methods: [
       {
-        signature: '@Remote(\'list\') async list(): Promise<UserTodoListResult>',
+        signature: '@Remote(\'list\') list(): Promise<UserTodoListResult>',
         description: 'Read every item in creation order; day views are derived by consumers.',
         parameters: [],
         returns: 'the frozen snapshot list.',
@@ -3864,12 +3919,6 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'resolution after durability.',
       },
       {
-        signature: 'unarchiveSession(sessionId: SessionId): Promise<void>',
-        description: 'Remove one session from the registry-global archive set: the session reappears on every grouping surface in its recorded workspace position. A not-archived id resolves without writing. A session neither live nor in session persistence fails with `session-not-found`, matching archive.',
-        parameters: [{ name: 'sessionId', description: 'The session to unarchive.' }],
-        returns: 'resolution after durability.',
-      },
-      {
         signature: 'async resolveByPath(path: string): Promise<Workspace | undefined>',
         description: 'Resolve by canonical directory path without creating or mutating a workspace. A missing path rejects during `realpath`; an existing unowned directory returns `undefined`.',
         parameters: [{ name: 'path', description: 'Existing directory path in a fully qualified spelling.' }],
@@ -4074,6 +4123,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'payload', description: '.signal - optional compaction cancellation signal.' }, { name: 'next', description: 'delegate to the next recovery listener.' }],
   },
   {
+    name: 'component-library/changed',
+    mode: 'emit',
+    signature: '\'component-library/changed\'(): void',
+    summary: 'The component library gained, changed, or dropped a record through the scanner, the watcher, the model tool, or a panel review.',
+    description: 'The component library gained, changed, or dropped a record through the scanner, the watcher, the model tool, or a panel review. Emitted after the storage domain committed; arguments are intentionally empty — consumers refetch instead of replaying deltas.',
+    parameters: [],
+  },
+  {
     name: 'connection/request',
     mode: 'waterfall',
     signature: '\'connection/request\'(request: IncomingMessage, response: ServerResponse, next: () => Promise<void>): Promise<void>',
@@ -4258,6 +4315,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; callers own their request inputs and must keep them unchanged until the stream settles.' }],
   },
   {
+    name: 'notifications/changed',
+    mode: 'emit',
+    signature: '\'notifications/changed\'(): void',
+    summary: 'The notification center gained or changed an entry through any collector or verb.',
+    description: 'The notification center gained or changed an entry through any collector or verb. Emitted after the storage domain committed; arguments are intentionally empty — consumers refetch instead of replaying deltas.',
+    parameters: [],
+  },
+  {
     name: 'permission-presets/catalog-changed',
     mode: 'emit',
     signature: '\'permission-presets/catalog-changed\'(): void',
@@ -4295,14 +4360,6 @@ export const EVENT_API: readonly EventApiEntry[] = [
     signature: '\'schedule/changed\'(): void',
     summary: 'Durable task set changed; clients refetch global task and Session-active catalogs.',
     description: 'Durable task set changed; clients refetch global task and Session-active catalogs.',
-    parameters: [],
-  },
-  {
-    name: 'notifications/changed',
-    mode: 'emit',
-    signature: '\'notifications/changed\'(): void',
-    summary: 'The notification center gained or changed an entry through any collector or verb.',
-    description: 'The notification center gained or changed an entry through any collector or verb. Emitted after the storage domain committed; arguments are intentionally empty — consumers refetch instead of replaying deltas.',
     parameters: [],
   },
   {
@@ -5870,6 +5927,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type LocalizedText = string | {\n    readonly en: string;\n    readonly [locale: string]: string;\n};',
   },
   {
+    name: 'LspCallRow',
+    declaration: 'export interface LspCallRow {\n    readonly name: string;\n    readonly kind: number;\n    readonly uri: string;\n    readonly range: LspRange;\n    readonly container?: string;\n    readonly callSites: readonly LspRange[];\n}',
+  },
+  {
+    name: 'LspDiagnostic',
+    declaration: 'export interface LspDiagnostic {\n    readonly range: LspRange;\n    readonly message: string;\n    readonly severity?: number;\n    readonly source?: string;\n}',
+  },
+  {
+    name: 'LspFileEdits',
+    declaration: 'export interface LspFileEdits {\n    readonly uri: string;\n    readonly edits: readonly LspTextEdit[];\n}',
+  },
+  {
+    name: 'LspFormattingOptions',
+    declaration: 'export interface LspFormattingOptions {\n    readonly tabSize: number;\n    readonly insertSpaces: boolean;\n}',
+  },
+  {
     name: 'LspHover',
     declaration: 'export interface LspHover {\n    readonly contents: string;\n    readonly range?: LspRange;\n}',
   },
@@ -5908,6 +5981,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'LspRange',
     declaration: 'export interface LspRange {\n    readonly start: LspPosition;\n    readonly end: LspPosition;\n}',
+  },
+  {
+    name: 'LspSymbolInfo',
+    declaration: 'export interface LspSymbolInfo {\n    readonly name: string;\n    readonly kind: number;\n    readonly container?: string;\n    readonly uri: string;\n    readonly range: LspRange;\n}',
+  },
+  {
+    name: 'LspTextEdit',
+    declaration: 'export interface LspTextEdit {\n    readonly range: LspRange;\n    readonly newText: string;\n}',
   },
   {
     name: 'ManagementError',
@@ -6060,6 +6141,46 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'NotFutureError',
     declaration: 'export interface NotFutureError {\n    readonly code: \'not_future\';\n    readonly message: string;\n}',
+  },
+  {
+    name: 'NotificationAckResult',
+    declaration: 'export type NotificationAckResult = {\n    readonly ok: true;\n    readonly value: NotificationAckValue;\n};',
+  },
+  {
+    name: 'NotificationAckValue',
+    declaration: 'export interface NotificationAckValue {\n    readonly done: true;\n}',
+  },
+  {
+    name: 'NotificationClearReadRequest',
+    declaration: 'export type NotificationClearReadRequest = Record<string, never>;',
+  },
+  {
+    name: 'NotificationId',
+    declaration: 'export type NotificationId = Branded<\'NotificationId\'>;',
+  },
+  {
+    name: 'NotificationKind',
+    declaration: 'export type NotificationKind = \'session-completed\' | \'approval-decided\' | \'job-finished\' | \'reminder-dispatched\';',
+  },
+  {
+    name: 'NotificationListResult',
+    declaration: 'export type NotificationListResult = {\n    readonly ok: true;\n    readonly value: {\n        readonly items: readonly NotificationRecord[];\n    };\n};',
+  },
+  {
+    name: 'NotificationMarkAllReadRequest',
+    declaration: 'export type NotificationMarkAllReadRequest = Record<string, never>;',
+  },
+  {
+    name: 'NotificationMarkReadRequest',
+    declaration: 'export interface NotificationMarkReadRequest {\n    readonly id: NotificationId;\n}',
+  },
+  {
+    name: 'NotificationMarkReadResult',
+    declaration: 'export type NotificationMarkReadResult = {\n    readonly ok: true;\n    readonly value: NotificationAckValue;\n} | {\n    readonly ok: false;\n    readonly error: {\n        readonly code: \'notification-not-found\';\n        readonly id: NotificationId;\n    };\n};',
+  },
+  {
+    name: 'NotificationRecord',
+    declaration: 'export interface NotificationRecord {\n    readonly id: NotificationId;\n    readonly kind: NotificationKind;\n    readonly title: string;\n    readonly detail?: string;\n    readonly sessionId?: SessionId;\n    readonly createdAt: number;\n    readonly readAt?: number;\n}',
   },
   {
     name: 'ObjectJsonSchema',
@@ -6524,6 +6645,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'SaveTextSpill',
     declaration: 'export interface SaveTextSpill {\n    owner: SpillOwner;\n    source: SpillSource;\n    suggestedName: string;\n    content: string;\n}',
+  },
+  {
+    name: 'SaveVideoAttachment',
+    declaration: 'export interface SaveVideoAttachment {\n    data: Uint8Array;\n    mediaType: VideoMediaType;\n    name?: string;\n}',
   },
   {
     name: 'ScheduleCatalogEntry',

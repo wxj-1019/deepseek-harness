@@ -592,16 +592,6 @@ pinSession(sessionId: SessionId): Promise<void>
 unpinSession(sessionId: SessionId): Promise<void>
 
 /**
- * Remove one session from the registry-global archive set: the session
- * reappears on every grouping surface in its recorded workspace position.
- * A not-archived id resolves without writing. A session neither live nor
- * in session persistence fails with `session-not-found`, matching archive.
- * @param sessionId - The session to unarchive.
- * @returns resolution after durability.
- */
-unarchiveSession(sessionId: SessionId): Promise<void>
-
-/**
  * Resolve by canonical directory path without creating or mutating a
  * workspace. A missing path rejects during `realpath`; an existing unowned
  * directory returns `undefined`.

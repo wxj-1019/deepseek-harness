@@ -29,7 +29,7 @@ The set is user-facing only — nothing here enters a session log or any model r
  * Read every pinned session id in pin order (oldest pin first).
  * @returns the frozen snapshot list.
  */
-@Remote('list') async list(): Promise<SessionPinListResult>
+@Remote('list') list(): Promise<SessionPinListResult>
 
 /**
  * Pin one session. An already pinned session resolves to its stored record

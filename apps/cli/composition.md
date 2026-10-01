@@ -56,8 +56,8 @@ flowchart LR
   cfg --> plugin_dsh_base_deepseek_account
   plugin_dsh_base_credentials["credentials<br/>@deepseek-ai/dsh-credentials-local"]
   cfg --> plugin_dsh_base_credentials
-  plugin_dsh_base_mcp_servers["mcp-servers<br/>@deepseek-ai/dsh-mcp-servers"]
-  cfg --> plugin_dsh_base_mcp_servers
+  plugin_dsh_base_mcp["mcp<br/>@deepseek-ai/dsh-mcp-servers"]
+  cfg --> plugin_dsh_base_mcp
   plugin_dsh_base_llm_pi_ai["llm-pi-ai<br/>@deepseek-ai/dsh-llm-pi-ai"]
   cfg --> plugin_dsh_base_llm_pi_ai
   plugin_dsh_base_session_persistence_jsonl["session-persistence-jsonl<br/>@deepseek-ai/dsh-session-persistence-jsonl"]
@@ -108,6 +108,16 @@ flowchart LR
   cfg --> plugin_dsh_base_tool_fs
   plugin_dsh_base_tool_fs_search["tool-fs-search<br/>@deepseek-ai/dsh-tool-fs-search"]
   cfg --> plugin_dsh_base_tool_fs_search
+  plugin_dsh_base_tool_ls["tool-ls<br/>@deepseek-ai/dsh-tool-ls"]
+  cfg --> plugin_dsh_base_tool_ls
+  plugin_dsh_base_tool_multi_edit["tool-multi-edit<br/>@deepseek-ai/dsh-tool-multi-edit"]
+  cfg --> plugin_dsh_base_tool_multi_edit
+  plugin_dsh_base_tool_tasks["tool-tasks<br/>@deepseek-ai/dsh-tool-tasks"]
+  cfg --> plugin_dsh_base_tool_tasks
+  plugin_dsh_base_tool_git["tool-git<br/>@deepseek-ai/dsh-tool-git"]
+  cfg --> plugin_dsh_base_tool_git
+  plugin_dsh_base_tool_compact["tool-compact<br/>@deepseek-ai/dsh-tool-compact"]
+  cfg --> plugin_dsh_base_tool_compact
   plugin_dsh_base_agent_instructions["agent-instructions<br/>@deepseek-ai/dsh-agent-instructions"]
   cfg --> plugin_dsh_base_agent_instructions
   plugin_dsh_base_skill["skill<br/>@deepseek-ai/dsh-skill"]
@@ -226,7 +236,7 @@ flowchart LR
 | `authorization` | `@deepseek-ai/dsh-authorization` |
 | `deepseek-account` | `@deepseek-ai/dsh-deepseek-account-platform` |
 | `credentials` | `@deepseek-ai/dsh-credentials-local` |
-| `mcp-servers` | `@deepseek-ai/dsh-mcp-servers` |
+| `mcp` | `@deepseek-ai/dsh-mcp-servers` |
 | `llm-pi-ai` | `@deepseek-ai/dsh-llm-pi-ai` |
 | `session-persistence-jsonl` | `@deepseek-ai/dsh-session-persistence-jsonl` |
 | `attachment-local` | `@deepseek-ai/dsh-attachment-local` |
@@ -252,6 +262,11 @@ flowchart LR
 | `fs-observation-policy` | `@deepseek-ai/dsh-fs-observation-policy` |
 | `tool-fs` | `@deepseek-ai/dsh-tool-fs` |
 | `tool-fs-search` | `@deepseek-ai/dsh-tool-fs-search` |
+| `tool-ls` | `@deepseek-ai/dsh-tool-ls` |
+| `tool-multi-edit` | `@deepseek-ai/dsh-tool-multi-edit` |
+| `tool-tasks` | `@deepseek-ai/dsh-tool-tasks` |
+| `tool-git` | `@deepseek-ai/dsh-tool-git` |
+| `tool-compact` | `@deepseek-ai/dsh-tool-compact` |
 | `agent-instructions` | `@deepseek-ai/dsh-agent-instructions` |
 | `skill` | `@deepseek-ai/dsh-skill` |
 | `skill-filesystem` | `@deepseek-ai/dsh-skill-filesystem` |

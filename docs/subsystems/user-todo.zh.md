@@ -29,7 +29,7 @@ The list is user-owned. When the deployment sets `modelVisible`, the service add
  * Read every item in creation order; day views are derived by consumers.
  * @returns the frozen snapshot list.
  */
-@Remote('list') async list(): Promise<UserTodoListResult>
+@Remote('list') list(): Promise<UserTodoListResult>
 
 /**
  * Create one item, or apply a partial update to an existing one. Unspecified

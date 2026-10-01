@@ -27,7 +27,7 @@ Storage-domain owner of the notification center. One flat durable set of entries
  * Read every entry, newest first.
  * @returns the frozen snapshot list.
  */
-@Remote('list') async list(): Promise<NotificationListResult>
+@Remote('list') list(): Promise<NotificationListResult>
 
 /**
  * Mark one entry read. Absence is a loud business failure (a UI that races

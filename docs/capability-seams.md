@@ -119,6 +119,21 @@ flowchart LR
   pkg_host_product_telemetry_otel["host-product-telemetry-otel"]
   pkg_session_telemetry_otel["session-telemetry-otel"]
   svc_productTelemetry["ctx.productTelemetry<br/>Product usage event sender"]
+  pkg_storage_component_library["storage-component-library"]
+  svc_componentLibrary["ctx.componentLibrary<br/>Learned UI component library domain"]
+  pkg_client_ui_component_library["client-ui-component-library"]
+  pkg_interaction_notification_center["interaction-notification-center"]
+  svc_notifications["ctx.notifications<br/>User notification feed"]
+  pkg_client_ui_notification_center["client-ui-notification-center"]
+  pkg_session_session_pins["session-session-pins"]
+  svc_sessionPins["ctx.sessionPins<br/>Pinned session roster"]
+  pkg_client_ui_session_pins["client-ui-session-pins"]
+  pkg_session_usage_ledger["session-usage-ledger"]
+  svc_usageLedger["ctx.usageLedger<br/>Token usage ledger"]
+  pkg_client_ui_usage["client-ui-usage"]
+  pkg_todo_user_todo["todo-user-todo"]
+  svc_userTodos["ctx.userTodos<br/>Per-user todo items"]
+  pkg_client_ui_user_todo["client-ui-user-todo"]
   pkg_session_telemetry["session-telemetry"]
   svc_sessionTelemetry["ctx.sessionTelemetry<br/>Session telemetry seam"]
   pkg_storage["storage"]
@@ -341,6 +356,7 @@ flowchart LR
   pkg_host_product_telemetry_otel --> svc_productTelemetry
   pkg_host_webserver --> svc_webServer
   pkg_inspector --> svc_inspector
+  pkg_interaction_notification_center --> svc_notifications
   pkg_invariants --> svc_invariants
   pkg_jobs --> svc_jobs
   pkg_jobs_local --> svc_jobs
@@ -377,11 +393,13 @@ flowchart LR
   pkg_session_query --> svc_sessionQuery
   pkg_session_query_sqlite --> svc_sessionQuery
   pkg_session_reference --> svc_sessionReferenceResolver
+  pkg_session_session_pins --> svc_sessionPins
   pkg_session_telemetry --> svc_sessionTelemetry
   pkg_session_telemetry_otel --> svc_sessionTelemetry
   pkg_session_title --> svc_sessionTitle
   pkg_session_title_all_prompts_llm --> svc_sessionTitle
   pkg_session_title_first_prompt_llm --> svc_sessionTitle
+  pkg_session_usage_ledger --> svc_usageLedger
   pkg_settings --> svc_settings
   pkg_shell --> svc_shell
   pkg_shell_env --> svc_shellEnv
@@ -393,6 +411,7 @@ flowchart LR
   pkg_spill_local --> svc_spillStore
   pkg_ssh --> svc_ssh
   pkg_storage --> svc_storage
+  pkg_storage_component_library --> svc_componentLibrary
   pkg_storage_domain --> svc_storageDomain
   pkg_storage_json --> svc_storage
   pkg_storage_sqlite --> svc_storage
@@ -409,6 +428,7 @@ flowchart LR
   pkg_system_prompt --> svc_systemPrompt
   pkg_terminal --> svc_terminals
   pkg_terminal_bash --> svc_terminals
+  pkg_todo_user_todo --> svc_userTodos
   pkg_token_meter --> svc_tokenMeter
   pkg_tool_subagent --> svc_subagentModelSelection
   pkg_tools --> svc_tools
@@ -446,6 +466,7 @@ flowchart LR
   svc_browserUse --> pkg_experimental_browser_use_stagehand_native
   svc_clientModules --> pkg_client_hmr
   svc_compaction --> pkg_compaction_basic
+  svc_componentLibrary --> pkg_client_ui_component_library
   svc_computerUse --> pkg_experimental_computer_use_cua_driver_mcp
   svc_computerUse --> pkg_experimental_computer_use_cua_driver_native
   svc_configEditor --> pkg_agent_default_model
@@ -479,6 +500,7 @@ flowchart LR
   svc_llm --> pkg_compaction_basic
   svc_lsp --> pkg_tool_lsp
   svc_mcpResources --> pkg_mcp_resources
+  svc_notifications --> pkg_client_ui_notification_center
   svc_officeToPdf --> pkg_client_ui_sidebar_documentpreview
   svc_otel --> pkg_host_product_telemetry_otel
   svc_otel --> pkg_session_telemetry_otel
@@ -500,6 +522,7 @@ flowchart LR
   svc_sessionPersistence --> pkg_session_query
   svc_sessionPersistence --> pkg_session_query_sqlite
   svc_sessionPersistence --> pkg_tool_bash
+  svc_sessionPins --> pkg_client_ui_session_pins
   svc_sessionProjectionCache --> pkg_api_session_controller
   svc_sessionProjectionCache --> pkg_session_query
   svc_sessionProjectionCache --> pkg_session_reference
@@ -562,7 +585,9 @@ flowchart LR
   svc_tools --> pkg_tool_web
   svc_typert --> pkg_api_gateway
   svc_typert --> pkg_typert_loader
+  svc_usageLedger --> pkg_client_ui_usage
   svc_userQuestions --> pkg_tool_ask_user
+  svc_userTodos --> pkg_client_ui_user_todo
   svc_web --> pkg_tool_web
   svc_webServer --> pkg_client_connection
   svc_webServer --> pkg_client_hmr
@@ -618,6 +643,11 @@ flowchart LR
 | `ctx.productAnalytics` | `service` | [`client-product-analytics`](../packages/client/product-analytics) | - | - | - | Accepts selected Desktop events, enriches available login identity, and observes live compaction under the live Host collection policy. |
 | `ctx.otel` | `service` | [`otel`](../packages/telemetry/otel) | - | [`host-product-telemetry-otel`](../packages/host/product-telemetry-otel), [`session-telemetry-otel`](../packages/session/session-telemetry-otel) | - | Product analytics and Session feedback adapters create independent reporting channels through one injected service. |
 | `ctx.productTelemetry` | `service` | [`host-product-telemetry-otel`](../packages/host/product-telemetry-otel) | - | - | - | Exports explicitly submitted analytics events through OTLP/HTTP; mounting alone collects nothing. |
+| `ctx.componentLibrary` | `service` | `storage-component-library` | - | [`client-ui-component-library`](../packages/client/ui-component-library) | - | Owns the scanned and model-contributed component records, the quarantine review flow, and the Remote face the gallery and model tools read. |
+| `ctx.notifications` | `service` | `interaction-notification-center` | - | [`client-ui-notification-center`](../packages/client/ui-notification-center) | - | Durable notification records with read state; the browser bell and panel read the list through the Remote face. |
+| `ctx.sessionPins` | `service` | `session-session-pins` | - | [`client-ui-session-pins`](../packages/client/ui-session-pins) | - | Owns the per-user pinned session list the sidebar section and header star read and write through the Remote face. |
+| `ctx.usageLedger` | `service` | `session-usage-ledger` | - | [`client-ui-usage`](../packages/client/ui-usage) | - | Aggregates committed turn usage per session with pricing; the usage dashboard reads the ledger through the Remote face. |
+| `ctx.userTodos` | `service` | `todo-user-todo` | - | [`client-ui-user-todo`](../packages/client/ui-user-todo) | - | Owns the durable user todo items the sidebar drawer reads and writes through the Remote face, plus the model-facing catalog projection. |
 | `ctx.sessionTelemetry` | `seam` | [`session-telemetry`](../packages/session/session-telemetry) | [`session-telemetry-otel`](../packages/session/session-telemetry-otel) | - | - | The seam captures, redacts, and hands session records to one backend; nothing else consumes the service — its output leaves the process. |
 | `ctx.storage` | `seam` | [`storage`](../packages/storage/storage) | [`storage-json`](../packages/storage/storage-json), [`storage-sqlite`](../packages/storage/storage-sqlite) | [`storage-domain`](../packages/storage/storage-domain) | - | Backends register side by side under names; data forms (domain first) mount on the hub and translate typed operations into opaque KV-unit primitives. |
 | `ctx.storageDomain` | `core` | [`storage-domain`](../packages/storage/storage-domain) | - | [`workspace`](../packages/workspace/workspace) | - | Waits for every configured backend, then publishes the domain form as one lifecycle-bound service for typed durable state. |

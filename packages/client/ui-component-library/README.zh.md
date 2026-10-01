@@ -1,5 +1,5 @@
 ---
-description: "面向浏览器操作者的组件库设置卡片：component_library domain Remote 面之上的已学习组件计数、搜索与模型记录审核。"
+description: "面向浏览器操作者的组件库会话视图画廊：component_library domain Remote 面之上的可搜索组件页签，含逐组件契约与实时预览 story。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-ui-component-library` 为学习到的组件库提供两个界面：Plugins 设置区可配置页签中的组件库卡片（已学习计数、搜索、模型贡献记录的通过/丢弃审核），以及 **组件** 会话视图画廊——仿 React Bits 的浏览页签，左侧可搜索的组件列表，右侧展示所选组件的契约（props 表、未解析时的原始类型、`--dsw-*` 令牌徽标与捕获的用法示例）。当组件在其包的 `tests/stories/` 下有 story 时，面板还会挂载真实组件的实时预览。卡片通过 `@deepseek-ai/dsh-component-library` 的 Remote 面读取，首次渲染时惰性加载，并在推送的 `component-library/changed` 事件与连接重置时收敛。必须与 Host 包一起组合；单独存在时不渲染任何内容。
+`dsh-client-ui-component-library` 为学习到的组件库提供 **组件** 会话视图画廊——仿 React Bits 的浏览页签，左侧可搜索的组件列表，右侧展示所选组件的契约（props 表、未解析时的原始类型、`--dsw-*` 令牌徽标与捕获的用法示例）。当组件在其包的 `tests/stories/` 下有 story 时，面板还会挂载真实组件的实时预览。画廊通过 `@deepseek-ai/dsh-component-library` 的 Remote 面读取，首次渲染时惰性加载，并在推送的 `component-library/changed` 事件与连接重置时收敛。必须与 Host 包一起组合；单独存在时不渲染任何内容。
 
 ## 目录
 
@@ -29,7 +29,7 @@ kind: "package-reference"
 
 ### 可观察行为
 
-只有在 Host 提供 `component-library` settings 命名空间时，卡片才出现在 Plugins 设置页签。它在首次渲染时加载记录列表，在 Host 侧每次提交变更后静默刷新，按名称、包或 jsdoc 关键词在客户端过滤行，并在未审核的模型贡献行上显示通过/丢弃按钮。
+画廊以会话视图中的 **组件** 页签出现。它在首次渲染时加载记录列表，在 Host 侧每次提交变更后静默刷新，按名称、包或 jsdoc 关键词在客户端过滤行。
 
 -----
 
@@ -39,7 +39,7 @@ kind: "package-reference"
 <details>
 <summary>实现内部——点击展开</summary>
 
-浏览器半遵循设置卡片约定：在 `settings.plugin.item` 上以 `component-library` 键注册槽位，经 `hooks` 隔间注入控制器持有的快照 store，文案走本包的双语 locale 字典。
+浏览器半遵循会话视图约定：在 `conversation.view` 上紧邻 Git 轨道排序注册槽位，经 `hooks` 隔间注入控制器持有的快照 store，文案走本包的双语 locale 字典。
 
 ### 源码地图
 
@@ -47,7 +47,6 @@ kind: "package-reference"
 |---|---|
 | [`src/client/index.ts`](src/client/index.ts) | 浏览器插件：locale 注册、推送失效订阅、槽位注册 |
 | [`src/client/controller.ts`](src/client/controller.ts) | Remote 面投影：惰性列表读取、审核写入、客户端过滤 |
-| [`src/client/ComponentLibraryCard.tsx`](src/client/ComponentLibraryCard.tsx) | 卡片组件：摘要计数、搜索框、记录行、审核控件 |
 | [`src/client/ComponentLibraryGallery.tsx`](src/client/ComponentLibraryGallery.tsx) | 画廊页签：可搜索的组件列表与逐组件契约面板 |
 | [`src/client/locales.ts`](src/client/locales.ts) | 双语文案字典及其 LocaleNamespaceMap 合并 |
 | [`src/index.ts`](src/index.ts) | Host 半（无注册；domain 由 Host 包拥有） |
@@ -81,7 +80,7 @@ None; the package never assembles or sends provider requests.
 
 这些限制是当前的包约束，不是任务待办。
 
-- **搜索是客户端子串过滤**——卡片只过滤已加载的列表，从不重新查询 Host；排名化的 `query` Remote 方法服务于模型工具，而非本面板。
+- **搜索是客户端子串过滤**——画廊只过滤已加载的列表，从不重新查询 Host；排名化的 `query` Remote 方法服务于模型工具，而非本面板。
 
 <a id="dev-note"></a>
 ### 开发备注
@@ -91,8 +90,8 @@ None; the package never assembles or sends provider requests.
 
 本开发备注是维护者的工作上下文：未决的开放问题与方向，不具权威性——已发布行为、限制与已接受的取舍以上述各节与所链接的设计文档为准。
 
-#### 未来：conversation view 升级
+#### 审核面
 
-设计文档概述了把组件库升级为仿 Git 提交轨道视图的 `conversation.view` 浏览页签；无论如何设置卡片都保留审核面的职责。
+设计文档最初把设置卡片草图化为模型记录的审核面；会话视图画廊是已发布的界面，模型记录审核经由模型工具与 Host 侧隔离区完成。
 
 </details>
