@@ -1,32 +1,31 @@
 import { Context } from '@deepseek-ai/cordis'
-import { describe, expect, it } from 'vitest'
-import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import { describe, expect, it, vi } from 'vitest'
 import {
   apply,
+  Config,
   DEV_CHECKS_SETTINGS_DEFAULTS,
-  DEV_CHECKS_SETTINGS_NAMESPACE,
 } from '@deepseek-ai/dsh-client-ui-settings-dev-checks'
 
-class MemorySettings extends SettingsProvider {
-  readonly writable = true
-  protected load(): Promise<Record<string, unknown>> { return Promise.resolve({}) }
-  protected persist(_ns: SettingsNamespace, _section: Record<string, unknown>): Promise<void> {
-    return Promise.resolve()
-  }
-}
-
 describe('ui-settings-dev-checks host', () => {
-  it('registers, validates, and disposes the durable dev-checks namespace with its fiber', async () => {
+  it('resolves an empty config into the shipped defaults and rejects invalid values', () => {
+    const resolved = Config({})
+    const plain = Object.fromEntries(
+      Object.entries(resolved).map(([key, ref]) => [key, (ref as { get(): unknown }).get()]),
+    )
+    expect(plain).toEqual(DEV_CHECKS_SETTINGS_DEFAULTS)
+    expect(() => Config({ e2e: 'no' } as never)).toThrow()
+  })
+
+  it('declares its generated-page policy through the settings service when composed', async () => {
     const ctx = new Context()
-    await ctx.plugin(MemorySettings).await()
-    const fiber = ctx.plugin({ apply })
+    const release = vi.fn()
+    const configure = vi.fn<(policy: { auto: boolean }) => () => void>(() => release)
+    ctx.provide('settings', { configure } as never)
+    const fiber = ctx.plugin({ Config, apply })
     await fiber.await()
-    const ns = DEV_CHECKS_SETTINGS_NAMESPACE
-    expect(ctx.settings.get(ns)).toEqual(DEV_CHECKS_SETTINGS_DEFAULTS)
-    await ctx.settings.update(ns, { e2e: false, docSync: false })
-    expect(ctx.settings.get(ns)).toEqual({ ...DEV_CHECKS_SETTINGS_DEFAULTS, e2e: false, docSync: false })
-    await expect(ctx.settings.update(ns, { e2e: 'no' })).rejects.toThrow()
+    expect(configure).toHaveBeenCalledOnce()
+    expect(configure.mock.calls[0]?.[0]).toEqual({ auto: false })
     await fiber.dispose()
-    expect(ctx.settings.describe().map(row => row.ns)).not.toContain(ns)
+    expect(release).toHaveBeenCalledOnce()
   })
 })

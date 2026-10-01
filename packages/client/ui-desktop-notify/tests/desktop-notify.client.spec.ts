@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
+import { stubConfigForm } from '@deepseek-ai/dsh-client-test-runtime'
 import {
   browserNotifyPort,
   DesktopNotifyRuntime,
@@ -35,12 +35,13 @@ function bench(opts?: {
 }) {
   const list = createSnapshotStore(opts?.initial ?? listState([]))
   const open = vi.fn<(id: SessionId) => void>()
-  const stub = stubSettingsScope<DesktopNotifySettings>()
+  const stub = stubConfigForm<DesktopNotifySettings>()
   const { port, shown } = recordingPort()
   const focusWindow = vi.fn()
   const runtime = new DesktopNotifyRuntime({
-    sessions: { list, open },
+    sessions: { list },
     scope: stub.scope,
+    openSession: open,
     notify: opts?.notify ?? port,
     bodyText: () => '任务已完成',
     isHidden: () => opts?.hidden ?? false,

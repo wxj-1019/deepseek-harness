@@ -16,9 +16,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Context, Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-// Type-only side-effect imports: pull the settings Context merge and the
-// webserver merge (the optional records-feed route) into this program.
-import type {} from '@deepseek-ai/dsh-settings'
+// Type-only side-effect import: pulls the webserver Context merge (the
+// optional records-feed route) into this program.
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain'
 import { TypertRemoteService, Remote } from '@deepseek-ai/dsh-typert-protocol'
@@ -60,20 +59,6 @@ export {
 } from './scanner.ts'
 export { ComponentLibraryWatcher } from './watcher.ts'
 
-/** Settings namespace the panel card keys on. */
-export const COMPONENT_LIBRARY_SETTINGS_NAMESPACE = 'component-library'
-
-/** User-facing component-library preferences. */
-export interface ComponentLibrarySettings {
-  /** Include unreviewed model-contributed records in query results (ranked last). */
-  readonly includeUnreviewed: boolean
-}
-
-/** Settings schema for the component-library namespace. */
-export const ComponentLibrarySettingsSchema: z<ComponentLibrarySettings> = z.object({
-  includeUnreviewed: z.boolean().default(false),
-})
-
 /** The plugin's composition config. */
 export interface Config {
   /**
@@ -84,12 +69,15 @@ export interface Config {
   readonly root?: string
   /** Keep learning from file changes after the cold-start scan (default true). */
   readonly watch?: boolean
+  /** Include unreviewed model-contributed records in query results, ranked last (default false). */
+  readonly includeUnreviewed?: boolean
 }
 
 /** Schemastery configuration for the component-library plugin. */
 export const Config: z<Config> = z.object({
   root: z.string(),
   watch: z.boolean(),
+  includeUnreviewed: z.boolean(),
 })
 
 /** The resolved deployment choices the pipeline runs on. */
@@ -192,25 +180,26 @@ function normalizeContributedPath(path: string): { path: string; directory: stri
  * after the domain commits, which the panel uses to refetch.
  */
 export class ComponentLibraryService extends TypertRemoteService {
-  static inject = ['storageDomain', 'tools', 'systemPrompt', 'skills', 'settings']
+  static inject = ['storageDomain', 'tools', 'systemPrompt', 'skills']
 
   /** Composition config; the loader fills defaults from {@link Config}. */
   static Config: z<Config> = Config
 
   private readonly spec: ComponentLibrarySpec
+  private readonly includeUnreviewed: boolean
   private table?: KvTable<string, ComponentRecord>
   private tokens: readonly StyleToken[] = []
-  private settings: ComponentLibrarySettings | undefined
   private skillControl?: SkillProviderControl
   private changeQueued = false
 
   /**
-   * @param ctx - Host context carrying the storage, tool, prompt, skill, and settings services.
+   * @param ctx - Host context carrying the storage, tool, prompt, and skill services.
    * @param config - composition config; see {@link resolveComponentLibrarySpec}.
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'componentLibrary')
     this.spec = resolveComponentLibrarySpec(config)
+    this.includeUnreviewed = config.includeUnreviewed ?? false
   }
 
   /** Open the domain, register every consumer face, and start learning. */
@@ -235,18 +224,13 @@ export class ComponentLibraryService extends TypertRemoteService {
           }
           const path = new URL(req.url ?? '/', 'http://localhost').pathname
           if (path === '/component-library/api/list' && (req.method === 'GET' || req.method === 'HEAD')) {
-            return void send(200, JSON.stringify({ items: this.snapshotAll() }))
+            send(200, JSON.stringify({ items: this.snapshotAll() }))
+            return
           }
           send(404, JSON.stringify({ error: 'not found' }))
         },
       }), 'component-library: /component-library/api route')
     })
-
-    const settingsScope = this.ctx.settings.register(COMPONENT_LIBRARY_SETTINGS_NAMESPACE, ComponentLibrarySettingsSchema)
-    this.settings = settingsScope.get()
-    this.ctx.effect(() => settingsScope.watch((value) => {
-      this.settings = value
-    }), 'component-library.settingsWatch')
 
     this.ctx.systemPrompt.section({
       name: 'component-library:reuse',
@@ -398,14 +382,14 @@ export class ComponentLibraryService extends TypertRemoteService {
 
   /**
    * Rank matches for one free-text query. Unreviewed model records stay
-   * quarantined unless the settings namespace opts in; when included they
+   * quarantined unless the composition opts in; when included they
    * rank below every scanned match.
    * @param request - the query, optional package filter, optional limit.
    * @returns the ranked match list.
    */
   rankMatches(request: ComponentLibraryQueryRequest): readonly ComponentMatch[] {
     const table = this.requireTable()
-    const includeUnreviewed = this.settings?.includeUnreviewed ?? false
+    const includeUnreviewed = this.includeUnreviewed
     const limit = request.limit ?? DEFAULT_QUERY_LIMIT
     const scored: { record: ComponentRecord; score: number }[] = []
     for (const [, record] of table.entries()) {

@@ -10,11 +10,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import InvariantRegistry from '@deepseek-ai/dsh-invariants'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
-import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
+import { stubConfigForm } from '@deepseek-ai/dsh-client-test-runtime'
 import { apply as applyLocale, inject as localeInject } from '@deepseek-ai/dsh-client-locale/client'
 import { apply, inject } from '../src/client/index.ts'
-import { apply as applyNode } from '../src/index.ts'
-import { DesktopNotifySettingsSchema } from '../src/desktop-notify-settings.ts'
+import { apply as applyNode, Config as NodeConfig } from '../src/index.ts'
 import * as NotifyInvariant from '../src/invariant.ts'
 import { en, NS, zh } from '../src/client/locales.ts'
 import { listState, summary } from './support.client.ts'
@@ -49,7 +48,7 @@ function generalItemIds(ctx: Context): (string | undefined)[] {
 async function bench(): Promise<{
   ctx: Context
   fiber: ReturnType<Context['plugin']>
-  stubs: Map<string, ReturnType<typeof stubSettingsScope>>
+  stubs: Map<string, ReturnType<typeof stubConfigForm>>
   sessions: { list: ReturnType<typeof createSnapshotStore>; open: ReturnType<typeof vi.fn> }
 }> {
   const ctx = new Context()
@@ -69,13 +68,14 @@ async function bench(): Promise<{
   // and the forwarded-event port.
   ctx.provide('connection', { api: { settings: {} }, isLoopback: false } as never)
   ctx.provide('remote', { $on: () => () => {} } as never)
-  const stubs = new Map<string, ReturnType<typeof stubSettingsScope>>()
-  ctx.provide('settingsScope', {
-    bind: (opts: { namespace: string }) => {
-      let stub = stubs.get(opts.namespace)
+  ctx.provide('uiWorkspace', { openSession: vi.fn() } as never)
+  const stubs = new Map<string, ReturnType<typeof stubConfigForm>>()
+  ctx.provide('configForms', {
+    get: (entryId: string) => {
+      let stub = stubs.get(entryId)
       if (stub === undefined) {
-        stub = stubSettingsScope()
-        stubs.set(opts.namespace, stub)
+        stub = stubConfigForm()
+        stubs.set(entryId, stub)
       }
       return stub.scope
     },
@@ -88,7 +88,7 @@ async function bench(): Promise<{
 
 describe('ui-desktop-notify browser half', () => {
   it('declares the services it binds', () => {
-    expect(inject).toEqual(['sessions', 'slots', 'locale', 'settingsScope'])
+    expect(inject).toEqual(['sessions', 'slots', 'locale', 'configForms', 'uiWorkspace'])
   })
 
   it('registers the General settings row, and fiber teardown removes it (HMR safety)', async () => {
@@ -153,19 +153,21 @@ describe('ui-desktop-notify browser half', () => {
 
 describe('ui-desktop-notify node half', () => {
   it('contributes no host behavior without the settings service', () => {
-    // The namespace registration waits for a settings service this bench never provides.
+    // The page-policy declaration waits for a settings service this bench never provides.
     expect(() => { applyNode(new Context()) }).not.toThrow()
   })
 
-  it('registers the durable namespace once the settings service is present', async () => {
+  it('declares its generated-page policy once the settings service is present', async () => {
     const ctx = new Context()
-    const register = vi.fn()
-    ctx.provide('settings', { register })
-    const fiber = ctx.plugin({ inject: ['settings'], apply: applyNode })
+    const release = vi.fn()
+    const configure = vi.fn<(policy: { auto: boolean }) => () => void>(() => release)
+    ctx.provide('settings', { configure } as never)
+    const fiber = ctx.plugin({ Config: NodeConfig, apply: applyNode })
     await fiber.await()
-    expect(register).toHaveBeenCalledOnce()
-    expect(register).toHaveBeenCalledWith('ui-desktop-notify', DesktopNotifySettingsSchema)
+    expect(configure).toHaveBeenCalledOnce()
+    expect(configure.mock.calls[0]?.[0]).toEqual({ auto: false })
     await fiber.dispose()
+    expect(release).toHaveBeenCalledOnce()
   })
 })
 

@@ -117,13 +117,13 @@
     - id: credentials
       name: '@deepseek-ai/dsh-credentials-local'
 
-    # MCP servers, mounted from the same user-settings document: every entry
-    # under a `mcp:` section's `servers:` dictionary becomes one mcp-client
-    # child row (`mcp-servers:<name>`), committed edits applying only the
-    # changed server. A `disabled:` name list parks entries without deleting
-    # them. `${NAME}` in env/header values resolves from the ambient
+    # MCP servers, edited through this entry's volatile Config (the `mcp`
+    # settings form): every entry under the `servers:` dictionary becomes one
+    # mcp-client child row (`mcp-servers:<name>`), committed edits applying
+    # only the changed server. A `disabled:` name list parks entries without
+    # deleting them. `${NAME}` in env/header values resolves from the ambient
     # environment; an unset reference skips that server with an error.
-    - id: mcp-servers
+    - id: mcp
       name: '@deepseek-ai/dsh-mcp-servers'
       group: true
 

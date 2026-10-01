@@ -34,6 +34,14 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'sidebar.panellist': { kind: 'list'; scope: 'root'; owner: SidebarPanelIconOwnerProps }
     /**
+     * The pinned-session section between the controls and the browsing
+     * region. Declared by this package's 'sidebar' entry; ui-session-pins
+     * registers the section when the deployment ships it. The shell passes
+     * only its column state; pinned ids and their sessions arrive through
+     * the occupant's own inject.
+     */
+    'sidebar.pinned': { kind: 'single'; scope: 'root'; owner: SidebarPinnedOwnerProps }
+    /**
      * The workspace/session browsing region: section header, search, the
      * grouped/flat session list, and every workspace dialog. Declared by this
      * package's 'sidebar' entry (declaring is claiming); ui-workspace
@@ -149,6 +157,7 @@ export type SidebarRootComponentProps =
     | 'sidebar.brand.name'
     | 'sidebar.toggle.badge'
     | 'sidebar.panellist'
+    | 'sidebar.pinned'
     | 'sidebar.workspaces'
     | 'sidebar.settings'
     | 'sidebar.footer.action'

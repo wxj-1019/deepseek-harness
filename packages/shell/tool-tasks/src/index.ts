@@ -247,12 +247,13 @@ export function apply(ctx: Context, config: Config): void {
         throw new Error('workspace must be a relative directory path from task_list without .. segments')
       }
       // Execute-time lookup: the shell executor provisions after registration.
-      const result = await ctx.shell.run(ctx.shell.resolve({
+      const execution = await ctx.shell.execute(ctx.shell.resolve({
         command: `${packageManager} run ${script}`,
         ...(cwd !== undefined ? { workdir: workspace === '' ? cwd : cwd + '/' + workspace } : {}),
         timeoutMs,
         signal: exec.signal,
       }))
+      const result = await execution.result()
       const combined = tail(`${result.stdout.text}${result.stderr.text.length > 0 ? `\n${result.stderr.text}` : ''}`, outputMaxChars)
       return { script, ...(workspace !== '' ? { workspace } : {}), exitCode: result.exitCode ?? -1, output: combined }
     },

@@ -13,27 +13,7 @@ import AgentRegistry from '@deepseek-ai/dsh-agent'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import AgentLoop from '@deepseek-ai/dsh-agent-loop'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
-import { SettingsProvider } from '@deepseek-ai/dsh-settings'
-import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
-import VisionRouteConfig, { VISION_MODEL_SETTINGS_NAMESPACE } from '../src/index.ts'
-
-/** The smallest real settings provider: one in-memory document, always writable. */
-class MemorySettings extends SettingsProvider {
-  doc: Record<string, unknown> = {}
-
-  get writable(): boolean {
-    return true
-  }
-
-  protected load(): Promise<Record<string, unknown>> {
-    return Promise.resolve(structuredClone(this.doc))
-  }
-
-  protected persist(ns: SettingsNamespace, section: Record<string, unknown>): Promise<void> {
-    this.doc = { ...this.doc, [ns]: structuredClone(section) }
-    return Promise.resolve()
-  }
-}
+import VisionRouteConfig from '../src/index.ts'
 
 /** One request-capturing adapter: `mock` is text-only, `vision` declares images. */
 class ScriptedAdapter extends LlmAdapter {
@@ -94,7 +74,10 @@ function imageMessage(text = 'what is this?'): ReturnType<typeof createUserMessa
   })
 }
 
-async function harness(adapter: ScriptedAdapter): Promise<{ ctx: Context; disposeAdapter: () => void }> {
+async function harness(
+  adapter: ScriptedAdapter,
+  vision: { provider: string; model: string } = { provider: '', model: '' },
+): Promise<{ ctx: Context; disposeAdapter: () => void }> {
   const ctx = new Context()
   await ctx.plugin(LlmRuntime)
   await ctx.plugin(SessionStore)
@@ -102,8 +85,7 @@ async function harness(adapter: ScriptedAdapter): Promise<{ ctx: Context; dispos
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(AgentRegistry)
   await ctx.plugin(SessionProjectionRegistry)
-  await ctx.plugin(MemorySettings)
-  await ctx.plugin(VisionRouteConfig)
+  await ctx.plugin(VisionRouteConfig, vision)
   await ctx.plugin(AgentLoop, { agents: [] })
   const disposeAdapter = ctx.llm.registerAdapter(['mock', 'vision'], adapter)
   return { ctx, disposeAdapter }
@@ -113,9 +95,8 @@ async function createAgent(ctx: Context, id: string, provider = 'mock', model = 
   return ctx.agentLoop.create(SessionId(id), { provider, model })
 }
 
-async function configureVision(ctx: Context, provider = 'vision', model = 'vl'): Promise<void> {
-  await ctx.settings.replace(VISION_MODEL_SETTINGS_NAMESPACE, { provider, model })
-}
+/** The deployment's configured vision route passed at composition. */
+const VISION = { provider: 'vision', model: 'vl' }
 
 let context: Context | undefined
 
@@ -127,8 +108,7 @@ afterEach(async () => {
 describe('vision-model routing', () => {
   it('routes an image-bearing turn to the configured vision model', async () => {
     const adapter = new ScriptedAdapter([textResponse('plain'), textResponse('seen it')])
-    ;({ ctx: context } = await harness(adapter))
-    await configureVision(context)
+    ;({ ctx: context } = await harness(adapter, VISION))
     const agent = await createAgent(context, 'vision-route-basic')
 
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'hello' }], source: { kind: 'user' } }))
@@ -159,8 +139,7 @@ describe('vision-model routing', () => {
 
   it('keeps the vision model for the session after the image-bearing turn', async () => {
     const adapter = new ScriptedAdapter([textResponse('a'), textResponse('b'), textResponse('c')])
-    ;({ ctx: context } = await harness(adapter))
-    await configureVision(context)
+    ;({ ctx: context } = await harness(adapter, VISION))
     const agent = await createAgent(context, 'vision-route-persistent')
 
     agent.followup(createUserMessage({ content: [{ type: 'text', text: 'one' }], source: { kind: 'user' } }))
@@ -178,8 +157,7 @@ describe('vision-model routing', () => {
 
   it('does not route when the session model already carries images', async () => {
     const adapter = new ScriptedAdapter([textResponse('seen it')])
-    ;({ ctx: context } = await harness(adapter))
-    await configureVision(context)
+    ;({ ctx: context } = await harness(adapter, VISION))
     const agent = await createAgent(context, 'vision-route-already-vision', 'vision', 'vl')
 
     agent.followup(imageMessage())
@@ -191,9 +169,8 @@ describe('vision-model routing', () => {
 
   it('does not route to a configured vision model that lacks image input', async () => {
     const adapter = new ScriptedAdapter([textResponse('plain')])
-    ;({ ctx: context } = await harness(adapter))
     // A deployment that misconfigures a text-only model as its vision route.
-    await configureVision(context, 'mock', 'mock')
+    ;({ ctx: context } = await harness(adapter, { provider: 'mock', model: 'mock' }))
     const agent = await createAgent(context, 'vision-route-misconfigured')
 
     agent.followup(imageMessage())
@@ -210,8 +187,7 @@ describe('vision-model routing', () => {
       toolCallResponse('call-1', 'echo', '{"text":"hi"}'),
       textResponse('done looking'),
     ])
-    ;({ ctx: context } = await harness(adapter))
-    await configureVision(context)
+    ;({ ctx: context } = await harness(adapter, VISION))
     const agent = await createAgent(context, 'vision-route-multistep')
     context.tools.register(defineContentToolFixture({
       name: 'echo',

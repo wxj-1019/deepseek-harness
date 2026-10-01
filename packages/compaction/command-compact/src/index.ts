@@ -7,6 +7,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { CommandDefinitionId } from '@deepseek-ai/dsh-commands/brand'
 import { ManualCompactionError } from '@deepseek-ai/dsh-compaction'
 import type { CommandInvocation, CommandResult } from '@deepseek-ai/dsh-commands'
+import { assertNever } from '@deepseek-ai/dsh-util-values'
 
 export const name = 'command-compact'
 export const inject = ['commands', 'compaction']

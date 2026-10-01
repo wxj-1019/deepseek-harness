@@ -14,8 +14,8 @@ import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
-// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
-import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+// Type-only: pulls the ctx.uiWorkspace declaration merge (navigation service).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 // Type-only: pulls ui-layout's SlotMap merge (the shell.overlay seat).
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import { UserTodoController } from './controller.ts'
@@ -45,7 +45,7 @@ const NS = 'userTodo'
  * Required services (cordis fiber inject). The target seat is declared by
  * ui-sidebar's apply; registration depends on it through `slots.inject()`.
  */
-export const inject = ['slots', 'locale', 'remote', 'remote.userTodos']
+export const inject = ['slots', 'locale', 'remote', 'remote.userTodos', 'uiWorkspace']
 
 /**
  * Register the dictionaries and the sidebar-foot entry, and keep a loaded
@@ -66,7 +66,7 @@ export function apply(ctx: ClientContext): void {
     retitle: (id, title) => controller.retitle(id, title),
     setWorkspaceLink: (id, workspaceId) => controller.setWorkspaceLink(id, workspaceId),
     setSessionLink: (id, sessionId) => controller.setSessionLink(id, sessionId),
-    openSession: (sessionId) => { ctx.sessions.open(sessionId) },
+    openSession: (sessionId) => { ctx.uiWorkspace.openSession(sessionId) },
     setDue: (id, dueMs) => controller.setDue(id, dueMs),
     remove: id => controller.remove(id),
   }

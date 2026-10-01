@@ -26,6 +26,7 @@ import type {
   SystemPromptUpdate,
   ToolSchema,
   ToolUpdate,
+  VisionRouteService,
 } from './types.ts'
 import { freezeMessage } from './message.ts'
 import { resolveRetryPolicy } from './retry-policy.ts'

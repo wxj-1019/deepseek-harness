@@ -12,8 +12,8 @@ import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import {
-  IconCheckOutline14, IconChevronDownOutline14, IconCloseOutline16, IconPlusOutline16,
-  IconTrashOutline16, useDismissOnOutsidePointer,
+  IconCheckOutlineMedium, IconChevronDownOutlineMedium, IconCloseOutlineRegular, IconPlusOutlineRegular,
+  IconTrashOutlineRegular, useDismissOnOutsidePointer,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UserTodoId, UserTodoRecord } from '@deepseek-ai/dsh-user-todo/types'
@@ -139,7 +139,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             aria-label={item.done ? t('row.check.undo') : t('row.check.done')}
             onClick={() => { run(actions.toggle(item.id, !item.done)) }}
           >
-            {item.done && <IconCheckOutline14 />}
+            {item.done && <IconCheckOutlineMedium />}
           </button>
           <button
             type="button"
@@ -161,7 +161,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             aria-expanded={expanded}
             onClick={() => { setExpandedId(current => (current === item.id ? null : item.id)) }}
           >
-            <IconChevronDownOutline14 />
+            <IconChevronDownOutlineMedium />
           </button>
           <button
             type="button"
@@ -169,7 +169,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             aria-label={t('row.delete')}
             onClick={() => { run(actions.remove(item.id)) }}
           >
-            <IconTrashOutline16 />
+            <IconTrashOutlineRegular />
           </button>
         </div>
         {expanded && (
@@ -291,7 +291,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
           else openDrawer()
         }}
       >
-        <IconCheckOutline14 />
+        <IconCheckOutlineMedium />
         {pendingCount > 0 && <span className={css.badge} aria-hidden="true">{pendingCount}</span>}
       </button>
 
@@ -301,7 +301,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
             <strong>{t('button.label')}</strong>
             {pendingCount > 0 && <span className={css.count}>{t('count.pending', { count: pendingCount })}</span>}
             <button type="button" className={css.iconAction} aria-label={t('panel.close')} onClick={() => { setOpen(false) }}>
-              <IconCloseOutline16 />
+              <IconCloseOutlineRegular />
             </button>
           </header>
 
@@ -320,7 +320,7 @@ export function TodoDrawer(props: TodoDrawerProps) {
               aria-label={t('add.placeholder')}
             />
             <button type="submit" className={css.iconAction} aria-label={t('add.submit')}>
-              <IconPlusOutline16 />
+              <IconPlusOutlineRegular />
             </button>
           </form>
 

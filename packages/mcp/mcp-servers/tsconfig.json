@@ -19,9 +19,6 @@
       "path": "../mcp-client"
     },
     {
-      "path": "../../settings/settings"
-    },
-    {
       "path": "../../runtime-diagnostics/invariants"
     }
   ]

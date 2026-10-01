@@ -337,14 +337,45 @@
     - id: ui-settings-general
       name: '@deepseek-ai/dsh-client-ui-settings-general'
 
-    # MCP servers card in the Plugins configurable tab: the mcp settings
-    # namespace's server list (enable/disable, add/edit, remove) over
-    # revision-fenced path-op mutations; edits apply without a restart.
-    - id: ui-settings-mcp
-      name: '@deepseek-ai/dsh-client-ui-settings-mcp'
-
     - id: ui-settings-models
       name: '@deepseek-ai/dsh-client-ui-settings-models'
+
+    # Daily-todo panel: the sidebar-foot button over the user-todo storage
+    # domain (host row `user-todo`).
+    - id: ui-user-todo
+      name: '@deepseek-ai/dsh-client-ui-user-todo'
+
+    # Session pins: the header star toggle and the sidebar's pinned section
+    # over the session-pins storage domain (host row `session-pins`).
+    - id: ui-session-pins
+      name: '@deepseek-ai/dsh-client-ui-session-pins'
+
+    # Usage dashboard: the settings "Usage" section over the usage-ledger
+    # domain (host row `usage-ledger`).
+    - id: ui-usage
+      name: '@deepseek-ai/dsh-client-ui-usage'
+    # Git commit-rail conversation view: the session workspace's history with
+    # branch topology (host row 'git-graph').
+    - id: ui-git-graph
+      name: '@deepseek-ai/dsh-client-ui-git-graph'
+
+    # Notification center: the bell at the sidebar foot plus the overlay
+    # panel (shell.overlay's first occupant) over the notifications domain.
+    - id: ui-notification-center
+      name: '@deepseek-ai/dsh-client-ui-notification-center'
+
+    # Component library card in the Plugins configurable tab: learned
+    # component count, search, and model-record review over the
+    # component_library domain (host row `component-library`).
+    - id: ui-component-library
+      name: '@deepseek-ai/dsh-client-ui-component-library'
+
+    # Dev checks: per-machine switches narrowing the heavy routine quality
+    # gates (e2e, coverage, snapshot, doc-sync, pre-push typecheck); the
+    # repo-side gate wrapper reads the same settings document. Local-only —
+    # CI never consults these toggles.
+    - id: ui-settings-dev-checks
+      name: '@deepseek-ai/dsh-client-ui-settings-dev-checks'
 
     # Plugin management: the sidebar Plugins page installs, enables, disables,
     # and removes the profile's bundles through the `pluginManager` Remote.
@@ -379,6 +410,13 @@
 
     - id: ui-cordis
       name: '@deepseek-ai/dsh-client-ui-cordis'
+
+    # dsh-better-sidebar: the community VSCode-style workbench — a right
+    # sidebar (explorer / editor / terminal / Git / browser) plus bottom
+    # panels, per-session layouts, and a `betterSidebar` service other
+    # plugins extend. Third-party package, pinned by the web-app dependency.
+    - id: better-sidebar
+      name: 'dsh-better-sidebar'
 
     # Turn tail: the changed-files card and delivery cards under each closing
     # assistant message. Remove this entry to turn the surface off; the tail
@@ -416,6 +454,13 @@
 
     - id: ui-reference
       name: '@deepseek-ai/dsh-client-ui-reference'
+
+    # Read-only active Schedule catalog. The shipped Web graph resolves the
+    # client package but leaves it disabled; the explicit Schedule overlay
+    # enables this same row together with the host Schedule services.
+    - id: ui-schedule
+      name: '@deepseek-ai/dsh-client-ui-schedule'
+      disabled: true
 
 
     # Background jobs: the session-header roster with on-demand streaming

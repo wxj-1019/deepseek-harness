@@ -69,6 +69,10 @@ import * as StagehandBrowserTools from '@deepseek-ai/dsh-experimental-browser-us
 import type TeamService from '@deepseek-ai/dsh-experimental-agent-team'
 import * as ToolTeam from '@deepseek-ai/dsh-experimental-tool-agent-team'
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo'
+import ComponentLibraryService from '@deepseek-ai/dsh-component-library'
+import Storage from '@deepseek-ai/dsh-storage'
+import * as StorageJson from '@deepseek-ai/dsh-storage-json'
+import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
 import type PluginManager from '@deepseek-ai/dsh-plugin-manager'
 import * as PluginManagerTools from '@deepseek-ai/dsh-plugin-manager/tools'
 import SandboxPolicy from '@deepseek-ai/dsh-sandbox-policy'
@@ -725,23 +729,20 @@ const TOOL_PACKAGES: ToolPackage[] = [
     pkg: '@deepseek-ai/dsh-component-library',
     dir: 'component-library',
     source: 'packages/storage/component-library/src/tools.ts',
-    requires: ['ctx.tools', 'ctx.systemPrompt', 'ctx.skills', 'ctx.settings', 'ctx.storageDomain'],
+    requires: ['ctx.tools', 'ctx.systemPrompt', 'ctx.skills', 'ctx.storageDomain'],
     writes: ['tool/call', 'tool/result', 'component_library domain writes', 'component-library/changed'],
     async mount(ctx) {
-      // The service owns a storage domain and a settings namespace; the
-      // harvest composes the JSON backend and a file provider over the shared
-      // scratch tree and scans this checkout with the watcher off.
+      // The service owns a storage domain; the harvest composes the JSON
+      // backend over the shared scratch tree and scans this checkout with the
+      // watcher off.
       await ctx.plugin(Storage)
       await ctx.plugin(StorageJson, { root: resolve(root, '.tmp/tool-catalog/storages') })
       await ctx.plugin(StorageDomain, { backend: 'json' })
       if (ctx.get('skills') === undefined) await ctx.plugin(SkillRegistry)
-      if (ctx.get('settings') === undefined) {
-        await ctx.plugin(FileSettingsProvider, { path: resolve(root, '.tmp/tool-catalog/settings.yaml') })
-      }
       await ctx.plugin(ComponentLibraryService, { root, watch: false })
     },
     note:
-      'component_query ranks scanned records above model-contributed ones and quarantines unreviewed model records unless the component-library settings namespace opts in; component_record writes are quarantined for human review on the web settings card.',
+      'component_query ranks scanned records above model-contributed ones and quarantines unreviewed model records unless the includeUnreviewed config field opts in; component_record writes are quarantined for human review on the web settings card.',
   },
   {
     pkg: '@deepseek-ai/dsh-tool-workflow',

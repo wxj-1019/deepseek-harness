@@ -9,27 +9,11 @@ import ToolRuntime from '@deepseek-ai/dsh-tools'
 import Storage from '@deepseek-ai/dsh-storage'
 import * as StorageDomain from '@deepseek-ai/dsh-storage-domain'
 import * as StorageJson from '@deepseek-ai/dsh-storage-json'
-import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import ComponentLibraryService from '../src/index.ts'
 import type { Config } from '../src/index.ts'
 
 /** Checkout fixture the scanner learns during tests. */
 export const FIXTURE_ROOT = fileURLToPath(new URL('../fixtures/checkout', import.meta.url))
-
-/** Minimal in-memory settings provider: the smallest real Service Provider. */
-class MemorySettings extends SettingsProvider {
-  get writable(): boolean {
-    return true
-  }
-
-  protected load(): Promise<Record<string, unknown>> {
-    return Promise.resolve({})
-  }
-
-  protected persist(_ns: SettingsNamespace, _section: Record<string, unknown>): Promise<void> {
-    return Promise.resolve()
-  }
-}
 
 export interface LibraryHarness {
   readonly ctx: Context
@@ -48,7 +32,6 @@ export async function setupLibrary(config: Config = { root: FIXTURE_ROOT, watch:
     await ctx.plugin(SystemPrompt)
     await ctx.plugin(ToolRuntime)
     await ctx.plugin(SkillRegistry)
-    await ctx.plugin(MemorySettings)
     await ctx.plugin(ComponentLibraryService, config)
   } catch (error) {
     await ctx.fiber.dispose()

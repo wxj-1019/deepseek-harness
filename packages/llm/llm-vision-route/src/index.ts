@@ -18,8 +18,6 @@ import z from '@deepseek-ai/schemastery'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { contentHasImage } from '@deepseek-ai/dsh-llm'
 import type { LlmCallConfig, VisionRouteService } from '@deepseek-ai/dsh-llm'
-// Type-only: pulls the settings service Context merge (ctx.settings).
-import type {} from '@deepseek-ai/dsh-settings'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -28,53 +26,33 @@ declare module '@deepseek-ai/cordis' {
   }
 }
 
-/** Settings namespace carrying the deployment's vision-model route. */
-export const VISION_MODEL_SETTINGS_NAMESPACE = 'vision-model'
-
-/** Stored and composed vision-model routing configuration. */
-export interface VisionModelSettings {
+/**
+ * Deployment vision-model route: requests of an image-bearing turn are
+ * rerouted to this provider/model pair. Both fields empty keeps routing off.
+ */
+export interface Config {
   /** Registered provider route. */
   provider: string
   /** Provider-owned model id. */
   model: string
 }
 
-/** Schema of the vision-model settings section. */
-export const VISION_MODEL_SETTINGS_SCHEMA: z<VisionModelSettings> = z.object({
-  provider: z.string().required(),
-  model: z.string().required(),
+/** Runtime schema for {@link Config}; routing stays off until both fields name a model. */
+export const Config: z<Config> = z.object({
+  provider: z.string().default(''),
+  model: z.string().default(''),
 })
-
-/** Composition entry: routing stays off until the settings document names a model. */
-const ROUTING_OFF: VisionModelSettings = { provider: '', model: '' }
-
-/** The plugin takes no composition config; the settings namespace is its configuration. */
-export type Config = Readonly<Record<string, never>>
-export const Config = z.object({}) as unknown as z<Config>
 
 /**
  * Owns the vision-model routing policy: the configured route, the per-agent
  * open-turn image state, and the `agent/request` waterfall that switches.
- * The settings source is read live, so a change takes effect on the next
- * request without a restart.
  */
 export class VisionRouteConfig extends Service implements VisionRouteService {
-  private source: () => VisionModelSettings
-
   /** Per-agent open-turn image state; the value is the turn number, 0 = none. */
   private readonly imagesInTurn = new WeakMap<Agent, number>()
 
-  constructor(ctx: Context, _config: Config = {}) {
+  constructor(ctx: Context, private readonly config: Config = { provider: '', model: '' }) {
     super(ctx, 'visionRoute')
-    this.source = () => ROUTING_OFF
-    ctx.inject(['settings'], (settingsCtx) => {
-      settingsCtx.settings.installSection(ctx, VISION_MODEL_SETTINGS_NAMESPACE, VISION_MODEL_SETTINGS_SCHEMA, ROUTING_OFF, {
-        setSource: (source) => { this.source = source },
-        // Every consumer reads through configured(), so no registration-level
-        // fact needs rebuilding when the settings document changes.
-        onChange: () => {},
-      })
-    })
     ctx.on('agent/pre-step', async (payload, next) => {
       // One flag per open turn: a turn that ever carried an image keeps
       // routing for all of its steps, and a fresh turn recomputes.
@@ -113,13 +91,11 @@ export class VisionRouteConfig extends Service implements VisionRouteService {
 
   /**
    * The configured vision model route, or undefined while routing is off.
-   * @returns a detached provider/model pair when the settings document names one.
+   * @returns a detached provider/model pair when the composition names one.
    */
   configured(): { provider: string; model: string } | undefined {
-    const settings = this.source()
-    return settings.provider.length > 0 && settings.model.length > 0
-      ? { provider: settings.provider, model: settings.model }
-      : undefined
+    const { provider, model } = this.config
+    return provider.length > 0 && model.length > 0 ? { provider, model } : undefined
   }
 
   /**

@@ -6,6 +6,15 @@
  */
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+// Type-only: pulls the workspace standard-kit merge (useWorkspaces).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 import { GitGraphTab, type GitGraphTabProps } from '../src/client/GitGraphTab.tsx'
 // Type-only: pulls the LocaleNamespaceMap merge (the view namespace).
 import type {} from '../src/client/index.ts'
@@ -47,16 +56,22 @@ function stubFetch(handler: (url: string, init?: RequestInit) => Promise<unknown
   })))
 }
 
+const useResource = (() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })) as GlobalStandardProps['useResource']
+
 function mount(overrides: Partial<GitGraphTabProps> = {}): void {
   const props: GitGraphTabProps = {
     sessionId: 'sess-1' as SessionId,
     viewRequest: null,
     openView: () => {},
     completeViewRequest: () => {},
+    inspectCall: () => {},
     useSession: () => { throw new Error('unused by the git graph tab') },
     useSessions,
-    useSessionPendingInteraction: () => { throw new Error('unused by the git graph tab') },
+    useSessionStatus: selector => selector(new Map()),
+    useSessionRetainInfo: () => undefined,
     useWorkspaces: () => { throw new Error('unused by the git graph tab') },
+    usePanelInfo: selector => selector({ activePanelId: null }),
+    useResource,
     useProjection: () => undefined,
     useConversation: () => { throw new Error('unused by the git graph tab') },
     useChat: () => { throw new Error('unused by the git graph tab') },

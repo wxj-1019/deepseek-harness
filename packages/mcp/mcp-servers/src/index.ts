@@ -1,14 +1,15 @@
 /**
  * MCP server composition manager: mounts one `@deepseek-ai/dsh-mcp-client`
- * row per server declared under the `mcp` settings namespace and keeps the
- * mounted set in step with committed settings edits.
+ * row per server declared in this group entry's volatile Config and keeps the
+ * mounted set in step with live configuration edits.
  *
- * Class plugin mounted as a loader group row (`group: true`). Each settings
+ * Class plugin mounted as a loader group row (`group: true`). Each configured
  * server becomes the child row `mcp-servers:<name>` whose config is the entry
- * plus the dictionary-key `serverName`; names under `mcp.disabled` are
- * excluded while their entries stay for a later re-enable. The settings
- * dictionary merges per server, so one edit re-applies exactly that row — the
- * loader's config-diff path — and never touches the others.
+ * plus the dictionary-key `serverName`; names under `disabled` are excluded
+ * while their entries stay for a later re-enable. Both Config fields are
+ * volatile, so a settings edit commits into the running references and
+ * `loader/volatile-update` re-composes exactly the changed rows — the
+ * loader's per-entry update path — without remounting this manager.
  *
  * `env` and `headers` values may reference the ambient environment as
  * `${NAME}`; an unresolved reference skips that server with an error instead
@@ -17,28 +18,26 @@
  * @module @deepseek-ai/dsh-mcp-servers
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
+import { Context, Service, type Volatile } from '@deepseek-ai/cordis'
 import { EntryGroup } from '@deepseek-ai/cordis-plugin-loader'
 import type { EntryOptions } from '@deepseek-ai/cordis-plugin-loader'
 import z from '@deepseek-ai/schemastery'
 import { SERVER_NAME_PATTERN, ServerEntryConfig } from '@deepseek-ai/dsh-mcp-client'
 import type { ServerEntry } from '@deepseek-ai/dsh-mcp-client'
-// Side-effect type import: declaration-merges `ctx.settings` onto Context.
-import type {} from '@deepseek-ai/dsh-settings'
-
-/** Settings namespace this manager owns. */
-const SETTINGS_NAMESPACE = 'mcp'
+// Type-only: the Loader emits `loader/volatile-update` after committing a live
+// edit into this entry's volatile Config references.
+import type {} from '@deepseek-ai/cordis-plugin-loader'
 
 /** Loader name of the bridge plugin each composed row mounts. */
 const MCP_CLIENT_PLUGIN = '@deepseek-ai/dsh-mcp-client'
 
-/** Row id prefix; each settings server becomes `<prefix>:<name>`. */
+/** Row id prefix; each configured server becomes `<prefix>:<name>`. */
 const ROW_ID_PREFIX = 'mcp-servers'
 
 /** One `${NAME}` reference inside an `env` or `headers` value. */
 const ENV_REFERENCE = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g
 
-/** The `mcp` settings document: the server dictionary plus excluded names. */
+/** The plain server dictionary plus excluded names. */
 export interface McpSettingsValue {
   /** Server entries keyed by the `serverName` each composed row receives. */
   servers: Record<string, ServerEntry>
@@ -46,18 +45,26 @@ export interface McpSettingsValue {
   disabled: string[]
 }
 
-/** Schemastery schema for the `mcp` settings namespace. */
+/** Schemastery schema for this plugin's Config; both fields edit live. */
 export const McpSettings = z.object({
-  servers: z.dict(ServerEntryConfig).default({}),
-  disabled: z.array(String).default([]),
-}) as unknown as z<McpSettingsValue>
+  servers: z.dict(ServerEntryConfig).default({}).volatile(),
+  disabled: z.array(String).default([]).volatile(),
+})
+
+/** Resolved Config: volatile fields arrive as live references. */
+export interface Config {
+  /** Live reference to the server dictionary. */
+  servers: Volatile<Record<string, ServerEntry>>
+  /** Live reference to the excluded server names. */
+  disabled: Volatile<string[]>
+}
 
 /** Outcome of expanding `${NAME}` references in one string. */
 type Expansion = { value: string } | { missing: string }
 
 /**
  * Expand every `${NAME}` reference in one value against the ambient environment.
- * @param source - the raw settings value.
+ * @param source - the raw configured value.
  * @returns the expanded value, or the first variable name that resolved to nothing.
  */
 function expandReferences(source: string): Expansion {
@@ -79,7 +86,7 @@ type DictExpansion = { value: Record<string, string> } | { missing: { key: strin
 /**
  * Expand every value of an env/headers dictionary, or report the key holding
  * the first unresolved reference.
- * @param dict - raw settings dictionary.
+ * @param dict - raw configured dictionary.
  * @returns the expanded dictionary, or the failing key and variable name.
  */
 function expandDict(dict: Record<string, string>): DictExpansion {
@@ -92,13 +99,13 @@ function expandDict(dict: Record<string, string>): DictExpansion {
   return { value }
 }
 
-/** A composed row's config: the settings entry plus the dictionary-key `serverName`. */
+/** A composed row's config: the configured entry plus the dictionary-key `serverName`. */
 type ComposedConfig = ServerEntry & { serverName: string }
 
 /**
- * Compose loader rows from one resolved `mcp` settings value. Pure: each
- * composition problem is reported through `report` and skips only that server.
- * @param value - resolved `mcp` settings value.
+ * Compose loader rows from one resolved Config value. Pure: each composition
+ * problem is reported through `report` and skips only that server.
+ * @param value - resolved server dictionary and disabled names.
  * @param report - error sink naming skipped servers; the plugin passes its logger.
  * @returns rows for the loader group, one per enabled server.
  */
@@ -135,23 +142,35 @@ export function composeRows(value: McpSettingsValue, report: (message: string) =
 export default class McpServers extends EntryGroup {
   static readonly [EntryGroup.key] = true
 
-  static inject = ['settings']
+  static Config = McpSettings
 
-  constructor(ctx: Context) {
+  constructor(ctx: Context, private readonly config: Config) {
     const entry = ctx.fiber.entry
     if (entry === undefined) throw new Error('mcp-servers requires an owning loader entry')
     super(ctx, entry.parent.tree)
+    // Live edits land as volatile commits on this entry, not as a remount.
+    ctx.on('loader/volatile-update', () => { void this.compose() })
+  }
+
+  /** Snapshot the current server dictionary and disabled names. */
+  private current(): McpSettingsValue {
+    // Volatile snapshots are deep-readonly; composition only reads them and
+    // each composed row receives a fresh object.
+    return {
+      servers: this.config.servers.get() as Record<string, ServerEntry>,
+      disabled: [...this.config.disabled.get()],
+    }
+  }
+
+  /** Reconcile the mounted rows with the current Config value. */
+  private async compose(): Promise<void> {
+    await this.update(composeRows(this.current(), (message) => { this.ctx.logger.error(message) }))
   }
 
   async* [Service.init](): AsyncGenerator<() => void, void, void> {
     // Registered first so a disposal during the initial composition still
     // tears the mounted rows down.
-    yield () => { void this.stop() }
-    const scope = this.ctx.settings.register(SETTINGS_NAMESPACE, McpSettings)
-    const unwatch = scope.watch((next) => {
-      void this.update(composeRows(next, (message) => { this.ctx.logger.error(message) }))
-    })
-    yield () => { unwatch() }
-    await this.update(composeRows(scope.get(), (message) => { this.ctx.logger.error(message) }))
+    yield () => { this.stop() }
+    await this.compose()
   }
 }

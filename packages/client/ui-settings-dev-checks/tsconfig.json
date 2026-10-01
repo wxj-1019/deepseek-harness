@@ -13,9 +13,9 @@
   ],
   "references": [
     { "path": "../ui-renderer" },
-    { "path": "../locale" },
+    { "path": "../locale/tsconfig.client.json" },
     { "path": "../ui-slots" },
-    { "path": "../ui-settings" },
+    { "path": "../ui-settings/tsconfig.client.json" },
     { "path": "../../settings/settings" },
     { "path": "../../runtime-diagnostics/invariants" },
     { "path": "../../../vendor/cordis" }

@@ -84,6 +84,9 @@ export function requestImageStore(readImageRequest: AttachmentStore['readImageRe
     saveImage(): never { throw new Error('unexpected image save') }
     readImage(): never { throw new Error('unexpected original image read') }
     override readImageRequest = readImageRequest
+    get videoLimits(): never { throw new Error('unexpected video policy read') }
+    saveVideo(): never { throw new Error('unexpected video save') }
+    readVideo(): never { throw new Error('unexpected video read') }
   }
   return new ProjectedAttachments(new Context())
 }

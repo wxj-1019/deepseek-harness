@@ -128,6 +128,26 @@ export const AQUA_DEFAULTS: AquaSection = {
 }
 
 /**
+ * Stored wallpaper reference schema; the union wrapper carries no default, so
+ * an absent `wallpaper` survives resolution as undefined. Shared by the
+ * section wire envelope and the Host plugin's volatile Config.
+ */
+export const WallpaperRefSchema = z.union([
+  z.object({
+    attachmentId: z.string().pattern(/^sha256:[0-9a-f]{64}$/),
+    mediaType: z.union([...WALLPAPER_IMAGE_MEDIA_TYPES]),
+    bytes: z.natural(),
+    width: z.natural(),
+    height: z.natural(),
+  }),
+  z.object({
+    attachmentId: z.string().pattern(/^sha256:[0-9a-f]{64}$/),
+    mediaType: z.union([...WALLPAPER_VIDEO_MEDIA_TYPES]),
+    bytes: z.natural(),
+  }),
+])
+
+/**
  * Durable section schema; also the wire envelope the browser scope validates
  * against. The union wrapper around each ref shape carries no default, so an
  * absent `wallpaper` survives resolution as undefined.
@@ -141,20 +161,7 @@ export const AquaSectionSchema: z<AquaSection> = z.object({
   fluidDepth: z.number().step(1).min(0).max(100).default(AQUA_DEFAULTS.fluidDepth),
   bgBrightness: z.number().step(1).min(0).max(100).default(AQUA_DEFAULTS.bgBrightness),
   background: z.union([...AQUA_BACKGROUNDS]).default('fluid'),
-  wallpaper: z.union([
-    z.object({
-      attachmentId: z.string().pattern(/^sha256:[0-9a-f]{64}$/),
-      mediaType: z.union([...WALLPAPER_IMAGE_MEDIA_TYPES]),
-      bytes: z.natural(),
-      width: z.natural(),
-      height: z.natural(),
-    }),
-    z.object({
-      attachmentId: z.string().pattern(/^sha256:[0-9a-f]{64}$/),
-      mediaType: z.union([...WALLPAPER_VIDEO_MEDIA_TYPES]),
-      bytes: z.natural(),
-    }),
-  ]).required(false),
+  wallpaper: WallpaperRefSchema.required(false),
   whale: z.boolean().default(true),
   critters: z.boolean().default(true),
   mesh: z.boolean().default(true),

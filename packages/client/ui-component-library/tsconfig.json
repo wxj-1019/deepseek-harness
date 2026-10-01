@@ -19,7 +19,7 @@
       "path": "../store"
     },
     {
-      "path": "../locale"
+      "path": "../locale/tsconfig.client.json"
     },
     {
       "path": "../ui-settings-plugins"

@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import {
-  IconCheckOutline14, IconCloseOutline16, IconRefreshOutline14,
+  IconCheckOutlineMedium, IconCloseOutlineRegular, IconRefreshOutlineMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { NotificationKind, NotificationRecord } from '@deepseek-ai/dsh-notification-center/types'
@@ -93,7 +93,7 @@ export function NotificationPanel(props: NotificationPanelProps) {
           {t('panel.clearRead')}
         </button>
         <button type="button" className={css.iconAction} aria-label={t('panel.close')} onClick={close}>
-          <IconCloseOutline16 />
+          <IconCloseOutlineRegular />
         </button>
       </header>
 
@@ -127,7 +127,7 @@ export function NotificationPanel(props: NotificationPanelProps) {
                   title={t('row.markRead')}
                   onClick={() => { run(markRead(item.id)) }}
                 >
-                  <IconCheckOutline14 />
+                  <IconCheckOutlineMedium />
                 </button>
               )}
             </li>
@@ -139,7 +139,7 @@ export function NotificationPanel(props: NotificationPanelProps) {
         <span className={css.counts}>{unread > 0 ? t('bell.unread', { count: unread }) : ''}</span>
         {read > 0 && (
           <button type="button" className={css.action} onClick={() => { run(clearRead()) }}>
-            <IconRefreshOutline14 />
+            <IconRefreshOutlineMedium />
           </button>
         )}
       </footer>

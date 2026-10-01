@@ -95,6 +95,11 @@
     "@deepseek-ai/dsh-office-to-pdf": "workspace:*",
     "@deepseek-ai/dsh-api-account-controller": "workspace:*",
     "@deepseek-ai/dsh-deepseek-account": "workspace:*",
-    "@deepseek-ai/dsh-client-product-analytics": "workspace:*"
+    "@deepseek-ai/dsh-client-product-analytics": "workspace:*",
+    "@deepseek-ai/dsh-component-library": "workspace:*",
+    "@deepseek-ai/dsh-notification-center": "workspace:*",
+    "@deepseek-ai/dsh-session-pins": "workspace:*",
+    "@deepseek-ai/dsh-usage-ledger": "workspace:*",
+    "@deepseek-ai/dsh-user-todo": "workspace:*"
   }
 }

@@ -1,11 +1,10 @@
-/** Host half: durable namespace registration, /backgrounds admission for both
+/** Host half: volatile Config resolution, /backgrounds admission for both
  * media kinds (same-origin write fence, limits from the attachments policy,
  * ETag revalidation, video byte ranges), and the boot glass transform. */
 import { Context } from '@deepseek-ai/cordis'
 import { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import { AttachmentError } from '@deepseek-ai/dsh-attachment'
-import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { afterAll, describe, expect, it } from 'vitest'
 import { AQUA_DEFAULTS, type WallpaperRef } from '../src/aqua-settings.ts'
 
@@ -49,52 +48,41 @@ function attachmentsStub(): AttachmentStore {
   } as unknown as AttachmentStore
 }
 
-/** In-memory settings document (the standard MemorySettings fixture). */
-class MemorySettings extends SettingsProvider {
-  readonly writable = true
-  protected load(): Promise<Record<string, unknown>> { return Promise.resolve({}) }
-  protected persist(_ns: SettingsNamespace, _section: Record<string, unknown>): Promise<void> {
-    return Promise.resolve()
-  }
-}
-
 const live: Context[] = []
 const base = () => `http://127.0.0.1:${live.at(-1)!.webServer.port}`
 
 afterAll(async () => { await Promise.all(live.map(ctx => ctx.fiber.dispose())) })
 
-/** Boot one Host composition: real settings provider + real WebServer. */
-async function boot(attachments: AttachmentStore): Promise<Context> {
+/** Boot one Host composition: real WebServer + the plugin over an initial Config. */
+async function boot(attachments: AttachmentStore, initial: Record<string, unknown> = {}): Promise<Context> {
   const ctx = new Context()
-  const { apply } = await import('../src/index.ts')
-  await ctx.plugin(MemorySettings).await()
+  const { apply, Config } = await import('../src/index.ts')
   ctx.provide('attachments', attachments)
   await ctx.plugin(WebServer, { host: '127.0.0.1', port: 0 })
   live.push(ctx)
-  await ctx.plugin({ apply }).await()
+  await ctx.plugin({ apply, Config }, { trustedHosts: [], ...initial }).await()
   return ctx
 }
 
-const NS = 'ui-aqua' as SettingsNamespace
-
 describe('ui-aqua host', () => {
-  it('registers and validates the durable namespace', async () => {
-    const ctx = await boot(attachmentsStub())
-    expect(ctx.settings.get(NS)).toEqual(AQUA_DEFAULTS)
-    await ctx.settings.update(NS, { mode: 'compat', blur: 30 })
-    expect(ctx.settings.get(NS)).toMatchObject({ mode: 'compat', blur: 30 })
-    await expect(ctx.settings.update(NS, { blur: 99 })).rejects.toThrow()
+  it('resolves the shipped defaults and rejects out-of-range knob values', async () => {
+    const { Config } = await import('../src/index.ts')
+    const resolved = Config({})
+    expect(resolved.enabled.get()).toBe(AQUA_DEFAULTS.enabled)
+    expect(resolved.blur.get()).toBe(AQUA_DEFAULTS.blur)
+    expect(resolved.mode.get()).toBe(AQUA_DEFAULTS.mode)
+    expect(() => Config({ blur: 99 })).toThrow()
   })
 
   it('renders the boot glass for an enabled section and nothing when off', async () => {
-    const ctx = await boot(attachmentsStub())
     const HTML = '<html><head></head><body></body></html>'
+    const ctx = await boot(attachmentsStub())
     const injected = ctx.webServer.applyIndexTaps(HTML)
     expect(injected.indexOf('<style>')).toBeGreaterThan(0)
     expect(injected).toContain("setAttribute('data-dsh-aqua','')")
     expect(injected).toContain('--dsw-alias-bg-base:#0C121B')
-    await ctx.settings.update(NS, { enabled: false })
-    expect(ctx.webServer.applyIndexTaps(HTML)).toBe(HTML)
+    const off = await boot(attachmentsStub(), { enabled: false })
+    expect(off.webServer.applyIndexTaps(HTML)).toBe(HTML)
   })
 
   it('admits same-origin image and video uploads and strips display names', async () => {
@@ -129,8 +117,7 @@ describe('ui-aqua host', () => {
   })
 
   it('serves the current image with ETag revalidation and 404s without one', async () => {
-    const ctx = await boot(attachmentsStub())
-    await ctx.settings.update(NS, { background: 'wallpaper', wallpaper: IMAGE_REF })
+    await boot(attachmentsStub(), { background: 'wallpaper', wallpaper: IMAGE_REF })
     const first = await fetch(`${base()}/backgrounds/current`)
     expect(first.status).toBe(200)
     expect(first.headers.get('content-type')).toBe('image/png')
@@ -142,8 +129,7 @@ describe('ui-aqua host', () => {
   })
 
   it('serves a video wallpaper in whole and as one byte range', async () => {
-    const ctx = await boot(attachmentsStub())
-    await ctx.settings.update(NS, { background: 'wallpaper', wallpaper: VIDEO_REF })
+    await boot(attachmentsStub(), { background: 'wallpaper', wallpaper: VIDEO_REF })
     const whole = await fetch(`${base()}/backgrounds/current`)
     expect(whole.status).toBe(200)
     expect(whole.headers.get('content-type')).toBe('video/webm')
@@ -158,8 +144,7 @@ describe('ui-aqua host', () => {
     const rejecting = attachmentsStub()
     ;(rejecting as { saveImage: unknown }).saveImage = () => Promise.reject(new AttachmentError('no', 'IMAGE_TOO_LARGE'))
     ;(rejecting as { readVideo: unknown }).readVideo = () => Promise.reject(new AttachmentError('gone', 'ATTACHMENT_NOT_FOUND'))
-    const ctx = await boot(rejecting)
-    await ctx.settings.update(NS, { background: 'wallpaper', wallpaper: VIDEO_REF })
+    await boot(rejecting, { background: 'wallpaper', wallpaper: VIDEO_REF })
     expect((await fetch(`${base()}/backgrounds`, {
       method: 'POST', headers: { 'content-type': 'image/png', 'content-length': '3' }, body: Buffer.alloc(3, 1),
     })).status).toBe(422)

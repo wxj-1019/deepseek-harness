@@ -7,7 +7,7 @@
  * {@link AquaLayer} is a pure applier this runtime drives.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
 import {
   AQUA_DEFAULTS, WALLPAPER_UPLOAD_PATH, isVideoRef,
   type AquaSection, type WallpaperRef,
@@ -98,7 +98,7 @@ function clearLegacy(): void {
  */
 export class AquaRuntime {
   private readonly ctx: Context
-  private readonly host: SettingsScope<AquaSection>
+  private readonly host: ConfigForm<AquaSection>
   private readonly layer: AquaLayer
   private section: AquaSection = AQUA_DEFAULTS
   private revision = 0
@@ -108,10 +108,10 @@ export class AquaRuntime {
   /**
    * @param ctx - owning context (change events are emitted on it; the scope
    * listener is released through ctx.effect on dispose).
-   * @param host - durable preference scope owned by the same plugin.
+   * @param host - durable preference form owned by the same plugin.
    * @param layer - the pure visual applier this runtime drives.
    */
-  constructor(ctx: Context, host: SettingsScope<AquaSection>, layer: AquaLayer) {
+  constructor(ctx: Context, host: ConfigForm<AquaSection>, layer: AquaLayer) {
     this.ctx = ctx
     this.host = host
     this.layer = layer

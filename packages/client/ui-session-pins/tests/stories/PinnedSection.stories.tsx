@@ -7,10 +7,14 @@
  */
 import { createRoot } from 'react-dom/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-// Type-only: pulls the session standard-kit merge (useSessions).
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 // Type-only: pulls the workspace standard-kit merge (useWorkspaces).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 import { SessionPinsController } from '../../src/client/controller.ts'
 import type { SessionPinsRemoteFace } from '../../src/client/controller.ts'
 import { PinnedSection } from '../../src/client/PinnedSection.tsx'
@@ -40,8 +44,6 @@ const SESSIONS = {
   },
 }
 
-const unusedHook = (() => { throw new Error('unused by the pinned section') }) as never
-
 export const story = {
   record: 'ui-session-pins/PinnedSection',
   /** Mount the wide pinned section over two pinned sessions; unpin is live. */
@@ -60,7 +62,10 @@ export const story = {
         ensure={() => controller.ensure()}
         unpin={id => controller.unpin(id)}
         openSession={() => {}}
-        useSessionPendingInteraction={unusedHook}
+        useSessionStatus={selector => selector(new Map())}
+        useSessionRetainInfo={() => undefined}
+        usePanelInfo={selector => selector({ activePanelId: null })}
+        useResource={() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })}
       />,
     )
     container.dataset.dshStoryRoot = 'true'

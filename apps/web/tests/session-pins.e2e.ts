@@ -12,6 +12,8 @@ import type { Browser, Page } from 'playwright'
 import { chromium } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import { SessionId } from '@deepseek-ai/dsh-session'
+// Empty type import: carries the sessionPins Context merge.
+import type {} from '@deepseek-ai/dsh-session-pins'
 import {
   acknowledgeReloadConnectionLoss, assertFixtureInventory, captureStableAria,
   compareOrRefreshGolden, launchWebScaffold, seedSession, watchConsole,

@@ -1,14 +1,10 @@
-# Integration base for the mcp-servers suite: an in-memory settings provider
-# (document injected via MCP_SERVERS_TEST_DOC), the manager as a loader group
-# row, and the registries the composed mcp-client rows need.
-- id: test-settings
-  name: 'cordis:mcp-servers-test-settings'
-  config:
-    doc: !!js JSON.parse(process.env.MCP_SERVERS_TEST_DOC ?? '{}')
-
-- id: mcp-servers
+# Integration base for the mcp-servers suite: the manager as a loader group
+# row whose volatile Config document is injected via MCP_SERVERS_TEST_DOC,
+# plus the registries the composed mcp-client rows need.
+- id: mcp
   name: 'cordis:mcp-servers-test-manager'
   group: true
+  config: !!js JSON.parse(process.env.MCP_SERVERS_TEST_DOC ?? '{}')
 
 - id: test-system-prompt
   name: 'cordis:mcp-servers-test-system-prompt'

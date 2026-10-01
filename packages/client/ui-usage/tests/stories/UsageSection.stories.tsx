@@ -6,10 +6,14 @@
  */
 import { createRoot } from 'react-dom/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-// Type-only: pulls the session standard-kit merge.
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 // Type-only: pulls the conversation standard-kit merge (useChat/useInput/…).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type { UsageLedgerListResult } from '@deepseek-ai/dsh-usage-ledger/types'
 import { UsageLedgerController } from '../../src/client/controller.ts'
@@ -86,6 +90,7 @@ export const story = {
         viewRequest={null}
         openView={() => {}}
         completeViewRequest={() => {}}
+        inspectCall={() => {}}
         useSession={() => { throw new Error('unused by the usage view') }}
         useSessions={selector => selector({
           byId: {
@@ -93,7 +98,10 @@ export const story = {
             'sess-beta': { cwd: '/work/beta' },
           },
         } as never)}
-        useSessionPendingInteraction={unusedHook}
+        useSessionStatus={selector => selector(new Map())}
+        useSessionRetainInfo={() => undefined}
+        usePanelInfo={selector => selector({ activePanelId: null })}
+        useResource={() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })}
         useWorkspaces={unusedHook}
         useProjection={() => undefined}
         useConversation={unusedHook}

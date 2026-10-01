@@ -4,7 +4,9 @@ import { RemoteStream, type RemoteStreamOptions } from '@deepseek-ai/dsh-api-gat
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { afterEach, describe, expect, it } from 'vitest'
 import * as JobClient from '../src/client/index.ts'
+import type { IJobs } from '../src/client/index.ts'
 import type { JobFollowFrame, JobListFrame } from '../src/types.ts'
+import type { JobId } from '@deepseek-ai/dsh-jobs/brand'
 
 const contexts = new Set<Context>()
 
@@ -64,21 +66,22 @@ describe('Job Controller Client apply', () => {
 
   it('installs ctx.jobs over the captured job namespace', async () => {
     const { ctx, observeCalls, rowsCalls } = await mount()
-    expect(ctx.jobs).toBeDefined()
-    const stopRows = ctx.jobs.watchRows('session-1' as SessionId)
-    const stopObserve = ctx.jobs.observe('session-1' as SessionId, 'bash-1' as never)
+    const jobs = ctx.jobs as IJobs
+    expect(jobs).toBeDefined()
+    const stopRows = jobs.watchRows('session-1' as SessionId)
+    const stopObserve = jobs.observe('session-1' as SessionId, 'bash-1' as JobId)
     await flush()
     expect(rowsCalls).toEqual([{ sessionId: 'session-1' }])
     expect(observeCalls).toEqual([{ sessionId: 'session-1', jobId: 'bash-1' }])
     stopRows()
     stopObserve()
     await flush()
-    expect(ctx.jobs.state.getSnapshot()).toEqual({ rows: {}, observed: {} })
+    expect(jobs.state.getSnapshot()).toEqual({ rows: {}, observed: {} })
   })
 
   it('forwards a kill to the job namespace with the row\'s session', async () => {
     const { ctx, killCalls } = await mount()
-    await expect(ctx.jobs.kill('session-1' as SessionId, 'bash-1' as never))
+    await expect((ctx.jobs as IJobs).kill('session-1' as SessionId, 'bash-1' as JobId))
       .resolves.toEqual({ ok: true, value: { outcome: 'requested' } })
     expect(killCalls).toEqual([{ sessionId: 'session-1', jobId: 'bash-1' }])
   })

@@ -18,9 +18,9 @@ import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useStat
 import clsx from 'clsx'
 import {
   Button, IconArchiveCheckOutlineRegular, IconArchiveOffOutlineRegular, IconArchiveOutlineRegular,
-  IconChevronsUpDownOutlineRegular, IconClockOutlineRegular, IconCloseFillRegular,
+  IconChevronRightOutlineRegular, IconChevronsUpDownOutlineRegular, IconClockOutlineRegular, IconCloseFillRegular,
   IconFlatListOutlineRegular, IconFolderCloseRegular, IconProjectAddOutlineRegular,
-  IconQueueOutlineRegular, IconSearchOutlineRegular, IconSlidersTwoOutlineRegular,
+  IconQueueOutlineRegular, IconRefreshOutlineRegular, IconSearchOutlineRegular, IconSlidersTwoOutlineRegular,
   IconWorkspaceTreeOutlineRegular, Menu, Modal, Toast, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type {
@@ -274,6 +274,61 @@ function EmptySessions({ rowState, onLeaveArchivedOnly, t }: Pick<SessionTreePro
         </button>
       )}
     </div>
+  )
+}
+
+/**
+ * The collapsible archived block under the list: sessions hidden from every
+ * grouping surface, restorable in place (their accounting slot never left).
+ */
+function ArchivedSessions({
+  useSessions, open, sessionIds, onUnarchive, t,
+}: {
+  useSessions: WorkspaceBrowserProps['useSessions']
+  open: WorkspaceBrowserProps['open']
+  sessionIds: readonly SessionNode['id'][]
+  onUnarchive: (sessionId: SessionNode['id']) => void
+  t: WorkspaceBrowserProps['t']
+}) {
+  const byId = useSessions(s => s.byId)
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <section className={css.archivedBlock} aria-label={t('archived.label')}>
+      <button
+        type="button"
+        className={css.archivedToggle}
+        aria-expanded={expanded}
+        onClick={() => { setExpanded(value => !value) }}
+      >
+        <IconChevronRightOutlineRegular />
+        <span>{t('archived.label', { n: sessionIds.length })}</span>
+      </button>
+      {expanded && (
+        <ul className={css.archivedList}>
+          {sessionIds.map(sessionId => (
+            <li key={sessionId} className={css.archivedRow}>
+              <button
+                type="button"
+                className={css.archivedTitle}
+                title={byId[sessionId]?.displayTitle}
+                onClick={() => { open(sessionId) }}
+              >
+                {byId[sessionId]?.displayTitle ?? String(sessionId).slice(0, 8)}
+              </button>
+              <button
+                type="button"
+                className={css.archivedRestore}
+                aria-label={t('archived.restore')}
+                title={t('archived.restore')}
+                onClick={() => { onUnarchive(sessionId) }}
+              >
+                <IconRefreshOutlineRegular />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

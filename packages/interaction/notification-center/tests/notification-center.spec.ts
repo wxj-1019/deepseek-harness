@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { agentEvents, Inbox, type Agent } from '@deepseek-ai/dsh-agent'
+import { agentEvents, type Agent } from '@deepseek-ai/dsh-agent'
 import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
 import Jobs from '@deepseek-ai/dsh-jobs-local'
 import Storage from '@deepseek-ai/dsh-storage'
@@ -25,7 +25,7 @@ function fakeAgent(session: Session): Agent {
     id: SessionId('notification-agent'),
     options: {},
     session,
-    inbox: new Inbox(session, { inserted: () => {}, discarded: () => {}, claimed: () => {} }),
+    inbox: { nextTurn: [], nextStep: [] } as never,
     status: 'running',
     ctx: new Context(),
     send: () => {},

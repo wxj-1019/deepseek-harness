@@ -310,13 +310,14 @@ export function apply(ctx: Context, config: Config): void {
       }
       const command = buildGitCommand(request, caps)
       const cwd = exec.agent?.session.header.cwd
-      const result = await ctx.shell.run(ctx.shell.resolve({
+      const execution = await ctx.shell.execute(ctx.shell.resolve({
         command: command.command,
         ...(cwd !== undefined ? { workdir: cwd } : {}),
         ...(command.stdin !== undefined ? { stdin: command.stdin } : {}),
         timeoutMs,
         signal: exec.signal,
       }))
+      const result = await execution.result()
       const output = [result.stdout.text, result.stderr.text].filter(part => part.length > 0).join('\n')
       // Annotation keeps the conditional spread free of `prop?: never` union
       // members, which exactOptionalPropertyTypes rejects against the output type.

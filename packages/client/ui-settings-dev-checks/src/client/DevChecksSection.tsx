@@ -5,15 +5,15 @@
  */
 
 import { useMemo, useSyncExternalStore } from 'react'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { DEV_CHECKS_SETTINGS_DEFAULTS, type DevChecksSettings } from '../dev-checks-settings.ts'
 import type { en } from './locales.ts'
 import styles from './DevChecksSection.module.css'
 
 /** Injected dependencies of {@link DevChecksSection} (slot `inject`). */
 export interface DevChecksSectionInjected {
-  /** Bound settings scope of the dev-checks namespace. */
-  scope: SettingsScope<DevChecksSettings>
+  /** Bound config form of the dev-checks namespace. */
+  scope: ConfigForm<DevChecksSettings>
   /** Section copy. */
   t: (key: keyof typeof en) => string
 }

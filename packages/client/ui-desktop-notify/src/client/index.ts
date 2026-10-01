@@ -22,6 +22,8 @@ import { en, NS, zh, type DesktopNotifyKey } from './locales.ts'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 // Type-only: pulls the ctx.sessions declaration merge (the session object layer).
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+// Type-only: pulls the ctx.uiWorkspace declaration merge (navigation service).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
@@ -30,8 +32,8 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   }
 }
 
-/** Required services: the list feed, the slot and locale registries, and the settings scope. */
-export const inject = ['sessions', 'slots', 'locale', 'settingsScope']
+/** Required services: the list feed, the slot and locale registries, the config form, and navigation. */
+export const inject = ['sessions', 'slots', 'locale', 'configForms', 'uiWorkspace']
 
 /**
  * Client plugin body: register the dictionaries, the completion watcher, and
@@ -44,7 +46,8 @@ export function apply(ctx: ClientContext): void {
 
   const runtime = new DesktopNotifyRuntime({
     sessions: ctx.sessions,
-    scope: ctx.settingsScope.bind<DesktopNotifySettings>({ namespace: DESKTOP_NOTIFY_SETTINGS_NAMESPACE }),
+    scope: ctx.configForms.get<DesktopNotifySettings>(DESKTOP_NOTIFY_SETTINGS_NAMESPACE),
+    openSession: (id) => { ctx.uiWorkspace.openSession(id) },
     notify: browserNotifyPort(),
     bodyText: () => t('body'),
     isHidden: documentHidden,

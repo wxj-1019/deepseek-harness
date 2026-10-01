@@ -294,6 +294,13 @@ export function SidebarRoot({
         </nav>
       )}
 
+      {/* The pinned section sits between the controls and the browsing
+          region; absent occupants leave no space. */}
+      {renderSlot('sidebar.pinned', {
+        wide,
+        expandSidebar: () => { if (collapsed) toggleSidebar() },
+      })}
+
       {/* The browsing region fills the column between the controls and the
           foot in both states; its rail icon column rides the same slot. */}
       <div className={css.regionArea}>

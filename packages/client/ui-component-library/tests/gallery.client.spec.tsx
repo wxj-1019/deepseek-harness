@@ -3,6 +3,15 @@ import { useSyncExternalStore } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
+import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+// Type-only: pulls the workspace standard-kit merge (useWorkspaces).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 import type { ComponentLibraryListResult, ComponentRecord } from '@deepseek-ai/dsh-component-library/types'
 import { ComponentLibraryController } from '../src/client/controller.ts'
 import type { ComponentLibraryRemoteFace } from '../src/client/controller.ts'
@@ -62,6 +71,8 @@ function installStories(double: StoriesDouble): () => void {
   }
 }
 
+const useResource = (() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })) as GlobalStandardProps['useResource']
+
 function mountGallery(controller: ComponentLibraryController): void {
   const t = (key: string): string => (en as Record<string, string>)[key] ?? key
   render(
@@ -70,10 +81,14 @@ function mountGallery(controller: ComponentLibraryController): void {
       viewRequest={null}
       openView={() => {}}
       completeViewRequest={() => {}}
+      inspectCall={() => {}}
       useSession={() => { throw new Error('unused by the component library gallery') }}
       useSessions={(() => undefined) as never}
-      useSessionPendingInteraction={() => { throw new Error('unused by the component library gallery') }}
+      useSessionStatus={selector => selector(new Map())}
+      useSessionRetainInfo={() => undefined}
       useWorkspaces={(() => undefined) as never}
+      usePanelInfo={selector => selector({ activePanelId: null })}
+      useResource={useResource}
       useProjection={() => undefined}
       useConversation={() => { throw new Error('unused by the component library gallery') }}
       useChat={() => { throw new Error('unused by the component library gallery') }}

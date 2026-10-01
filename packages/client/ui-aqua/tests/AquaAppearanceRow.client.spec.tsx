@@ -11,6 +11,14 @@ import { bindSnapshotSelector, workspaceSnapshot } from '@deepseek-ai/dsh-client
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { WorkspaceSnapshot } from '@deepseek-ai/dsh-api-workspace-controller/client'
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+// Type-only: pulls the workspace standard-kit merge (useWorkspaces).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 // Local stand-in for the workspaces-service list state; the service module has
 // not landed yet, so the mock types the literal this test feeds the store.
 // The row reads the workspace standard kit as a bare WorkspaceSnapshot.
@@ -53,7 +61,7 @@ const IMAGE_REF: WallpaperRef = {
 /** Empty standard-kit hook bindings (the row reads neither). */
 function emptySessions() {
   const store = createSnapshotStore<SessionListState>(
-    { ids: [], byId: {}, current: undefined, phase: 'ready', subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined })
+    { ids: [], byId: {}, phase: 'ready', projectionsBySession: {} })
   return bindSnapshotSelector(store)
 }
 function emptyWorkspaces() {
@@ -96,7 +104,10 @@ function mountRow(section: AquaSection, dark = false, configure?: (face: FaceMoc
   const props: AquaAppearanceRowComponentProps = {
     useSessions: emptySessions(),
     useWorkspaces: emptyWorkspaces(),
-    useSessionPendingInteraction: () => { throw new Error('unused by the aqua row') },
+    useSessionStatus: selector => selector(new Map()),
+    useSessionRetainInfo: () => undefined,
+    usePanelInfo: selector => selector({ activePanelId: null }),
+    useResource: () => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} }),
     useStore,
     actions: store.actions,
     t: (key: string) => COPY[key] ?? key,

@@ -2,13 +2,10 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { AttachmentError, type AttachmentStore } from '@deepseek-ai/dsh-attachment'
-import type { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import {
-  AQUA_SETTINGS_NAMESPACE, WALLPAPER_IMAGE_MEDIA_TYPES, WALLPAPER_VIDEO_MEDIA_TYPES,
+  WALLPAPER_IMAGE_MEDIA_TYPES, WALLPAPER_VIDEO_MEDIA_TYPES,
   type AquaSection, type WallpaperImageRef, type WallpaperVideoRef,
 } from './aqua-settings.ts'
-
-const NAMESPACE = AQUA_SETTINGS_NAMESPACE
 type WallpaperImageMediaType = WallpaperImageRef['mediaType']
 type WallpaperVideoMediaType = WallpaperVideoRef['mediaType']
 
@@ -22,8 +19,8 @@ const CURRENT_PATH = '/backgrounds/current'
 export interface WallpaperRouteDeps {
   /** Durable media storage (also owns the admission policy). */
   attachments: AttachmentStore
-  /** Durable settings document (source of the current wallpaper reference). */
-  settings: SettingsProvider
+  /** Live read of the durable section (source of the current wallpaper reference). */
+  readSection: () => AquaSection | undefined
 }
 
 function json(res: ServerResponse, status: number, body: unknown): void {
@@ -119,7 +116,7 @@ function parseRange(header: string, total: number): { start: number; end: number
 export async function handleCurrentWallpaper(
   req: IncomingMessage, res: ServerResponse, deps: WallpaperRouteDeps,
 ): Promise<void> {
-  const section = deps.settings.get(NAMESPACE) as AquaSection | undefined
+  const section = deps.readSection()
   const ref = section?.wallpaper
   // Null-tolerant presence check: the schema admits an explicitly-present null
   // (hand-edited settings.yaml), which must 404, not crash on property access.

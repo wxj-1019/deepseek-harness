@@ -5,10 +5,14 @@
  */
 import { createRoot } from 'react-dom/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-// Type-only: pulls the session standard-kit merge.
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 // Type-only: pulls the conversation standard-kit merge.
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 import { SessionPinsController } from '../../src/client/controller.ts'
 import type { SessionPinsRemoteFace } from '../../src/client/controller.ts'
 import { PinStar } from '../../src/client/PinStar.tsx'
@@ -48,7 +52,10 @@ export const story = {
         toggle={id => controller.toggle(id)}
         useSessions={() => { throw new Error('unused by the pin star') }}
         useWorkspaces={() => { throw new Error('unused by the pin star') }}
-        useSessionPendingInteraction={() => { throw new Error('unused by the pin star') }}
+        useSessionStatus={() => { throw new Error('unused by the pin star') }}
+        useSessionRetainInfo={() => undefined}
+        usePanelInfo={selector => selector({ activePanelId: null })}
+        useResource={() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })}
         useProjection={() => undefined}
         useConversation={() => { throw new Error('unused by the pin star') }}
         useChat={() => { throw new Error('unused by the pin star') }}

@@ -7,6 +7,7 @@ import { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import AttachmentStore, { AttachmentId } from '@deepseek-ai/dsh-attachment'
 import type { ImageAttachmentRef, SaveImageAttachment, StoredImageAttachment } from '@deepseek-ai/dsh-attachment'
+import type { SaveVideoAttachment, StoredVideoAttachment, VideoAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import FileSystem from '@deepseek-ai/dsh-fs-local'
 import { LlmAdapter, LlmRuntime, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions, StreamChunk, ImageBlock, LlmImageRequestPricing, LlmResolvedModelInfo } from '@deepseek-ai/dsh-llm'
@@ -46,6 +47,16 @@ class TestAttachments extends AttachmentStore {
   }
   async readImage(ref: ImageAttachmentRef): Promise<StoredImageAttachment> {
     return { ref, data: await readFile(this.imageHostPath(ref)) }
+  }
+  readonly videoLimits = { maxVideoBytes: 4096, mediaTypes: ['video/mp4'] as const }
+  async saveVideo(input: SaveVideoAttachment): Promise<VideoAttachmentRef> {
+    return {
+      attachmentId: AttachmentId(`sha256:${String(++this.ordinal).padStart(64, '0')}`),
+      mediaType: input.mediaType, bytes: input.data.byteLength,
+    }
+  }
+  async readVideo(ref: VideoAttachmentRef): Promise<StoredVideoAttachment> {
+    return { ref, data: new Uint8Array() }
   }
 }
 

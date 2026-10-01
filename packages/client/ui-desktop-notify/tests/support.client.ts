@@ -10,22 +10,24 @@ export function summary(id: string, running: boolean, displayTitle = id): Sessio
     id: id as SessionId,
     displayTitle,
     running,
+    retainedBy: {},
     blank: false,
     updatedAt: 0,
   }
 }
 
-/** A list snapshot over the given rows with the given selection. */
+/** A list snapshot over the given rows; `current` marks the row the main view retains. */
 export function listState(rows: readonly SessionSummary[], current?: string): SessionListState {
   const byId: Record<SessionId, SessionSummary> = {}
-  for (const row of rows) byId[row.id] = row
+  for (const row of rows) {
+    byId[row.id] = current !== undefined && row.id === (current as SessionId)
+      ? { ...row, retainedBy: { mainView: 1 } }
+      : row
+  }
   return {
     ids: rows.map(row => row.id),
     byId,
-    current: current === undefined ? undefined : current as SessionId,
     phase: 'ready',
-    subagentsByParent: {},
-    jobsBySession: {},
-    currentAddress: undefined,
+    projectionsBySession: {},
   }
 }

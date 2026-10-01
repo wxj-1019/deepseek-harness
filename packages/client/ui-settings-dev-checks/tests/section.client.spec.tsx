@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import type { SettingsScope, SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigForm, ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { DEV_CHECKS_SETTINGS_DEFAULTS, type DevChecksSettings } from '../src/dev-checks-settings.ts'
 import { DevChecksSection, type DevChecksSectionProps } from '../src/client/DevChecksSection.tsx'
 import { en } from '../src/client/locales.ts'
@@ -11,10 +11,10 @@ afterEach(cleanup)
 const dictionary: Record<string, string> = en
 const t: NonNullable<DevChecksSectionProps['t']> = key => dictionary[key] ?? key
 
-type TestScope = SettingsScope<DevChecksSettings> & { set: ReturnType<typeof vi.fn> }
+type TestScope = ConfigForm<DevChecksSettings> & { set: ReturnType<typeof vi.fn> }
 
-function createScope(overrides: Partial<SettingsScopeSnapshot<DevChecksSettings>> = {}): TestScope {
-  let current: SettingsScopeSnapshot<DevChecksSettings> = {
+function createScope(overrides: Partial<ConfigFormSnapshot<DevChecksSettings>> = {}): TestScope {
+  let current: ConfigFormSnapshot<DevChecksSettings> = {
     status: 'ready',
     value: { ...DEV_CHECKS_SETTINGS_DEFAULTS },
     base: undefined,
@@ -34,10 +34,10 @@ function createScope(overrides: Partial<SettingsScopeSnapshot<DevChecksSettings>
     set: vi.fn((field: string, value: unknown) => {
       current = { ...current, value: { ...current.value, [field]: value } as DevChecksSettings }
       for (const listener of listeners) listener()
-      return Promise.resolve()
+      return Promise.resolve(true)
     }),
-    unset: vi.fn(() => Promise.resolve()),
-    mutate: vi.fn(() => Promise.resolve()),
+    unset: vi.fn(() => Promise.resolve(true)),
+    mutate: vi.fn(() => Promise.resolve(true)),
   }
 }
 

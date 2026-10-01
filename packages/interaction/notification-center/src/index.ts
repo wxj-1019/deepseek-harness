@@ -115,11 +115,12 @@ export class NotificationCenterService extends TypertRemoteService {
     })
 
     // Jobs: every terminal state is one entry.
-    const disposeJobs = this.ctx.jobs.onJobDone((job) => {
+    const disposeJobs = this.ctx.jobs.events.subscribe({ owners: 'all' }, (event) => {
+      if (event.type !== 'settled') return
       this.collect('job-finished', {
-        title: job.label,
-        detail: job.status,
-        ...(job.ownerSession === undefined ? {} : { sessionId: job.ownerSession }),
+        title: event.job.label,
+        detail: event.job.status,
+        ...(event.job.owner === undefined ? {} : { sessionId: event.job.owner }),
       })
     })
     this.ctx.effect(() => disposeJobs, 'notification-center.jobDone')

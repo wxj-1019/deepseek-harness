@@ -22,8 +22,8 @@ import type { SessionPinsInjected } from './slots.ts'
 import { en, zh, type SessionPinsKey } from './locales.ts'
 // Type-only: pulls the ctx.slots declaration merge (the slot registry service).
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
-import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+// Type-only: pulls the ctx.uiWorkspace declaration merge (navigation service).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 
 export type { SessionPinsController, SessionPinsRemoteFace } from './controller.ts'
 export type { PinStarProps, StarGlyph } from './PinStar.tsx'
@@ -42,7 +42,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 const NS = 'sessionPins'
 
 /** Required services (cordis fiber inject). */
-export const inject = ['slots', 'locale', 'remote', 'remote.sessionPins']
+export const inject = ['slots', 'locale', 'remote', 'remote.sessionPins', 'uiWorkspace']
 
 /**
  * Register the dictionaries and both surfaces, and keep a loaded set
@@ -58,7 +58,7 @@ export function apply(ctx: ClientContext): void {
     ensure: () => controller.ensure(),
     toggle: (sessionId: Parameters<typeof controller.toggle>[0]) => controller.toggle(sessionId),
     unpin: (sessionId: Parameters<typeof controller.unpin>[0]) => controller.unpin(sessionId),
-    openSession: (sessionId: Parameters<typeof controller.toggle>[0]) => { ctx.sessions.open(sessionId) },
+    openSession: (sessionId: Parameters<typeof controller.toggle>[0]) => { ctx.uiWorkspace.openSession(sessionId) },
   }
 
   // Pushed invalidations converge only what was read; a cold set stays cold.

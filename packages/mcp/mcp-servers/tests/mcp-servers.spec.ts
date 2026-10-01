@@ -1,6 +1,6 @@
 /**
- * Unit tests for the mcp-servers composition: settings schema resolution and
- * the pure settings-to-rows composition (serverName injection, disabled
+ * Unit tests for the mcp-servers composition: Config schema resolution and
+ * the pure config-to-rows composition (serverName injection, disabled
  * exclusion, `${NAME}` expansion, per-server skip reporting).
  */
 import { describe, expect, it, vi } from 'vitest'
@@ -31,26 +31,32 @@ const httpEntry: ServerEntry = {
 }
 
 function settings(servers: Record<string, ServerEntry>, disabled: string[] = []): McpSettingsValue {
-  return McpSettings({ servers, disabled })
+  const resolved = McpSettings({ servers, disabled })
+  // Volatile snapshots are deep-readonly; composition only reads them.
+  return { servers: resolved.servers.get() as Record<string, ServerEntry>, disabled: [...resolved.disabled.get()] }
 }
 
 // ---- Schema ----
 
 describe('McpSettings schema', () => {
   it('resolves an absent section to empty servers and no disabled names', () => {
-    expect(McpSettings({} as never)).toEqual({ servers: {}, disabled: [] })
-    expect(McpSettings(undefined as never)).toEqual({ servers: {}, disabled: [] })
+    const empty = McpSettings({})
+    expect(empty.servers.get()).toEqual({})
+    expect(empty.disabled.get()).toEqual([])
+    const missing = McpSettings(undefined)
+    expect(missing.servers.get()).toEqual({})
+    expect(missing.disabled.get()).toEqual([])
   })
 
   it('resolves stdio and streamable-http entries through the dictionary union', () => {
     const value = McpSettings({ servers: { gh: stdioEntry, web: httpEntry }, disabled: ['web'] })
-    expect(Object.keys(value.servers)).toEqual(['gh', 'web'])
-    expect(value.servers.gh).toEqual(stdioEntry)
-    expect(value.disabled).toEqual(['web'])
+    expect(Object.keys(value.servers.get())).toEqual(['gh', 'web'])
+    expect(value.servers.get().gh).toEqual(stdioEntry)
+    expect(value.disabled.get()).toEqual(['web'])
   })
 
   it('rejects an entry whose transport matches neither branch', () => {
-    expect(() => McpSettings({ servers: { bad: { transport: 'sse' } as never } } as never)).toThrow()
+    expect(() => McpSettings({ servers: { bad: { transport: 'sse' } as never } })).toThrow()
   })
 })
 

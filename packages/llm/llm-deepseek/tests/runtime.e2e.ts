@@ -19,6 +19,7 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
+  VideoAttachmentLimits,
 } from '@deepseek-ai/dsh-attachment'
 import { LocalCredentialProvider } from '@deepseek-ai/dsh-credentials-local'
 import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
@@ -97,6 +98,16 @@ class E2eAttachmentStore extends AttachmentStore {
     _signal?: AbortSignal,
   ): Promise<RequestImageAttachment> {
     return Promise.resolve(this.version)
+  }
+
+  readonly videoLimits: VideoAttachmentLimits = { maxVideoBytes: 1, mediaTypes: [] }
+
+  saveVideo(): Promise<never> {
+    return Promise.reject(new Error('video is outside this e2e suite'))
+  }
+
+  readVideo(): Promise<never> {
+    return Promise.reject(new Error('video is outside this e2e suite'))
   }
 }
 

@@ -11,6 +11,11 @@ import type {} from '@deepseek-ai/dsh-deepseek-account/types'
 import type {} from '@deepseek-ai/dsh-permission-presets/types'
 import type {} from '@deepseek-ai/dsh-plugin-manager/types'
 import type {} from '@deepseek-ai/dsh-schedule/client'
+import type {} from '@deepseek-ai/dsh-session-pins/types'
+import type {} from '@deepseek-ai/dsh-notification-center/types'
+import type {} from '@deepseek-ai/dsh-component-library/types'
+import type {} from '@deepseek-ai/dsh-usage-ledger/types'
+import type {} from '@deepseek-ai/dsh-user-todo/types'
 import type { TypertForwardableEventEntry } from '@deepseek-ai/dsh-typert-protocol'
 
 /**

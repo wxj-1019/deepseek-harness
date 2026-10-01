@@ -23,8 +23,8 @@ import type { NotificationCenterInjected } from './slots.ts'
 import { en, zh, type NotificationCenterKey } from './locales.ts'
 // Type-only: pulls the ctx.slots declaration merge (the slot registry service).
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
-// Type-only: pulls the ctx.sessions declaration merge (the session object layer).
-import type {} from '@deepseek-ai/dsh-api-session-controller/client'
+// Type-only: pulls the ctx.uiWorkspace declaration merge (navigation service).
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 
 export type { NotificationsController, NotificationsRemoteFace } from './controller.ts'
 export type { NotificationBellProps, BellGlyph } from './NotificationBell.tsx'
@@ -43,7 +43,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 const NS = 'notificationCenter'
 
 /** Required services (cordis fiber inject). */
-export const inject = ['slots', 'locale', 'remote', 'remote.notifications']
+export const inject = ['slots', 'locale', 'remote', 'remote.notifications', 'uiWorkspace']
 
 /**
  * Register the dictionaries and both surfaces, and keep a loaded list
@@ -62,7 +62,7 @@ export function apply(ctx: ClientContext): void {
     markRead: (id: Parameters<typeof controller.markRead>[0]) => controller.markRead(id),
     markAllRead: () => controller.markAllRead(),
     clearRead: () => controller.clearRead(),
-    openSession: (sessionId: SessionId) => { ctx.sessions.open(sessionId) },
+    openSession: (sessionId: SessionId) => { ctx.uiWorkspace.openSession(sessionId) },
   }
 
   // Pushed invalidations converge only what was read; a cold list stays cold.

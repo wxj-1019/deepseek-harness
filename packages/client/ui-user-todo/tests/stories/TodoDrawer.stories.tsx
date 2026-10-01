@@ -7,10 +7,15 @@
  */
 import { createRoot } from 'react-dom/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
-// Type-only: pulls the session standard-kit merge.
+import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
+// Type-only: pulls the session standard-kit merge (useSessions/useSessionStatus/useSessionRetainInfo).
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 // Type-only: pulls the workspace standard-kit merge (useWorkspaces).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+// Type-only: pulls the layout standard-kit merge (usePanelInfo).
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+// Type-only: pulls the resources standard-kit merge (useResource).
+import type {} from '@deepseek-ai/dsh-client-resources/client'
 import type { UserTodoId, UserTodoRecord } from '@deepseek-ai/dsh-user-todo/types'
 import { UserTodoController } from '../../src/client/controller.ts'
 import type { UserTodosRemoteFace } from '../../src/client/controller.ts'
@@ -84,7 +89,7 @@ const WORKSPACES = {
   archivedSessionIds: [],
 }
 
-const unusedHook = (() => { throw new Error('unused by the todo drawer') }) as never
+const useResource = (() => ({ status: 'none' as const, value: undefined, failure: undefined, reload: () => {} })) as GlobalStandardProps['useResource']
 
 export const story = {
   record: 'ui-user-todo/TodoDrawer',
@@ -101,8 +106,11 @@ export const story = {
         t={key => (en as Record<string, string>)[key as keyof typeof en] ?? key}
         useTodo={selector => selector(controller.store.getSnapshot())}
         useSessions={selector => selector(SESSIONS as never)}
+        useSessionStatus={selector => selector(new Map())}
+        useSessionRetainInfo={() => undefined}
         useWorkspaces={selector => selector(WORKSPACES as never)}
-        useSessionPendingInteraction={unusedHook}
+        usePanelInfo={selector => selector({ activePanelId: null })}
+        useResource={useResource}
         ensure={() => controller.ensure()}
         resync={() => controller.resync()}
         add={title => controller.add(title)}

@@ -9,6 +9,7 @@ import type {
   RequestImageAttachment,
   SaveImageAttachment,
   StoredImageAttachment,
+  VideoAttachmentLimits,
 } from '@deepseek-ai/dsh-attachment'
 import LlmRuntime, { createToolResultMessage, createUserMessage, ToolCallId } from '@deepseek-ai/dsh-llm'
 import type { Message, ToolSchema } from '@deepseek-ai/dsh-llm'
@@ -107,6 +108,16 @@ async function harness(image?: StoredImageAttachment): Promise<Context> {
           space: 'srgb',
           hasAlpha: fixture.ref.mediaType === 'image/png',
         })
+      }
+
+      readonly videoLimits: VideoAttachmentLimits = { maxVideoBytes: 1, mediaTypes: [] }
+
+      saveVideo(): Promise<never> {
+        return Promise.reject(new Error('video is outside this e2e suite'))
+      }
+
+      readVideo(): Promise<never> {
+        return Promise.reject(new Error('video is outside this e2e suite'))
       }
     }
     await ctx.plugin(E2eAttachmentStore)

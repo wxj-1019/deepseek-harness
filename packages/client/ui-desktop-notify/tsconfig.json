@@ -14,14 +14,21 @@
       "path": "../../../vendor/cordis"
     },
     {
-      "path": "../locale"
+      "path": "../locale/tsconfig.client.json"
     },
     {
       "path": "../store"
     },
     {
-      "path": "../ui-settings"
+      "path": "../ui-settings/tsconfig.client.json"
     },
+    { "path": "../shortcuts/tsconfig.client.json" },
+    { "path": "../ui-session" },
+    { "path": "../ui-conversation/tsconfig.client.json" },
+    { "path": "../ui-workspace" },
+    { "path": "../ui-sidebar" },
+    { "path": "../ui-layout" },
+    { "path": "../ui-theme/tsconfig.client.json" },
     {
       "path": "../ui-slots"
     },

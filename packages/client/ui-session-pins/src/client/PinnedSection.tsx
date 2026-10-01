@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { IconCloseFill14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconCloseFillMedium } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionPinsInjected } from './slots.ts'
 import type { SessionPinsState } from './controller.ts'
@@ -73,7 +73,7 @@ export function PinnedSection(props: PinnedSectionProps) {
                     .then((message) => { setActionError(message ?? null) })
                 }}
               >
-                <IconCloseFill14 />
+                <IconCloseFillMedium />
               </button>
             </li>
           )

@@ -10,7 +10,7 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { IconCheckOutline16, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconCheckOutlineRegular, IconChevronDownOutlineMedium } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './CardSelect.module.css'
 
 /** One selectable entry of the dropdown. */
@@ -140,7 +140,7 @@ export function CardSelect(props: CardSelectProps): ReactNode {
         }}
       >
         <span className={css.triggerValue}>{current?.label ?? ''}</span>
-        <IconChevronDownOutline14 className={open ? `${css.chevron} ${css.chevronOpen}` : css.chevron} />
+        <IconChevronDownOutlineMedium className={open ? `${css.chevron} ${css.chevronOpen}` : css.chevron} />
       </button>
       {open && rect !== null && createPortal(
         <div ref={guardPointerDown} data-dsh-aqua="">
@@ -176,7 +176,7 @@ export function CardSelect(props: CardSelectProps): ReactNode {
                 }}
               >
                 <span className={css.optionLabel}>{option.label}</span>
-                {option.value === value && <IconCheckOutline16 />}
+                {option.value === value && <IconCheckOutlineRegular />}
               </li>
             ))}
           </ul>

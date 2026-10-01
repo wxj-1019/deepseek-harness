@@ -72,6 +72,10 @@ External packages installed for runtime use or distributed inside the prebuilt b
 | [`@xterm/headless`](https://github.com/xtermjs/xterm.js) | MIT |
 | [`@xterm/xterm`](https://github.com/xtermjs/xterm.js) | MIT |
 | [`@yarnpkg/parsers`](https://github.com/yarnpkg/berry) | BSD-2-Clause |
+| [`@yeesy369/dsh-browser`](https://github.com/xylt369/dsh-browser) | MIT |
+| [`@yeesy369/dsh-browser-playwright`](https://github.com/xylt369/dsh-browser) | MIT |
+| [`@yeesy369/dsh-tool-browser`](https://github.com/xylt369/dsh-browser) | MIT |
+| [`@yeesy369/dsh-web-permission`](https://github.com/xylt369/dsh-browser) | MIT |
 | [`acorn`](https://github.com/acornjs/acorn) | MIT |
 | [`ajv`](https://github.com/ajv-validator/ajv) | MIT |
 | [`anser`](https://github.com/IonicaBizau/anser) | MIT |
@@ -84,6 +88,7 @@ External packages installed for runtime use or distributed inside the prebuilt b
 | [`compression`](https://github.com/expressjs/compression) | MIT |
 | [`diff`](https://github.com/kpdecker/jsdiff) | BSD-3-Clause |
 | [`dompurify`](https://github.com/cure53/DOMPurify) | (MPL-2.0 OR Apache-2.0) |
+| [`dsh-better-sidebar`](https://github.com/omdsh-dev/DSH-better-sidebar) | MIT |
 | [`electron-updater`](https://github.com/electron-userland/electron-builder) | MIT |
 | [`eventsource-parser`](https://github.com/rexxars/eventsource-parser) | MIT |
 | [`exceljs`](https://github.com/exceljs/exceljs) | MIT |

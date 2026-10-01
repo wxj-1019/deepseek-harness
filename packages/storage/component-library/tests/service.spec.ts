@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
-import { setupLibrary } from './helpers.ts'
+import { setupLibrary, FIXTURE_ROOT } from './helpers.ts'
 
 const testToolSignal = new AbortController().signal
 let callCounter = 0
@@ -58,19 +58,30 @@ describe('ComponentLibraryService', () => {
       // Quarantined: invisible to queries even though it matches the keyword.
       expect(service.rankMatches({ query: 'Gauge' }).map(match => match.name)).not.toContain('GaugeExtender')
 
-      // The settings namespace opts queries into unreviewed records, ranked last.
-      await harness.ctx.settings.update('component-library', { includeUnreviewed: true })
-      const withUnreviewed = service.rankMatches({ query: 'gauge' })
-      expect(withUnreviewed.at(-1)?.name).toBe('GaugeExtender')
-
       const reviewed = await service.review({ id: 'ui-demo/GaugeExtender', decision: 'approve' })
       expect(reviewed.ok).toBe(true)
-      await harness.ctx.settings.update('component-library', { includeUnreviewed: false })
       const afterReview = service.rankMatches({ query: 'gauge' })
       expect(afterReview.at(-1)?.name).toBe('GaugeExtender')
       expect(afterReview.at(-1)?.origin).toBe('model')
     } finally {
       await harness.dispose()
+    }
+
+    // Composition opting into unreviewed records: visible, ranked last.
+    const openHarness = await setupLibrary({ root: FIXTURE_ROOT, watch: false, includeUnreviewed: true })
+    try {
+      const service = openHarness.ctx.componentLibrary
+      const written = await service.contribute({
+        name: 'GaugeExtender',
+        pkg: '@deepseek-ai/dsh-client-ui-demo',
+        path: 'packages/client/ui-demo/src/client/GaugeExtender.tsx',
+        jsdoc: 'A gauge extension.',
+      })
+      expect(written.ok).toBe(true)
+      const withUnreviewed = service.rankMatches({ query: 'gauge' })
+      expect(withUnreviewed.at(-1)?.name).toBe('GaugeExtender')
+    } finally {
+      await openHarness.dispose()
     }
   })
 

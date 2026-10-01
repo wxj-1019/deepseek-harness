@@ -8,7 +8,7 @@
  */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // Type-only: pulls the shell's SlotMap merge (the 'settings.section' entry)
-// and the ctx.settingsScope Context merge.
+// and the ctx.configForms Context merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
@@ -34,10 +34,10 @@ const NS = 'settings.devChecks'
 
 /**
  * Required services (cordis fiber inject): slots and locale for the section
- * registration, settingsScope for the transport, and connection/remote which
- * the bound scope reads through the caller's context.
+ * registration, configForms for the transport, and connection/remote which
+ * the bound form reads through the caller's context.
  */
-export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope']
+export const inject = ['slots', 'locale', 'connection', 'remote', 'configForms']
 
 /**
  * Register the dev-checks section once the `settings.section` declaration is
@@ -48,7 +48,7 @@ export const inject = ['slots', 'locale', 'connection', 'remote', 'settingsScope
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-dev-checks: copy dictionaries')
 
-  const scope = ctx.settingsScope.bind<DevChecksSettings>({ namespace: DEV_CHECKS_SETTINGS_NAMESPACE })
+  const scope = ctx.configForms.get<DevChecksSettings>(DEV_CHECKS_SETTINGS_NAMESPACE)
   // Registration-time text (the nav label thunk) and the inject face share
   // one bound translate; copy freshness rides the locale revision.
   const t = ctx.locale.bind(NS) as DevChecksSectionInjected['t']

@@ -9,7 +9,9 @@
 import { createSnapshotStore, type ObservableSnapshot, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
+// Type-only: the mainView reference-source merge (retainedBy.mainView reads).
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type { DesktopNotifySettings } from '../desktop-notify-settings.ts'
 import { ENABLED_FIELD } from '../desktop-notify-settings.ts'
 import { completedSince, runningOf, shouldNotify, type RunningMap } from './notifications.ts'
@@ -93,11 +95,6 @@ export function browserNotifyPort(): NotifyPort | undefined {
 export interface NotifySessionsFace {
   /** The session list snapshot feed. */
   list: ObservableSnapshot<SessionListState>
-  /**
-   * Select a session as current (notification click-through).
-   * @param id - session id.
-   */
-  open(id: SessionId): void
 }
 
 /**
@@ -111,7 +108,8 @@ export class DesktopNotifyRuntime {
   private prev: RunningMap | undefined
 
   private readonly sessions: NotifySessionsFace
-  private readonly scope: SettingsScope<DesktopNotifySettings>
+  private readonly scope: ConfigForm<DesktopNotifySettings>
+  private readonly openSession: (id: SessionId) => void
   private readonly notify: NotifyPort | undefined
   private readonly bodyText: () => string
   private readonly isHidden: () => boolean
@@ -119,7 +117,8 @@ export class DesktopNotifyRuntime {
 
   constructor(deps: {
     sessions: NotifySessionsFace
-    scope: SettingsScope<DesktopNotifySettings>
+    scope: ConfigForm<DesktopNotifySettings>
+    openSession: (id: SessionId) => void
     notify: NotifyPort | undefined
     bodyText: () => string
     isHidden: () => boolean
@@ -127,6 +126,7 @@ export class DesktopNotifyRuntime {
   }) {
     this.sessions = deps.sessions
     this.scope = deps.scope
+    this.openSession = deps.openSession
     this.notify = deps.notify
     this.bodyText = deps.bodyText
     this.isHidden = deps.isHidden
@@ -180,15 +180,18 @@ export class DesktopNotifyRuntime {
     const done = completedSince(this.prev, state)
     this.prev = runningOf(state)
     if (!this.enabled.getSnapshot() || this.notify === undefined) return
+    // The main-view retention marks the session the user is looking at; the
+    // old list snapshot's `current` field moved behind reference counting.
+    const current = state.ids.find(id => (state.byId[id]?.retainedBy.mainView ?? 0) > 0)
     for (const id of done) {
       const summary = state.byId[id]
       if (summary === undefined) continue
-      if (!shouldNotify(id, state.current, this.isHidden())) continue
+      if (!shouldNotify(id, current, this.isHidden())) continue
       this.notify.show(
         { title: summary.displayTitle, body: this.bodyText(), tag: id },
         () => {
           this.focusWindow()
-          this.sessions.open(id)
+          this.openSession(id)
         },
       )
     }

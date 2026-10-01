@@ -22,7 +22,7 @@
       "path": "../../api/session-controller/tsconfig.host.json"
     },
     {
-      "path": "../locale"
+      "path": "../locale/tsconfig.client.json"
     },
     {
       "path": "../store"
@@ -31,13 +31,13 @@
       "path": "../ui-slots"
     },
     {
-      "path": "../ui-settings"
+      "path": "../ui-settings/tsconfig.client.json"
     },
     {
       "path": "../ui-settings-plugins"
     },
     {
-      "path": "../ui-theme"
+      "path": "../ui-theme/tsconfig.client.json"
     },
     {
       "path": "../ui-primitives"

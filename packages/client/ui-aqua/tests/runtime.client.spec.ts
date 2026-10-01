@@ -6,7 +6,7 @@
  * wallpaper) and then removes every legacy key. */
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
+import { stubConfigForm } from '@deepseek-ai/dsh-client-test-runtime'
 import { AQUA_DEFAULTS, type AquaSection, type WallpaperRef } from '../src/aqua-settings.ts'
 import { AquaRuntime } from '../src/client/runtime.ts'
 import type { AquaLayer } from '../src/client/theme-layer.ts'
@@ -34,7 +34,7 @@ afterEach(() => {
 
 function runtime() {
   const ctx = new Context()
-  const stub = stubSettingsScope<AquaSection>()
+  const stub = stubConfigForm<AquaSection>()
   const { applied, layer } = layerStub()
   const service = new AquaRuntime(ctx, stub.scope, layer)
   return { ctx, stub, applied, service }
@@ -152,7 +152,7 @@ describe('AquaRuntime one-shot migration', () => {
   it('does not migrate once the durable section exists', () => {
     localStorage.setItem('dsh.ui-aqua.blur', '33')
     const ctx = new Context()
-    const stub = stubSettingsScope<AquaSection>()
+    const stub = stubConfigForm<AquaSection>()
     const { layer } = layerStub()
     stub.publish({ status: 'ready', value: AQUA_DEFAULTS, revision: 3 })
     const service = new AquaRuntime(ctx, stub.scope, layer)

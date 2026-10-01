@@ -419,6 +419,7 @@ function todosMessage(messages: readonly UserMessage[]): UserMessage | undefined
  * assumptions across session implementations.
  */
 function todosCatalogHistory(agent: Agent): { visibleDigest?: string; published: boolean } {
+  // oxlint-disable-next-line typescript/no-deprecated -- Existing Session history read; migration deferred.
   const events = agent.session.snapshotEvents()
   for (let index = events.length - 1; index >= 0; index -= 1) {
     const event = events[index]
