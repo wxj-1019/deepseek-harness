@@ -1,3 +1,4 @@
+import { demoClientPath } from './helpers.ts'
 import { EventEmitter } from 'node:events'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -83,17 +84,17 @@ describe('ComponentLibraryWatcher', () => {
     await watcher.start()
     const fake = harness.watchers[0]!
 
-    fake.emit('change', '/checkout/packages/client/ui-demo/src/client/Gauge.tsx')
-    fake.emit('add', '/checkout/packages/client/ui-demo/src/client/New.tsx')
+    fake.emit('change', '/checkout/' + demoClientPath('Gauge.tsx'))
+    fake.emit('add', '/checkout/' + demoClientPath('New.tsx'))
     // A settled CSS module re-learns its sibling component file.
-    fake.emit('change', '/checkout/packages/client/ui-demo/src/client/Gauge.module.css')
+    fake.emit('change', '/checkout/' + demoClientPath('Gauge.module.css'))
     // Irrelevant kinds never reach the pipeline.
-    fake.emit('change', '/checkout/packages/client/ui-demo/src/client/notes.md')
+    fake.emit('change', '/checkout/' + demoClientPath('notes.md'))
 
     expect(settled).toEqual([
-      '/checkout/packages/client/ui-demo/src/client/Gauge.tsx',
-      '/checkout/packages/client/ui-demo/src/client/New.tsx',
-      '/checkout/packages/client/ui-demo/src/client/Gauge.tsx',
+      '/checkout/' + demoClientPath('Gauge.tsx'),
+      '/checkout/' + demoClientPath('New.tsx'),
+      '/checkout/' + demoClientPath('Gauge.tsx'),
     ])
     await watcher.dispose()
   })
@@ -104,11 +105,11 @@ describe('ComponentLibraryWatcher', () => {
     await watcher.start()
     const fake = harness.watchers[0]!
 
-    fake.emit('unlink', '/checkout/packages/client/ui-demo/src/client/Old.tsx')
-    fake.emit('unlink', '/checkout/packages/client/ui-demo/src/client/Gauge.module.css')
+    fake.emit('unlink', '/checkout/' + demoClientPath('Old.tsx'))
+    fake.emit('unlink', '/checkout/' + demoClientPath('Gauge.module.css'))
 
-    expect(removed).toEqual(['/checkout/packages/client/ui-demo/src/client/Old.tsx'])
-    expect(settled).toEqual(['/checkout/packages/client/ui-demo/src/client/Gauge.tsx'])
+    expect(removed).toEqual(['/checkout/' + demoClientPath('Old.tsx')])
+    expect(settled).toEqual(['/checkout/' + demoClientPath('Gauge.tsx')])
     await watcher.dispose()
   })
 

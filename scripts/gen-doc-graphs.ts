@@ -1693,8 +1693,13 @@ function renderDocs(): GraphDoc[] {
     { rel: 'docs/tool-execution-pipeline.md', content: renderToolPipeline() },
   ]
   docs.unshift({ rel: 'docs/graph-atlas.md', content: renderIndex(docs) })
-  const events = docs.find(doc => doc.rel === 'docs/event-producer-consumer.md')
-  if (events !== undefined) docs.push(spliceChineseRegions(events))
+  // Every graph page's generated regions splice into its authored Chinese
+  // counterpart when one exists; the pairing gate enforces the resulting sync.
+  for (const doc of [...docs]) {
+    if (existsSync(resolve(root, doc.rel.replace(/\.md$/, '.zh.md')))) {
+      docs.push(spliceChineseRegions(doc))
+    }
+  }
   return docs
 }
 

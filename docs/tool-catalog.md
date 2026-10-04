@@ -2826,7 +2826,7 @@ Record a UI component you just created into this checkout’s component library 
     },
     "path": {
       "type": "string",
-      "description": "Repository-relative source path, e.g. packages/client/ui-foo/src/client/Bar.tsx."
+      "description": "Repository-relative source path, e.g. packages/client/<pkg>/src/client/Bar.tsx."
     },
     "props": {
       "type": "array",

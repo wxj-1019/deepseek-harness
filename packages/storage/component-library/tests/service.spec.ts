@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { demoClientPath } from './helpers.ts'
 import { describe, expect, it } from 'vitest'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { setupLibrary, FIXTURE_ROOT } from './helpers.ts'
@@ -50,7 +51,7 @@ describe('ComponentLibraryService', () => {
       const written = await service.contribute({
         name: 'GaugeExtender',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/GaugeExtender.tsx',
+        path: demoClientPath('GaugeExtender.tsx'),
         jsdoc: 'A gauge extension.',
       })
       expect(written.ok).toBe(true)
@@ -74,7 +75,7 @@ describe('ComponentLibraryService', () => {
       const written = await service.contribute({
         name: 'GaugeExtender',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/GaugeExtender.tsx',
+        path: demoClientPath('GaugeExtender.tsx'),
         jsdoc: 'A gauge extension.',
       })
       expect(written.ok).toBe(true)
@@ -91,7 +92,7 @@ describe('ComponentLibraryService', () => {
       const result = await harness.ctx.componentLibrary.contribute({
         name: 'Gauge',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/Gauge.tsx',
+        path: demoClientPath('Gauge.tsx'),
       })
       expect(result).toMatchObject({ ok: false, error: { code: 'invalid-record' } })
     } finally {
@@ -110,7 +111,7 @@ describe('ComponentLibraryService', () => {
       })
       expect(written).toEqual({ ok: true, value: { done: true, id: 'ui-demo/BackslashCard' } })
       const record = service.snapshotAll().find(entry => entry.id === 'ui-demo/BackslashCard')
-      expect(record?.path).toBe('packages/client/ui-demo/src/client/BackslashCard.tsx')
+      expect(record?.path).toBe(demoClientPath('BackslashCard.tsx'))
 
       // The same component reached through backslash separators lands on the
       // scanned id too, so the scanner-collision rejection still fires.
@@ -164,7 +165,7 @@ describe('ComponentLibraryService', () => {
       const result = await harness.ctx.componentLibrary.contribute({
         name: 'MisnamedCard',
         pkg: '@deepseek-ai/dsh-client-ui-somewhere-else',
-        path: 'packages/client/ui-demo/src/client/MisnamedCard.tsx',
+        path: demoClientPath('MisnamedCard.tsx'),
       })
       expect(result).toMatchObject({ ok: false, error: { code: 'invalid-record' } })
       expect(JSON.stringify(result)).toContain('@deepseek-ai/dsh-client-ui-demo')
@@ -181,7 +182,7 @@ describe('ComponentLibraryService', () => {
       await service.contribute({
         name: 'Throwaway',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/Throwaway.tsx',
+        path: demoClientPath('Throwaway.tsx'),
       })
       expect(await service.review({ id: 'ui-demo/Throwaway', decision: 'discard' })).toEqual({ ok: true, value: { done: true } })
       expect(service.snapshotAll().map(record => record.id)).not.toContain('ui-demo/Throwaway')
@@ -202,7 +203,7 @@ describe('ComponentLibraryService', () => {
       await harness.ctx.componentLibrary.contribute({
         name: 'Watched',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/Watched.tsx',
+        path: demoClientPath('Watched.tsx'),
       })
       await new Promise(resolve => setTimeout(resolve, 0))
       expect(changes).toBe(1)
@@ -287,7 +288,7 @@ describe('component tools', () => {
         arguments: {
           name: 'FreshCard',
           pkg: '@deepseek-ai/dsh-client-ui-demo',
-          path: 'packages/client/ui-demo/src/client/FreshCard.tsx',
+          path: demoClientPath('FreshCard.tsx'),
           props: [{ name: 'title', type: 'string', required: true }],
           tokens: ['--dsw-alias-label-primary'],
         },
@@ -302,7 +303,7 @@ describe('component tools', () => {
         arguments: {
           name: 'Gauge',
           pkg: '@deepseek-ai/dsh-client-ui-demo',
-          path: 'packages/client/ui-demo/src/client/Gauge.tsx',
+          path: demoClientPath('Gauge.tsx'),
         },
       })
       expect(colliding.isError).toBe(true)

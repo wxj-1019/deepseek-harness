@@ -72,6 +72,9 @@ export function apply(ctx: ClientContext): void {
     appearanceBound = actions
     sync()
     return {
+      setEnabled: (enabled) => {
+        runtime.setEnabled(enabled)
+      },
       setMode: (mode) => {
         runtime.setMode(mode)
       },

@@ -2837,7 +2837,7 @@ todo_write 是会话所有的状态；UI 将最新的 todo/write 事件渲染为
     },
     "path": {
       "type": "string",
-      "description": "Repository-relative source path, e.g. packages/client/ui-foo/src/client/Bar.tsx."
+      "description": "Repository-relative source path, e.g. packages/client/<pkg>/src/client/Bar.tsx."
     },
     "props": {
       "type": "array",

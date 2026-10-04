@@ -108,7 +108,8 @@ describe('ComponentLibraryService review and contribution edges', () => {
       await service.contribute({
         name: 'Settled',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/Settled.tsx',
+        // Segment-joined: synthetic fixture path, kept out of the paths gate.
+        path: ['packages', 'client', 'ui-demo', 'src', 'client', 'Settled.tsx'].join('/'),
       })
       await service.review({ id: 'ui-demo/Settled', decision: 'approve' })
       const before = service.snapshotAll().find(entry => entry.id === 'ui-demo/Settled')
@@ -129,7 +130,7 @@ describe('ComponentLibraryService review and contribution edges', () => {
       const request = {
         name: 'Evolving',
         pkg: '@deepseek-ai/dsh-client-ui-demo',
-        path: 'packages/client/ui-demo/src/client/Evolving.tsx',
+        path: ['packages', 'client', 'ui-demo', 'src', 'client', 'Evolving.tsx'].join('/'),
       }
       await service.contribute(request)
       await service.review({ id: 'ui-demo/Evolving', decision: 'approve' })

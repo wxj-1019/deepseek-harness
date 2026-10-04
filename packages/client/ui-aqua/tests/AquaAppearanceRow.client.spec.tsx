@@ -34,6 +34,8 @@ import { AQUA_DEFAULTS, type AquaSection, type WallpaperRef } from '../src/aqua-
 afterEach(cleanup)
 
 const COPY: Record<string, string> = {
+  'aqua.title': 'Glass theme',
+  'aqua.description': 'Global glassmorphism with mica/compatibility modes — blur, frost, backdrop, and color all adjustable',
   'aqua.mode': 'Mode',
   'aqua.modeMica': 'Mica',
   'aqua.modeCompat': 'Compatibility',
@@ -79,6 +81,7 @@ function mountRow(section: AquaSection, dark = false, configure?: (face: FaceMoc
   const store = createAquaRowStore().create()
   store.actions.sync({ ...section, dark }, 0)
   const face = {
+    setEnabled: vi.fn<(value: boolean) => void>(),
     setMode: vi.fn<(value: 'mica' | 'compat') => void>(),
     setBlur: vi.fn<(value: number) => void>(),
     setFrost: vi.fn<(value: number) => void>(),
@@ -118,9 +121,18 @@ function mountRow(section: AquaSection, dark = false, configure?: (face: FaceMoc
 }
 
 describe('AquaAppearanceRow', () => {
-  it('renders nothing while the master switch is off', () => {
+  it('renders only the master switch while off and re-enables through it', () => {
     mountRow({ ...AQUA_DEFAULTS, enabled: false })
     expect(document.querySelector('input[type="file"]')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Compatibility' })).toBeNull()
+    const master = screen.getByRole('button', { name: 'Glass theme' })
+    fireEvent.click(master)
+  })
+
+  it('the master switch drives the injected setEnabled', () => {
+    const { face } = mountRow({ ...AQUA_DEFAULTS })
+    fireEvent.click(screen.getByRole('button', { name: 'Glass theme' }))
+    expect(face.setEnabled).toHaveBeenCalledWith(false)
   })
 
   it('mode and backdrop segmented controls drive the injected face', () => {

@@ -3,14 +3,14 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-component-library/README.md
 /:
-  en: 25b42d2b1f1fc4b8
-  zh: 17119e7fb552700f
+  en: 0f7710bec9675e70
+  zh: 6d36920339cb382b
 /deepseek-ai-dsh-client-ui-component-library:
   en: 5e8e658412bec35e
   zh: 7d4429ca84715e46
 /deepseek-ai-dsh-client-ui-component-library/summary:
-  en: abf10a0171cf6100
-  zh: 966df341eb21a673
+  en: 30459a8fa1ea8f22
+  zh: 514036170c5e49fe
 /deepseek-ai-dsh-client-ui-component-library/table-of-contents:
   en: d152484eb41ac6b4
   zh: 744490fe9a414704
@@ -18,14 +18,14 @@
   en: cfe1a95a7444b2e1
   zh: 3ff8acbead38c878
 /deepseek-ai-dsh-client-ui-component-library/use-this-package/observable-behavior:
-  en: ecf353ef400d77e2
-  zh: ab77619f8d21dfef
+  en: 0f60a8852fbd851a
+  zh: 0fd7613bc4cf7669
 /deepseek-ai-dsh-client-ui-component-library/understand-the-implementation:
-  en: 2af40c8197bf7ad0
-  zh: 3ebb4910aeb80670
+  en: 6b78d1b8b9358c3d
+  zh: a9cea50f838b8839
 /deepseek-ai-dsh-client-ui-component-library/understand-the-implementation/source-map:
-  en: 0502851ca262907b
-  zh: ee4bbf72ee063b30
+  en: dc674a3143ebe9b7
+  zh: 454210d684d8c29c
 /deepseek-ai-dsh-client-ui-component-library/further-exploration:
   en: a54035fa6942df89
   zh: e0b3cc4dd452bfb0
@@ -36,11 +36,11 @@
   en: 47f982e326fe77fd
   zh: 47f982e326fe77fd
 /deepseek-ai-dsh-client-ui-component-library/known-limitations-and-deferred-work:
-  en: 2ddd0f89d86dea99
-  zh: 7733a7547c4e5043
+  en: 6a5e59a724f14f3e
+  zh: a4c26d3b54f1bf86
 /deepseek-ai-dsh-client-ui-component-library/known-limitations-and-deferred-work/dev-note:
   en: 3195c22a4f3a7bc8
   zh: bd838cdb2b5ed42d
-/deepseek-ai-dsh-client-ui-component-library/known-limitations-and-deferred-work/dev-note/future-conversation-view-promotion:
-  en: 26e7a12b59d4271b
-  zh: d05db826df3d0172
+/deepseek-ai-dsh-client-ui-component-library/known-limitations-and-deferred-work/dev-note/review-surface:
+  en: c06f76ec83c0f062
+  zh: d7fb8df95f0dcbf6

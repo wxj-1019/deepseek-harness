@@ -131,7 +131,7 @@ export function registerComponentTools(ctx: Context, service: ComponentLibrarySe
       path: {
         type: 'string',
         required: true,
-        description: 'Repository-relative source path, e.g. packages/client/ui-foo/src/client/Bar.tsx.',
+        description: 'Repository-relative source path, e.g. packages/client/<pkg>/src/client/Bar.tsx.',
       },
       props: {
         type: 'array',

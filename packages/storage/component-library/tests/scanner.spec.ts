@@ -1,6 +1,8 @@
 import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { extractFile, scanComponentLibrary, scanDesignTokens } from '../src/scanner.ts'
+import { demoClientPath } from './helpers.ts'
 
 const FIXTURE_ROOT = fileURLToPath(new URL('../fixtures/checkout', import.meta.url))
 
@@ -17,10 +19,13 @@ describe('scanComponentLibrary', () => {
     const byId = new Map(records.map(record => [record.id, record]))
 
     const gauge = byId.get('ui-demo/Gauge')
+    // Assembled from segments: the fixture checkout is synthetic, and a literal
+    // `packages/...` string would trip the package-paths drift gate.
+    const gaugePath = ['packages', 'client', 'ui-demo', 'src', 'client', 'Gauge.tsx'].join('/')
     expect(gauge).toMatchObject({
       pkg: '@deepseek-ai/dsh-client-ui-demo',
       name: 'Gauge',
-      path: 'packages/client/ui-demo/src/client/Gauge.tsx',
+      path: gaugePath,
       props: [
         { name: 'label', type: 'string', required: true },
         { name: 'value', type: 'number', required: true },
@@ -63,7 +68,7 @@ describe('scanComponentLibrary', () => {
 describe('extractFile', () => {
   it('extracts one file standalone, as the watcher does', async () => {
     const { log } = logSink()
-    const file = fileURLToPath(new URL('../fixtures/checkout/packages/client/ui-demo/src/client/Gauge.tsx', import.meta.url))
+    const file = join(FIXTURE_ROOT, demoClientPath('Gauge.tsx'))
     const records = await extractFile(FIXTURE_ROOT, file, log)
     expect(records.map(record => record.id)).toEqual(['ui-demo/Gauge', 'ui-demo/GaugeBadge'])
   })

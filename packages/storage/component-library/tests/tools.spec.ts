@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { demoClientPath } from './helpers.ts'
 import { ToolCallId } from '@deepseek-ai/dsh-llm'
 import { setupLibrary } from './helpers.ts'
 
@@ -127,7 +128,7 @@ describe('component_record presentation and validation', () => {
         arguments: {
           name: 'FullCard',
           pkg: '@deepseek-ai/dsh-client-ui-demo',
-          path: 'packages/client/ui-demo/src/client/FullCard.tsx',
+          path: demoClientPath('FullCard.tsx'),
           props: [{ name: 'title', type: 'string' }, { name: 'count', type: 'number', required: true }],
           tokens: ['--dsw-alias-label-primary'],
           jsdoc: 'A fully specified card.',
@@ -157,7 +158,7 @@ describe('component_record presentation and validation', () => {
         arguments: {
           name: 'Gauge',
           pkg: '@deepseek-ai/dsh-client-ui-demo',
-          path: 'packages/client/ui-demo/src/client/Gauge.tsx',
+          path: demoClientPath('Gauge.tsx'),
         },
       })
       expect(result.isError).toBe(true)

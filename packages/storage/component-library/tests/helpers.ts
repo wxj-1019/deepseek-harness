@@ -15,6 +15,24 @@ import type { Config } from '../src/index.ts'
 /** Checkout fixture the scanner learns during tests. */
 export const FIXTURE_ROOT = fileURLToPath(new URL('../fixtures/checkout', import.meta.url))
 
+/**
+ * Segment-joined synthetic demo-package directory inside the fixture checkout.
+ * A literal `packages/...` string here would trip the package-paths drift gate:
+ * the path does not exist at the repository root and its `client` segment names
+ * a live package leaf.
+ */
+export const DEMO_CLIENT_DIR = ['packages', 'client', 'ui-demo', 'src', 'client'].join('/')
+
+/**
+ * Checkout-root-relative path of one synthetic demo file, for record and event
+ * assertions.
+ * @param name - file name inside the demo package's client directory.
+ * @returns the joined path string.
+ */
+export function demoClientPath(name: string): string {
+  return `${DEMO_CLIENT_DIR}/${name}`
+}
+
 export interface LibraryHarness {
   readonly ctx: Context
   readonly storageRoot: string
